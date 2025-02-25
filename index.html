@@ -15,9 +15,32 @@
             width: 100%;
             height: 100%;
         }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+        #controls select {
+            padding: 5px;
+        }
     </style>
 </head>
 <body>
+    <div id="controls">
+        <label for="partySelect">Wähle eine Partei:</label>
+        <select id="partySelect">
+            <option value="SPDinkBW">SPD</option>
+            <option value="GrueninkBW">Grüne</option>
+            <option value="CDUinkBW">CDU</option>
+            <option value="LINKEinkBW">LINKE</option>
+            <option value="AfDinkBW">AfD</option>
+            <option value="FDPinkBW">FDP</option>
+        </select>
+    </div>
     <div id="map"></div>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
@@ -27,38 +50,68 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // Funktion zur Bestimmung der Farbe basierend auf dem Wert
-        function getColor(value) {
-            return value > 0.8 ? '#800026' :
-                   value > 0.6 ? '#BD0026' :
-                   value > 0.4 ? '#E31A1C' :
-                   value > 0.2 ? '#FC4E2A' :
-                   value > 0.1 ? '#FD8D3C' :
-                   value > 0.05 ? '#FEB24C' :
-                   value > 0.02 ? '#FED976' :
-                                  '#FFEDA0';
+        // Farben für die Parteien
+        var partyColors = {
+            SPD: '#FF0000',
+            Gruen: '#4CAF50',
+            CDU: '#1E88E5',
+            LINKE: '#9C27B0',
+            AfD: '#FF5722',
+            FDP: '#FFEB3B'
+        };
+
+        // Funktion zur Bestimmung der Farbe basierend auf der Partei
+        function getPartyColor(party, value) {
+            if (partyColors[party]) {
+                return partyColors[party];
+            }
+            return '#CCCCCC'; // Standardfarbe, wenn keine Partei gewählt ist
         }
 
-        // Style-Funktion für GeoJSON
-        function style(feature) {
-            var value = parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.'));
-            return {
-                fillColor: getColor(value),
-                weight: 1,
-                opacity: 1,
-                color: 'white',
-                dashArray: '3',
-                fillOpacity: 0.7
-            };
-        }
+        // Die aktuelle Partei, die angezeigt werden soll
+        var currentParty = "SPDinkBW";
 
         // GeoJSON-Daten laden und zur Karte hinzufügen
         fetch('https://kxljxv.github.io/wahlergebnisse.json')
             .then(response => response.json())
             .then(data => {
-                L.geoJSON(data, { style: style }).addTo(map);
+                // Stil für die GeoJSON-Polygone
+                function style(feature) {
+                    var value = parseFloat(feature.properties[currentParty].replace(',', '.'));
+                    return {
+                        fillColor: getPartyColor(currentParty, value),
+                        weight: 0,
+                        opacity: 1,
+                        color: 'white',
+                        dashArray: '3',
+                        fillOpacity: 0.7
+                    };
+                }
+
+                // Funktion für das Popup mit Informationen
+                function onEachFeature(feature, layer) {
+                    layer.on('mouseover', function (e) {
+                        var popupContent = '<b>' + feature.properties.Bezirk + '</b><br>' +
+                            'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
+                            feature.properties[currentParty] + ' der Partei: ' + currentParty + '<br>';
+                        layer.bindPopup(popupContent).openPopup();
+                    });
+                }
+
+                L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
             })
             .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
+
+        // Event listener für die Auswahl der Partei
+        document.getElementById('partySelect').addEventListener('change', function (e) {
+            currentParty = e.target.value;
+            // Alle Polygone mit der neuen Partei aktualisieren
+            map.eachLayer(function (layer) {
+                if (layer instanceof L.GeoJSON) {
+                    layer.setStyle(style(layer.feature));
+                }
+            });
+        });
     </script>
 </body>
 </html>
