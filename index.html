@@ -96,7 +96,6 @@
       "LINKEinkBW": { min: 0.04, max: 0.5 },
       "AfDinkBW": { min: 0.02, max: 0.5 },
       "FDPinkBW": { min: 0.004, max: 0.16 }
-      // Weitere Parteien falls benötigt...
     };
 
     // Hilfsfunktionen für Farbkonvertierung und Interpolation
@@ -120,7 +119,7 @@
       var b = Math.round(255 + (base.b - 255) * value);
       return rgbToHex(r, g, b);
     }
-    // Gibt die Farbe für einen Rohwert und eine Partei zurück
+    // Gibt die Farbe für einen Rohwert und eine Partei zurück (stufenlos interpoliert)
     function getColor(rawValue, party) {
       var range = partyRanges[party];
       var normalized = (rawValue - range.min) / (range.max - range.min);
@@ -129,33 +128,46 @@
       return interpolateColor(partyBaseColors[party], normalized);
     }
 
+    // Dynamische Transparenz der Polygone: Bei niedrigem Zoom (herausgezoomt) sind sie voll deckend (opacity 1), bei höherem Zoom nehmen sie ab.
+    function getFillOpacity() {
+      var zoom = map.getZoom();
+      if (zoom <= 11) return 1;
+      if (zoom >= 16) return 0.7;
+      // Linear interpolieren zwischen Zoom 11 und 16
+      return 1 - ((zoom - 11) * (0.3 / 5));
+    }
+
     // Begrenzungen (ungefähr Berlin und Umgebung)
     var bounds = L.latLngBounds([[52.3, 13.0], [52.7, 13.8]]);
-    // Karte initialisieren
+    // Karte initialisieren mit minZoom und maxBounds, Inertia deaktiviert
     var map = L.map('map', {
       center: [52.52, 13.40],
       zoom: 12,
       minZoom: 11,
       maxBounds: bounds,
-      inertia: false
+      inertia: false,
+      detectRetina: true
     });
-    // Basemap: CartoDB Positron
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+    // Basemap: CartoDB Positron, detectRetina aktiviert
+    var baseLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap, CartoDB | Quelle: wahlen-berlin.de, opendata portal berlin',
-      maxZoom: 19
+      maxZoom: 19,
+      detectRetina: true
     }).addTo(map);
 
-    // Erstelle einen eigenen Pane für Beschriftungen (Labels) und füge eine Labels-Kachel hinzu
+    // Zusätzlicher Pane für Beschriftungen (Labels)
     map.createPane('labelsPane');
-    map.getPane('labelsPane').style.zIndex = 650; // oberhalb der OverlayPane
+    map.getPane('labelsPane').style.zIndex = 650; // oberhalb der Overlays
     map.getPane('labelsPane').style.pointerEvents = 'none'; // nicht interaktiv
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
       attribution: '',
-      pane: 'labelsPane'
+      pane: 'labelsPane',
+      maxZoom: 19,
+      detectRetina: true
     }).addTo(map);
 
     // Maßstabsanzeige unten rechts
-    L.control.scale({position: 'bottomright'}).addTo(map);
+    L.control.scale({ position: 'bottomright' }).addTo(map);
 
     // Suchfeld (Geocoder) hinzufügen
     L.Control.geocoder({
@@ -163,24 +175,20 @@
     })
     .on('markgeocode', function(e) {
       var bbox = e.geocode.bbox;
-      var poly = L.polygon([
-        bbox.getSouthEast(),
-        bbox.getNorthEast(),
-        bbox.getNorthWest(),
-        bbox.getSouthWest()
-      ]).addTo(map);
-      map.fitBounds(poly.getBounds());
+      map.fitBounds(bbox);
     })
     .addTo(map);
 
+    // Variablen für den GeoJSON-Layer
+    var geojsonLayer;
+
     // Funktionen zur Hervorhebung von Polygonen bei Mouseover
-    var geojsonLayer; // wird später initialisiert
     function highlightFeature(e) {
       var layer = e.target;
       layer.setStyle({
         weight: 3,
         color: '#666',
-        fillOpacity: 0.7
+        fillOpacity: getFillOpacity() // aktuelle Opacity beibehalten
       });
       if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
         layer.bringToFront();
@@ -190,7 +198,7 @@
       geojsonLayer.resetStyle(e.target);
     }
 
-    // Style-Funktion für die Polygone (stufenlos gefärbt)
+    // Style-Funktion für die Polygone: Stufenlose Farbinterpolation und dynamische Transparenz
     function style(feature) {
       var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
       return {
@@ -198,11 +206,11 @@
         weight: 0, // keine Linien
         opacity: 1,
         color: 'transparent',
-        fillOpacity: 0.7
+        fillOpacity: getFillOpacity()
       };
     }
 
-    // Popup und Ereignisse für jedes Polygon: Popup erscheint bei Klick, Hervorhebung beim Mouseover
+    // Popup und Ereignisse für jedes Polygon: Popup erscheint bei Klick; beim Mouseover wird hervorgehoben
     function onEachFeature(feature, layer) {
       layer.on({
         mouseover: highlightFeature,
@@ -232,6 +240,13 @@
       .catch(function(error) {
         console.error('Fehler beim Laden der GeoJSON-Daten:', error);
       });
+
+    // Aktualisiere die Polygon-Transparenz bei Zoomänderung
+    map.on('zoomend', function() {
+      if (geojsonLayer) {
+        geojsonLayer.setStyle(style);
+      }
+    });
   </script>
 </body>
 </html>
