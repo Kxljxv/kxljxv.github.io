@@ -7,55 +7,31 @@
   
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <!-- Leaflet Control Geocoder CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-
+  
   <style>
     body {
       margin: 0;
       padding: 0;
       font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background-color: #f4f4f4;
+      text-align: center;
     }
     #map {
-      width: 80%;
+      width: 90%;
       height: 70vh;
-      margin: 20px 0;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    }
-    h1 {
-      font-size: 2em;
-      margin-top: 30px;
-      text-align: center;
-      color: #333;
-    }
-    p.description {
-      font-size: 1.1em;
-      text-align: center;
-      max-width: 800px;
-      margin-top: 15px;
-      color: #555;
+      margin: 20px auto;
     }
     select {
-      margin-top: 20px;
-      padding: 10px;
+      margin: 10px;
+      padding: 5px;
       font-size: 1em;
-      border-radius: 5px;
-      border: 1px solid #ccc;
     }
     .legend {
-      position: absolute;
-      bottom: 30px;
-      left: 10px;
       background: white;
       padding: 10px;
+      line-height: 1.5;
+      font-size: 12px;
       border-radius: 5px;
-      font-size: 14px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.2);
     }
     .legend i {
       width: 18px;
@@ -68,132 +44,129 @@
 </head>
 <body>
   <h1>Wahlergebnisse in Berlin</h1>
-  <p class="description">
-    Wählen Sie eine Partei aus, um deren Wahlergebnisse auf der Karte anzuzeigen.
-  </p>
-
-  <!-- Partei-Auswahl -->
+  
   <select id="partySelect">
     <option value="SPDinkBW">SPD</option>
+    <option value="GrueninkBW">Grüne</option>
     <option value="CDUinkBW">CDU</option>
-    <option value="CSUinkBW">CSU</option>
-    <option value="GrueninkBW">Bündnis 90/Die Grünen</option>
-    <option value="FDPinkBW">FDP</option>
     <option value="LINKEinkBW">Die Linke</option>
     <option value="AfDinkBW">AfD</option>
-    <option value="FWinkBW">Freie Wähler</option>
-    <option value="VoltDeutschlandinkBW">Volt Deutschland</option>
-    <option value="PARTEIMENSCHUMWELTTIERSCHUTZinkBW">Tierschutzpartei</option>
-    <option value="MLPDinkBW">MLPD</option>
-    <option value="BSWinkBWB">BSW</option>
+    <option value="FDPinkBW">FDP</option>
+    <option value="BSWinkBWB">Bündnis Sahra Wagenknecht</option>
   </select>
 
   <div id="map"></div>
 
-  <!-- Leaflet JS -->
+  <p>Quellen: <a href="https://wahlen-berlin.de" target="_blank">wahlen-berlin.de</a>, <a href="https://daten.berlin.de" target="_blank">Open Data Portal Berlin</a></p>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-
+  
   <script>
-    var currentParty = "SPDinkBW"; 
-
-    var partyBaseColors = {
-      "SPDinkBW": "#E3000F",
-      "CDUinkBW": "#000000",
-      "CSUinkBW": "#0570C9",
-      "GrueninkBW": "#1AA037",
-      "FDPinkBW": "#FFEF00",
-      "LINKEinkBW": "#E3000F",
-      "AfDinkBW": "#0489DB",
-      "FWinkBW": "#FF8000",
-      "VoltDeutschlandinkBW": "#562883",
-      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#A6006B",
-      "MLPDinkBW": "#BE0027",
-      "BSWinkBWB": "#8B0000"
-    };
-
     var map = L.map('map', {
-      center: [52.52, 13.405],
-      zoom: 11,
       minZoom: 10,
-      maxZoom: 16
-    });
+      maxZoom: 17,
+      zoomControl: true
+    }).setView([52.52, 13.405], 11);
 
-    var tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-      opacity: 1.0
+    var baseMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      opacity: 1
     }).addTo(map);
 
-    var geojsonLayer;
+    // Farben der Parteien
+    var partyColors = {
+      "SPDinkBW": "#E3000F",
+      "GrueninkBW": "#1AA037",
+      "CDUinkBW": "#000000",
+      "LINKEinkBW": "#A6006B",
+      "AfDinkBW": "#0489DB",
+      "FDPinkBW": "#FFEF00",
+      "BSWinkBWB": "#008000"
+    };
+
+    // Wertebereiche der Parteien
+    var partyRanges = {
+      "SPDinkBW": { min: 0.06, max: 0.26 },
+      "GrueninkBW": { min: 0.015, max: 0.41 },
+      "CDUinkBW": { min: 0.031, max: 0.46 },
+      "LINKEinkBW": { min: 0.04, max: 0.5 },
+      "AfDinkBW": { min: 0.02, max: 0.5 },
+      "FDPinkBW": { min: 0.004, max: 0.16 },
+      "BSWinkBWB": { min: 0.01, max: 0.16 }
+    };
 
     function getColor(value, party) {
-      let color = partyBaseColors[party] || "#CCCCCC";
-      return L.Util.ColorGradient ? L.Util.ColorGradient(color, value) : color;
+      var range = partyRanges[party];
+      var normValue = (value - range.min) / (range.max - range.min);
+      normValue = Math.max(0, Math.min(1, normValue));
+      return `rgba(${hexToRgb(partyColors[party]).join(',')}, ${normValue})`;
+    }
+
+    function hexToRgb(hex) {
+      hex = hex.replace(/^#/, '');
+      return [
+        parseInt(hex.substring(0,2), 16),
+        parseInt(hex.substring(2,4), 16),
+        parseInt(hex.substring(4,6), 16)
+      ];
     }
 
     function style(feature) {
-      var value = parseFloat(feature.properties[currentParty]);
-      var min = 0.01, max = 0.5;
-      var normValue = (value - min) / (max - min);
-      normValue = Math.max(0, Math.min(1, normValue));
-
+      var party = document.getElementById("partySelect").value;
+      var value = parseFloat(feature.properties[party]);
       return {
-        fillColor: getColor(normValue, currentParty),
+        fillColor: getColor(value, party),
         weight: 1,
         opacity: 1,
-        color: "#555",
-        fillOpacity: 1 - map.getZoom() / 16
+        color: "#ffffff",
+        fillOpacity: 1 - (map.getZoom() - 10) / 7
       };
     }
 
-    function highlightFeature(e) {
-      var layer = e.target;
-      layer.setStyle({
-        weight: 3,
-        color: '#000',
-        dashArray: '',
-        fillOpacity: 0.7
-      });
-    }
+    var geojsonLayer = L.geoJson(null, {
+      style: style,
+      onEachFeature: function (feature, layer) {
+        layer.on("click", function () {
+          var party = document.getElementById("partySelect").value;
+          var percentage = (parseFloat(feature.properties[party]) * 100).toFixed(1);
+          layer.bindPopup(`Bezirk: ${feature.properties.Bezirk}<br>${party}: ${percentage}%`).openPopup();
+        });
+        layer.on("mouseover", function () {
+          layer.setStyle({ weight: 3, color: "black" });
+        });
+        layer.on("mouseout", function () {
+          geojsonLayer.resetStyle(layer);
+        });
+      }
+    }).addTo(map);
 
-    function resetHighlight(e) {
-      geojsonLayer.resetStyle(e.target);
-    }
-
-    function zoomToFeature(e) {
-      map.fitBounds(e.target.getBounds());
-    }
-
-    function onEachFeature(feature, layer) {
-      layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight,
-        click: function (e) {
-          var value = (parseFloat(feature.properties[currentParty]) * 100).toFixed(1);
-          layer.bindPopup(feature.properties.Bezirk + ": " + value + "%").openPopup();
-        }
-      });
-    }
-
-    async function loadGeoJSON() {
-      const response = await fetch("data.geojson");
-      const data = await response.json();
-      geojsonLayer = L.geoJSON(data, {
-        style: style,
-        onEachFeature: onEachFeature
-      }).addTo(map);
-    }
-
-    loadGeoJSON();
+    fetch("geojson-data.json")
+      .then(response => response.json())
+      .then(data => geojsonLayer.addData(data))
+      .catch(error => console.error("Fehler beim Laden der GeoJSON-Daten:", error));
 
     document.getElementById("partySelect").addEventListener("change", function () {
-      currentParty = this.value;
       geojsonLayer.setStyle(style);
     });
 
     L.Control.geocoder().addTo(map);
 
-    L.control.scale().addTo(map);
+    var legend = L.control({ position: "bottomright" });
+    legend.onAdd = function (map) {
+      var div = L.DomUtil.create("div", "legend");
+      div.innerHTML = "<b>Parteien</b><br>";
+      for (var party in partyColors) {
+        div.innerHTML += `<i style="background:${partyColors[party]}"></i> ${party}<br>`;
+      }
+      return div;
+    };
+    legend.addTo(map);
+
+    map.on("zoomend", function () {
+      geojsonLayer.setStyle(style);
+    });
+
   </script>
 </body>
 </html>
