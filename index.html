@@ -1,130 +1,132 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wahlergebnisse Karte</title>
-    
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background-color: #f4f4f4;
-        }
-        #map {
-            width: 80%;
-            height: 70vh;
-            margin-top: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            font-size: 2em;
-            margin-top: 30px;
-            text-align: center;
-            color: #333;
-        }
-        p.description {
-            font-size: 1.1em;
-            text-align: center;
-            max-width: 800px;
-            margin-top: 15px;
-            color: #555;
-        }
-        select {
-            margin-top: 20px;
-            padding: 10px;
-            font-size: 1em;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wahlergebnisse Karte</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: #f4f4f4;
+    }
+    #map {
+      width: 80%;
+      height: 70vh;
+      margin-top: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      font-size: 2em;
+      margin-top: 30px;
+      text-align: center;
+      color: #333;
+    }
+    p.description {
+      font-size: 1.1em;
+      text-align: center;
+      max-width: 800px;
+      margin-top: 15px;
+      color: #555;
+    }
+    select {
+      margin-top: 20px;
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
 <body>
 
-    <h1>Wahlergebnisse in Berlin</h1>
-    <p class="description">Hier können Sie die Wahlergebnisse von verschiedenen Parteien visualisieren. Wählen Sie eine Partei aus, um deren Wahlergebnisse auf einer Karte anzuzeigen.</p>
-    
-    <!-- Party Auswahl -->
-    <select id="partySelect">
-        <option value="SPDinkBW">SPD</option>
-        <option value="GrueninkBW">Grüne</option>
-        <option value="CDUinkBW">CDU</option>
-        <option value="LINKEinkBW">Die Linke</option>
-        <option value="AfDinkBW">AfD</option>
-        <option value="FDPinkBW">FDP</option>
-    </select>
+  <h1>Wahlergebnisse in Berlin</h1>
+  <p class="description">Hier können Sie die Wahlergebnisse von verschiedenen Parteien visualisieren. Wählen Sie eine Partei aus, um deren Wahlergebnisse auf einer Karte anzuzeigen.</p>
+  
+  <!-- Party Auswahl -->
+  <select id="partySelect">
+      <option value="SPDinkBW">SPD</option>
+      <option value="GrueninkBW">Grüne</option>
+      <option value="CDUinkBW">CDU</option>
+      <option value="LINKEinkBW">Die Linke</option>
+      <option value="AfDinkBW">AfD</option>
+      <option value="FDPinkBW">FDP</option>
+  </select>
 
-    <!-- Karte -->
-    <div id="map"></div>
+  <!-- Karte -->
+  <div id="map"></div>
 
-    <!-- Leaflet JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script>
-        var map = L.map('map').setView([52.52, 13.40], 12); // Berlin als Zentrum
+  <!-- Leaflet JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script>
+    // Global definierte Variable
+    var currentParty = "SPDinkBW"; // Standardpartei
 
-        // Schlichte Hintergrundkarte: CartoDB Positron (leichte, saubere Karte)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & <a href="https://carto.com/attributions">CartoDB</a>',
-            maxZoom: 19
-        }).addTo(map);
+    var map = L.map('map').setView([52.52, 13.40], 12); // Berlin als Zentrum
 
-        // Farbskala erstellen (stufenweise von grün bis rot)
-        function getColor(value) {
-            return value > 0.75 ? '#006400' : // Dunkelgrün für hohe Werte
-                   value > 0.5  ? '#228B22' : // Mittelgrün für mittlere Werte
-                   value > 0.25 ? '#FFFF00' : // Gelb für niedrige Werte
-                                  '#FF4500';  // Rot für sehr niedrige Werte
+    // Schlichte Hintergrundkarte: CartoDB Positron
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & <a href="https://carto.com/attributions">CartoDB</a>',
+      maxZoom: 19
+    }).addTo(map);
+
+    // Farbskala (stufenweise: hier von dunkelgrün bis rot)
+    function getColor(value) {
+      return value > 0.75 ? '#006400' : // Dunkelgrün
+             value > 0.5  ? '#228B22' : // Mittelgrün
+             value > 0.25 ? '#FFFF00' : // Gelb
+                            '#FF4500';  // Rot
+    }
+
+    // Style-Funktion nutzt die globale Variable currentParty
+    function style(feature) {
+      var value = parseFloat(feature.properties[currentParty].replace(',', '.'));
+      return {
+        fillColor: getColor(value),
+        weight: 0,   // Keine Linien
+        opacity: 1,
+        color: 'transparent',
+        fillOpacity: 0.7
+      };
+    }
+
+    // GeoJSON laden und Karte aktualisieren
+    fetch('https://kxljxv.github.io/wahlergebnisse.json')
+      .then(response => response.json())
+      .then(data => {
+
+        // Popup-Funktion
+        function onEachFeature(feature, layer) {
+          layer.on('mouseover', function () {
+            var popupContent = '<b>' + feature.properties.Bezirk + '</b><br>' +
+              'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
+              feature.properties[currentParty] + ' der Partei: ' + currentParty + '<br>';
+            layer.bindPopup(popupContent).openPopup();
+          });
         }
 
-        // Funktion zum Anpassen der Farben je nach Ergebnis
-        function style(feature) {
-            var value = parseFloat(feature.properties[currentParty].replace(',', '.')); // Verwenden des ausgewählten Partei-Werts
-            return {
-                fillColor: getColor(value),
-                weight: 0,   // Keine Linie um die Polygone
-                opacity: 1,
-                color: 'transparent', // Keine Linien
-                fillOpacity: 0.7
-            };
-        }
+        // GeoJSON-Layer hinzufügen
+        var geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
 
-        // GeoJSON laden und Karte aktualisieren
-        fetch('https://kxljxv.github.io/wahlergebnisse.json')
-            .then(response => response.json())
-            .then(data => {
-                var currentParty = "SPDinkBW"; // Standardpartei
-
-                // Popup für jedes Polygon
-                function onEachFeature(feature, layer) {
-                    layer.on('mouseover', function (e) {
-                        var popupContent = '<b>' + feature.properties.Bezirk + '</b><br>' +
-                            'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
-                            feature.properties[currentParty] + ' der Partei: ' + currentParty + '<br>';
-                        layer.bindPopup(popupContent).openPopup();
-                    });
-                }
-
-                // Hinzufügen der GeoJSON-Daten zur Karte
-                var geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
-
-                // Party-Auswahl-Handler
-                document.getElementById('partySelect').addEventListener('change', function (e) {
-                    currentParty = e.target.value;
-                    geojsonLayer.setStyle(style); // Update der Farben nach Partyauswahl
-                });
-            })
-            .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
-    </script>
+        // Party-Auswahl-Handler: Aktualisiert currentParty und setzt den Stil neu
+        document.getElementById('partySelect').addEventListener('change', function (e) {
+          currentParty = e.target.value;
+          geojsonLayer.setStyle(style);
+        });
+      })
+      .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
+  </script>
 
 </body>
 </html>
