@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <!-- Leaflet Control Geocoder CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-  
+
   <style>
     body {
       margin: 0;
@@ -47,206 +47,153 @@
       border-radius: 5px;
       border: 1px solid #ccc;
     }
+    .legend {
+      position: absolute;
+      bottom: 30px;
+      left: 10px;
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+    .legend i {
+      width: 18px;
+      height: 18px;
+      float: left;
+      margin-right: 8px;
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body>
   <h1>Wahlergebnisse in Berlin</h1>
   <p class="description">
-    Hier können Sie die Wahlergebnisse von verschiedenen Parteien visualisieren.
-    Wählen Sie eine Partei aus, um deren Ergebnisse auf der Karte anzuzeigen.
+    Wählen Sie eine Partei aus, um deren Wahlergebnisse auf der Karte anzuzeigen.
   </p>
-  
-  <!-- Party-Auswahl -->
+
+  <!-- Partei-Auswahl -->
   <select id="partySelect">
     <option value="SPDinkBW">SPD</option>
-    <option value="GrueninkBW">Grüne</option>
     <option value="CDUinkBW">CDU</option>
+    <option value="CSUinkBW">CSU</option>
+    <option value="GrueninkBW">Bündnis 90/Die Grünen</option>
+    <option value="FDPinkBW">FDP</option>
     <option value="LINKEinkBW">Die Linke</option>
     <option value="AfDinkBW">AfD</option>
-    <option value="FDPinkBW">FDP</option>
+    <option value="FWinkBW">Freie Wähler</option>
+    <option value="VoltDeutschlandinkBW">Volt Deutschland</option>
+    <option value="PARTEIMENSCHUMWELTTIERSCHUTZinkBW">Tierschutzpartei</option>
+    <option value="MLPDinkBW">MLPD</option>
+    <option value="BSWinkBWB">BSW</option>
   </select>
 
-  <!-- Karte -->
   <div id="map"></div>
 
   <!-- Leaflet JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <!-- Leaflet Control Geocoder JS -->
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-  
+
   <script>
-    // Global definierte Variable für die aktuell ausgewählte Partei
-    var currentParty = "SPDinkBW"; // Standardpartei
+    var currentParty = "SPDinkBW"; 
 
-    // Basisfarben für jede Partei (Hex-Werte)
     var partyBaseColors = {
-      "SPDinkBW": "#1E90FF",    // DodgerBlue
-      "GrueninkBW": "#32CD32",  // LimeGreen
-      "CDUinkBW": "#FF6347",    // Tomato
-      "LINKEinkBW": "#800080",  // Purple
-      "AfDinkBW": "#FFD700",    // Gold
-      "FDPinkBW": "#FFA500"     // Orange
+      "SPDinkBW": "#E3000F",
+      "CDUinkBW": "#000000",
+      "CSUinkBW": "#0570C9",
+      "GrueninkBW": "#1AA037",
+      "FDPinkBW": "#FFEF00",
+      "LINKEinkBW": "#E3000F",
+      "AfDinkBW": "#0489DB",
+      "FWinkBW": "#FF8000",
+      "VoltDeutschlandinkBW": "#562883",
+      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#A6006B",
+      "MLPDinkBW": "#BE0027",
+      "BSWinkBWB": "#8B0000"
     };
 
-    // Manuell definierte Minimal- und Maximalwerte für jede Partei
-    var partyRanges = {
-      "SPDinkBW": { min: 0.06, max: 0.26 },
-      "GrueninkBW": { min: 0.015, max: 0.41 },
-      "CDUinkBW": { min: 0.031, max: 0.46 },
-      "LINKEinkBW": { min: 0.04, max: 0.5 },
-      "AfDinkBW": { min: 0.02, max: 0.5 },
-      "FDPinkBW": { min: 0.004, max: 0.16 }
-    };
-
-    // Hilfsfunktionen für Farbkonvertierung und Interpolation
-    function hexToRgb(hex) {
-      hex = hex.replace(/^#/, '');
-      if(hex.length === 3) {
-        hex = hex.split('').map(function(c) { return c + c; }).join('');
-      }
-      var bigint = parseInt(hex, 16);
-      return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
-    }
-    function rgbToHex(r, g, b) {
-      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b)
-          .toString(16).slice(1).toUpperCase();
-    }
-    // Interpoliert zwischen Weiß (bei 0) und der Basisfarbe (bei 1) basierend auf einem normierten Wert
-    function interpolateColor(baseHex, value) {
-      var base = hexToRgb(baseHex);
-      var r = Math.round(255 + (base.r - 255) * value);
-      var g = Math.round(255 + (base.g - 255) * value);
-      var b = Math.round(255 + (base.b - 255) * value);
-      return rgbToHex(r, g, b);
-    }
-    // Gibt die Farbe für einen Rohwert und eine Partei zurück (stufenlos interpoliert)
-    function getColor(rawValue, party) {
-      var range = partyRanges[party];
-      var normalized = (rawValue - range.min) / (range.max - range.min);
-      if (normalized < 0) normalized = 0;
-      if (normalized > 1) normalized = 1;
-      return interpolateColor(partyBaseColors[party], normalized);
-    }
-
-    // Dynamische Transparenz der Polygone: Bei niedrigem Zoom (herausgezoomt) sind sie voll deckend (opacity 1), bei höherem Zoom nehmen sie ab.
-    function getFillOpacity() {
-      var zoom = map.getZoom();
-      if (zoom <= 11) return 1;
-      if (zoom >= 16) return 0.7;
-      // Linear interpolieren zwischen Zoom 11 und 16
-      return 1 - ((zoom - 11) * (0.3 / 5));
-    }
-
-    // Begrenzungen (ungefähr Berlin und Umgebung)
-    var bounds = L.latLngBounds([[52.3, 13.0], [52.7, 13.8]]);
-    // Karte initialisieren mit minZoom und maxBounds, Inertia deaktiviert
     var map = L.map('map', {
-      center: [52.52, 13.40],
-      zoom: 12,
-      minZoom: 11,
-      maxBounds: bounds,
-      inertia: false,
-      detectRetina: true
+      center: [52.52, 13.405],
+      zoom: 11,
+      minZoom: 10,
+      maxZoom: 16
     });
-    // Basemap: CartoDB Positron, detectRetina aktiviert
-    var baseLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap, CartoDB | Quelle: wahlen-berlin.de, opendata portal berlin',
-      maxZoom: 19,
-      detectRetina: true
+
+    var tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      opacity: 1.0
     }).addTo(map);
 
-    // Zusätzlicher Pane für Beschriftungen (Labels)
-    map.createPane('labelsPane');
-    map.getPane('labelsPane').style.zIndex = 650; // oberhalb der Overlays
-    map.getPane('labelsPane').style.pointerEvents = 'none'; // nicht interaktiv
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
-      attribution: '',
-      pane: 'labelsPane',
-      maxZoom: 19,
-      detectRetina: true
-    }).addTo(map);
-
-    // Maßstabsanzeige unten rechts
-    L.control.scale({ position: 'bottomright' }).addTo(map);
-
-    // Suchfeld (Geocoder) hinzufügen
-    L.Control.geocoder({
-      defaultMarkGeocode: false
-    })
-    .on('markgeocode', function(e) {
-      var bbox = e.geocode.bbox;
-      map.fitBounds(bbox);
-    })
-    .addTo(map);
-
-    // Variablen für den GeoJSON-Layer
     var geojsonLayer;
 
-    // Funktionen zur Hervorhebung von Polygonen bei Mouseover
+    function getColor(value, party) {
+      let color = partyBaseColors[party] || "#CCCCCC";
+      return L.Util.ColorGradient ? L.Util.ColorGradient(color, value) : color;
+    }
+
+    function style(feature) {
+      var value = parseFloat(feature.properties[currentParty]);
+      var min = 0.01, max = 0.5;
+      var normValue = (value - min) / (max - min);
+      normValue = Math.max(0, Math.min(1, normValue));
+
+      return {
+        fillColor: getColor(normValue, currentParty),
+        weight: 1,
+        opacity: 1,
+        color: "#555",
+        fillOpacity: 1 - map.getZoom() / 16
+      };
+    }
+
     function highlightFeature(e) {
       var layer = e.target;
       layer.setStyle({
         weight: 3,
-        color: '#666',
-        fillOpacity: getFillOpacity() // aktuelle Opacity beibehalten
+        color: '#000',
+        dashArray: '',
+        fillOpacity: 0.7
       });
-      if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-        layer.bringToFront();
-      }
     }
+
     function resetHighlight(e) {
       geojsonLayer.resetStyle(e.target);
     }
 
-    // Style-Funktion für die Polygone: Stufenlose Farbinterpolation und dynamische Transparenz
-    function style(feature) {
-      var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-      return {
-        fillColor: getColor(rawValue, currentParty),
-        weight: 0, // keine Linien
-        opacity: 1,
-        color: 'transparent',
-        fillOpacity: getFillOpacity()
-      };
+    function zoomToFeature(e) {
+      map.fitBounds(e.target.getBounds());
     }
 
-    // Popup und Ereignisse für jedes Polygon: Popup erscheint bei Klick; beim Mouseover wird hervorgehoben
     function onEachFeature(feature, layer) {
       layer.on({
         mouseover: highlightFeature,
         mouseout: resetHighlight,
-        click: function(e) {
-          var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-          var percent = (rawValue * 100).toFixed(2) + '%';
-          var popupContent = '<b>' + feature.properties.Bezirk + '</b><br>' +
-            'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
-            'Ergebnis: ' + percent + ' (' + currentParty + ')';
-          layer.bindPopup(popupContent).openPopup();
+        click: function (e) {
+          var value = (parseFloat(feature.properties[currentParty]) * 100).toFixed(1);
+          layer.bindPopup(feature.properties.Bezirk + ": " + value + "%").openPopup();
         }
       });
     }
 
-    // GeoJSON-Daten laden und zur Karte hinzufügen
-    fetch('https://kxljxv.github.io/wahlergebnisse.json')
-      .then(function(response) { return response.json(); })
-      .then(function(data) {
-        geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
-        // Aktualisierung bei Änderung der Parteiauswahl
-        document.getElementById('partySelect').addEventListener('change', function(e) {
-          currentParty = e.target.value;
-          geojsonLayer.setStyle(style);
-        });
-      })
-      .catch(function(error) {
-        console.error('Fehler beim Laden der GeoJSON-Daten:', error);
-      });
+    async function loadGeoJSON() {
+      const response = await fetch("data.geojson");
+      const data = await response.json();
+      geojsonLayer = L.geoJSON(data, {
+        style: style,
+        onEachFeature: onEachFeature
+      }).addTo(map);
+    }
 
-    // Aktualisiere die Polygon-Transparenz bei Zoomänderung
-    map.on('zoomend', function() {
-      if (geojsonLayer) {
-        geojsonLayer.setStyle(style);
-      }
+    loadGeoJSON();
+
+    document.getElementById("partySelect").addEventListener("change", function () {
+      currentParty = this.value;
+      geojsonLayer.setStyle(style);
     });
+
+    L.Control.geocoder().addTo(map);
+
+    L.control.scale().addTo(map);
   </script>
 </body>
 </html>
