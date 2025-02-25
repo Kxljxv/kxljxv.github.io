@@ -64,6 +64,7 @@
     <option value="LINKEinkBW">Die Linke</option>
     <option value="AfDinkBW">AfD</option>
     <option value="FDPinkBW">FDP</option>
+    <option value="BSWinkBW">BSW</option>
   </select>
 
   <!-- Karte -->
@@ -80,12 +81,13 @@
 
     // Basisfarben für jede Partei (Hex-Werte)
     var partyBaseColors = {
-      "SPDinkBW": "#1E90FF",    // DodgerBlue
-      "GrueninkBW": "#32CD32",  // LimeGreen
-      "CDUinkBW": "#FF6347",    // Tomato
-      "LINKEinkBW": "#800080",  // Purple
-      "AfDinkBW": "#FFD700",    // Gold
-      "FDPinkBW": "#FFA500"     // Orange
+      "SPDinkBW": "#E3000F",    // Rot
+      "GrueninkBW": "#46962B",  // Grün
+      "CDUinkBW": "#000000",    // Schwarz
+      "LINKEinkBW": "#BE3075",  // Magenta
+      "AfDinkBW": "#009EE0",    // Blau
+      "FDPinkBW": "#FFED00",    // Gelb
+      "BSWinkBW": "#FF8700"     // Orange
     };
 
     // Manuell definierte Minimal- und Maximalwerte für jede Partei
@@ -95,7 +97,8 @@
       "CDUinkBW": { min: 0.031, max: 0.46 },
       "LINKEinkBW": { min: 0.04, max: 0.5 },
       "AfDinkBW": { min: 0.02, max: 0.5 },
-      "FDPinkBW": { min: 0.004, max: 0.16 }
+      "FDPinkBW": { min: 0.004, max: 0.16 },
+      "BSWinkBW": { min: 0.01, max: 0.16 }
     };
 
     // Hilfsfunktionen für Farbkonvertierung und Interpolation
@@ -137,116 +140,6 @@
     }
 
     // Begrenzungen (ungefähr Berlin und Umgebung)
-    var bounds = L.latLngBounds([[52.3, 13.0], [52.7, 13.8]]);
-    // Karte initialisieren (mit minZoom, maxBounds, Inertia deaktiviert, detectRetina aktiviert)
-    var map = L.map('map', {
-      center: [52.52, 13.40],
-      zoom: 12,
-      minZoom: 11,
-      maxBounds: bounds,
-      inertia: false,
-      detectRetina: true
-    });
-
-    // Basislayer: Nur Straßen (Stamen Toner Lines)
-    var baseLayer = L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/toner-lines/{z}/{x}/{y}.png', {
-      attribution: 'Map tiles by Stamen Design, CC BY 3.0 | Quelle: wahlen-berlin.de, opendata portal berlin',
-      maxZoom: 19
-    }).addTo(map);
-
-    // Labels als Overlay: Stamen Toner Labels, höher aufgelöst
-    map.createPane('labelsPane');
-    map.getPane('labelsPane').style.zIndex = 650;
-    map.getPane('labelsPane').style.pointerEvents = 'none';
-    L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}.png', {
-      attribution: '',
-      pane: 'labelsPane',
-      tileSize: 512,
-      zoomOffset: -1,
-      maxZoom: 19
-    }).addTo(map);
-
-    // Maßstabsanzeige unten rechts
-    L.control.scale({ position: 'bottomright' }).addTo(map);
-
-    // Suchfeld (Geocoder) hinzufügen
-    L.Control.geocoder({
-      defaultMarkGeocode: false
-    })
-    .on('markgeocode', function(e) {
-      var bbox = e.geocode.bbox;
-      map.fitBounds(bbox);
-    })
-    .addTo(map);
-
-    // Variablen für den GeoJSON-Layer
-    var geojsonLayer;
-
-    // Funktionen zur Hervorhebung von Polygonen bei Mouseover
-    function highlightFeature(e) {
-      var layer = e.target;
-      layer.setStyle({
-        weight: 3,
-        color: '#666',
-        fillOpacity: getFillOpacity()
-      });
-      if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-        layer.bringToFront();
-      }
-    }
-    function resetHighlight(e) {
-      geojsonLayer.resetStyle(e.target);
-    }
-
-    // Style-Funktion für die Polygone: Stufenlos gefärbt und dynamische Transparenz
-    function style(feature) {
-      var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-      return {
-        fillColor: getColor(rawValue, currentParty),
-        weight: 0,
-        opacity: 1,
-        color: 'transparent',
-        fillOpacity: getFillOpacity()
-      };
-    }
-
-    // Popup und Ereignisse für jedes Polygon: Popup erscheint bei Klick
-    function onEachFeature(feature, layer) {
-      layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight,
-        click: function(e) {
-          var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-          var percent = (rawValue * 100).toFixed(2) + '%';
-          var popupContent = '<b>' + feature.properties.Bezirk + '</b><br>' +
-            'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
-            'Ergebnis: ' + percent + ' (' + currentParty + ')';
-          layer.bindPopup(popupContent).openPopup();
-        }
-      });
-    }
-
-    // GeoJSON-Daten laden und zur Karte hinzufügen
-    fetch('https://kxljxv.github.io/wahlergebnisse.json')
-      .then(function(response) { return response.json(); })
-      .then(function(data) {
-        geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
-        // Aktualisierung bei Änderung der Parteiauswahl
-        document.getElementById('partySelect').addEventListener('change', function(e) {
-          currentParty = e.target.value;
-          geojsonLayer.setStyle(style);
-        });
-      })
-      .catch(function(error) {
-        console.error('Fehler beim Laden der GeoJSON-Daten:', error);
-      });
-
-    // Aktualisiere die Polygon-Transparenz bei Zoomänderung
-    map.on('zoomend', function() {
-      if (geojsonLayer) {
-        geojsonLayer.setStyle(style);
-      }
-    });
-  </script>
-</body>
-</html>
+    var bounds = L.latLngBounds([[52
+::contentReference[oaicite:0]{index=0}
+ 
