@@ -75,7 +75,7 @@
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
   
   <script>
-    // Global definierte Variable für die aktuell ausgewählte Partei
+    // Globale Variable für die aktuell ausgewählte Partei
     var currentParty = "SPDinkBW"; // Standardpartei
 
     // Basisfarben für jede Partei (Hex-Werte)
@@ -128,18 +128,17 @@
       return interpolateColor(partyBaseColors[party], normalized);
     }
 
-    // Dynamische Transparenz der Polygone: Bei niedrigem Zoom (herausgezoomt) sind sie voll deckend (opacity 1), bei höherem Zoom nehmen sie ab.
+    // Dynamische Transparenz: Je nach Zoomlevel
     function getFillOpacity() {
       var zoom = map.getZoom();
       if (zoom <= 11) return 1;
       if (zoom >= 16) return 0.7;
-      // Linear interpolieren zwischen Zoom 11 und 16
       return 1 - ((zoom - 11) * (0.3 / 5));
     }
 
     // Begrenzungen (ungefähr Berlin und Umgebung)
     var bounds = L.latLngBounds([[52.3, 13.0], [52.7, 13.8]]);
-    // Karte initialisieren mit minZoom und maxBounds, Inertia deaktiviert
+    // Karte initialisieren (mit minZoom, maxBounds, Inertia deaktiviert, detectRetina aktiviert)
     var map = L.map('map', {
       center: [52.52, 13.40],
       zoom: 12,
@@ -148,22 +147,23 @@
       inertia: false,
       detectRetina: true
     });
-    // Basemap: CartoDB Positron, detectRetina aktiviert
-    var baseLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap, CartoDB | Quelle: wahlen-berlin.de, opendata portal berlin',
-      maxZoom: 19,
-      detectRetina: true
+
+    // Basislayer: Nur Straßen (Stamen Toner Lines)
+    var baseLayer = L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/toner-lines/{z}/{x}/{y}.png', {
+      attribution: 'Map tiles by Stamen Design, CC BY 3.0 | Quelle: wahlen-berlin.de, opendata portal berlin',
+      maxZoom: 19
     }).addTo(map);
 
-    // Zusätzlicher Pane für Beschriftungen (Labels)
+    // Labels als Overlay: Stamen Toner Labels, höher aufgelöst
     map.createPane('labelsPane');
-    map.getPane('labelsPane').style.zIndex = 650; // oberhalb der Overlays
-    map.getPane('labelsPane').style.pointerEvents = 'none'; // nicht interaktiv
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
+    map.getPane('labelsPane').style.zIndex = 650;
+    map.getPane('labelsPane').style.pointerEvents = 'none';
+    L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}.png', {
       attribution: '',
       pane: 'labelsPane',
-      maxZoom: 19,
-      detectRetina: true
+      tileSize: 512,
+      zoomOffset: -1,
+      maxZoom: 19
     }).addTo(map);
 
     // Maßstabsanzeige unten rechts
@@ -188,7 +188,7 @@
       layer.setStyle({
         weight: 3,
         color: '#666',
-        fillOpacity: getFillOpacity() // aktuelle Opacity beibehalten
+        fillOpacity: getFillOpacity()
       });
       if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
         layer.bringToFront();
@@ -198,19 +198,19 @@
       geojsonLayer.resetStyle(e.target);
     }
 
-    // Style-Funktion für die Polygone: Stufenlose Farbinterpolation und dynamische Transparenz
+    // Style-Funktion für die Polygone: Stufenlos gefärbt und dynamische Transparenz
     function style(feature) {
       var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
       return {
         fillColor: getColor(rawValue, currentParty),
-        weight: 0, // keine Linien
+        weight: 0,
         opacity: 1,
         color: 'transparent',
         fillOpacity: getFillOpacity()
       };
     }
 
-    // Popup und Ereignisse für jedes Polygon: Popup erscheint bei Klick; beim Mouseover wird hervorgehoben
+    // Popup und Ereignisse für jedes Polygon: Popup erscheint bei Klick
     function onEachFeature(feature, layer) {
       layer.on({
         mouseover: highlightFeature,
