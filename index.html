@@ -5,36 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wahlergebnisse Karte</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.7.0/nouislider.min.css" />
     <style>
-        body, html {
+        body {
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            height: 100%;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
         }
         #map {
             width: 100%;
-            height: 100%;
+            height: 60vh; /* Die Karte nimmt 60% der Bildschirmhöhe ein */
+            margin-top: 20px;
+        }
+        #slider {
+            width: 80%;
+            margin: 20px 0;
+        }
+        #info {
+            width: 80%;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
         #controls {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(255, 255, 255, 0.7);
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
+            width: 80%;
+            margin-top: 20px;
         }
-        #controls select {
-            padding: 8px;
-            margin: 5px;
-            border-radius: 5px;
+        h1 {
+            color: #333;
+        }
+        p {
+            font-size: 16px;
+            color: #555;
         }
     </style>
 </head>
 <body>
+
+    <h1>Wahlergebnisse auf der Karte</h1>
+
+    <div id="info">
+        <p>Wählen Sie eine Partei und sehen Sie die Wahlergebnisse auf der Karte. Sie können die verschiedenen Ergebnisse mit dem Schieberegler vergleichen.</p>
+    </div>
+
+    <div id="map"></div>
+
+    <div id="slider"></div>
+
     <div id="controls">
-        <label for="partySelect">Wähle eine Partei:</label>
+        <label for="partySelect">Wählen Sie eine Partei:</label>
         <select id="partySelect">
             <option value="SPDinkBW">SPD</option>
             <option value="GrueninkBW">Grüne</option>
@@ -44,8 +71,9 @@
             <option value="FDPinkBW">FDP</option>
         </select>
     </div>
-    <div id="map"></div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.7.0/nouislider.min.js"></script>
     <script>
         var map = L.map('map').setView([52.52, 13.40], 12); // Berlin als Zentrum
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -115,6 +143,34 @@
                 }
             });
         });
+
+        // Fancy Schieberegler für den Vergleich der Wahlergebnisse
+        var slider = document.getElementById('slider');
+        noUiSlider.create(slider, {
+            start: [0],
+            range: {
+                'min': [0],
+                'max': [100]
+            },
+            step: 1,
+            connect: [true, false],
+            format: {
+                to: function (value) {
+                    return value.toFixed(0);
+                },
+                from: function (value) {
+                    return value;
+                }
+            }
+        });
+
+        slider.noUiSlider.on('update', function (values, handle) {
+            var percentage = values[handle];
+            // Hier könntest du zusätzliche Logik hinzufügen, um etwas mit dem Schieberegler zu machen
+            console.log('Slider Value: ' + percentage);
+        });
+
     </script>
+
 </body>
 </html>
