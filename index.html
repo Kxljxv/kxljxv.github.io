@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wahlergebnisse Karte</title>
+  <title>Wahlergebnisse in Berlin</title>
   
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <!-- Leaflet Control Geocoder CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
   
@@ -52,190 +52,80 @@
 <body>
   <h1>Wahlergebnisse in Berlin</h1>
   <p class="description">
-    Hier können Sie die Wahlergebnisse von verschiedenen Parteien visualisieren.
-    Wählen Sie eine Partei aus, um deren Ergebnisse auf der Karte anzuzeigen.
+    Wählen Sie eine Partei aus, um deren Wahlergebnisse auf der Karte zu visualisieren.
   </p>
   
-  <!-- Party-Auswahl -->
+  <!-- Partei-Auswahl -->
   <select id="partySelect">
-    <option value="SPDinkBW">SPD</option>
-    <option value="GrueninkBW">Grüne</option>
-    <option value="CDUinkBW">CDU</option>
-    <option value="LINKEinkBW">Die Linke</option>
-    <option value="AfDinkBW">AfD</option>
-    <option value="FDPinkBW">FDP</option>
-    <option value="BSWinkBWB">BSW</option>
+    <option value="SPD">SPD</option>
+    <option value="CDU">CDU</option>
+    <option value="Gruene">Bündnis 90/Die Grünen</option>
+    <option value="FDP">FDP</option>
+    <option value="AfD">AfD</option>
+    <option value="Linke">Die Linke</option>
+    <option value="BSW">Bündnis Sahra Wagenknecht</option>
   </select>
 
   <!-- Karte -->
   <div id="map"></div>
 
   <!-- Leaflet JS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <!-- Leaflet Control Geocoder JS -->
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
   
   <script>
     // Globale Variable für die aktuell ausgewählte Partei
-    var currentParty = "SPDinkBW"; // Standardpartei
+    var currentParty = "SPD"; // Standardpartei
 
-    // Typische Parteifarben (basierend auf gängigen Farben in Deutschland)
-    var partyBaseColors = {
-      "SPDinkBW": "#E3000F",    // SPD: Rot
-      "GrueninkBW": "#009B3A",  // Grüne: Grün
-      "CDUinkBW": "#000080",    // CDU: Navy
-      "LINKEinkBW": "#8E008E",  // Die Linke: Violett
-      "AfDinkBW": "#009EE0",    // AfD: Hellblau
-      "FDPinkBW": "#FFCC00",    // FDP: Gelb
-      "BSWinkBWB": "#8B8B8B"    // BSW: Grau
+    // Offizielle Parteifarben
+    var partyColors = {
+      "SPD": "#E3000F",    // Rot
+      "CDU": "#000000",    // Schwarz
+      "Gruene": "#64A12D", // Grün
+      "FDP": "#FFED00",    // Gelb
+      "AfD": "#009EE0",    // Blau
+      "Linke": "#BE3075",  // Magenta
+      "BSW": "#800080"     // Lila
     };
 
     // Manuell definierte Minimal- und Maximalwerte für jede Partei
     var partyRanges = {
-      "SPDinkBW": { min: 0.06, max: 0.26 },
-      "GrueninkBW": { min: 0.015, max: 0.41 },
-      "CDUinkBW": { min: 0.031, max: 0.46 },
-      "LINKEinkBW": { min: 0.04, max: 0.5 },
-      "AfDinkBW": { min: 0.02, max: 0.5 },
-      "FDPinkBW": { min: 0.004, max: 0.16 },
-      "BSWinkBWB": { min: 0.01, max: 0.16 }
+      "SPD": { min: 0.06, max: 0.26 },
+      "CDU": { min: 0.031, max: 0.46 },
+      "Gruene": { min: 0.015, max: 0.41 },
+      "FDP": { min: 0.004, max: 0.16 },
+      "AfD": { min: 0.02, max: 0.5 },
+      "Linke": { min: 0.04, max: 0.5 },
+      "BSW": { min: 0.01, max: 0.16 }
     };
 
-    // Hilfsfunktionen für Farbkonvertierung und Interpolation
-    function hexToRgb(hex) {
-      hex = hex.replace(/^#/, '');
-      if(hex.length === 3) {
-        hex = hex.split('').map(function(c) { return c + c; }).join('');
+    // Hilfsfunktion zur Farbinterpolation
+    function interpolateColor(color, factor) {
+      var result = "#";
+      for (var i = 1; i < 6; i += 2) {
+        var component = parseInt(color.substr(i, 2), 16);
+        var interpolated = Math.round(component + (255 - component) * (1 - factor)).toString(16);
+        result += ("0" + interpolated).slice(-2);
       }
-      var bigint = parseInt(hex, 16);
-      return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
+      return result;
     }
-    function rgbToHex(r, g, b) {
-      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b)
-          .toString(16).slice(1).toUpperCase();
-    }
-    // Interpoliert zwischen Weiß (bei 0) und der Basisfarbe (bei 1) basierend auf einem normierten Wert (0 bis 1)
-    function interpolateColor(baseHex, value) {
-      var base = hexToRgb(baseHex);
-      var r = Math.round(255 + (base.r - 255) * value);
-      var g = Math.round(255 + (base.g - 255) * value);
-      var b = Math.round(255 + (base.b - 255) * value);
-      return rgbToHex(r, g, b);
-    }
-    // Gibt die Farbe für einen Rohwert und eine Partei zurück (stufenlos interpoliert)
-    function getColor(rawValue, party) {
+
+    // Funktion zur Bestimmung der Füllfarbe basierend auf dem Wert
+    function getColor(value, party) {
       var range = partyRanges[party];
-      var normalized = (rawValue - range.min) / (range.max - range.min);
-      if (normalized < 0) normalized = 0;
-      if (normalized > 1) normalized = 1;
-      return interpolateColor(partyBaseColors[party], normalized);
+      var factor = (value - range.min) / (range.max - range.min);
+      factor = Math.max(0, Math.min(1, factor)); // Begrenzung auf [0, 1]
+      return interpolateColor(partyColors[party], factor);
     }
 
-    // Dynamische Transparenz der Polygone: Bei Zoom 11: opacity 1, bei Zoom 16: opacity 0.3 (linear interpoliert)
-    function getFillOpacity() {
-      var zoom = map.getZoom();
-      if (zoom <= 11) return 1;
-      if (zoom >= 16) return 0.3;
-      return 1 - ((zoom - 11) / 5) * 0.7;
+    // Dynamische Anpassung der Fülltransparenz basierend auf dem Zoomlevel
+    function getFillOpacity(zoom) {
+      return zoom >= 16 ? 0.7 : 1;
     }
 
-    // Begrenzungen (ungefähr Berlin und Umgebung)
-    var bounds = L.latLngBounds([[52.3, 13.0], [52.7, 13.8]]);
-    // Karte initialisieren (mit minZoom, maxBounds, Inertia deaktiviert, detectRetina aktiviert)
+    // Initialisierung der Karte
     var map = L.map('map', {
-      center: [52.52, 13.40],
-      zoom: 12,
-      minZoom: 11,
-      maxBounds: bounds,
-      inertia: false,
-      detectRetina: true
-    });
-    // Basislayer: CartoDB Positron (zeigt Straßen und Landschaften minimal, aber deutlich)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap, CartoDB | Quelle: wahlen-berlin.de, opendata portal berlin',
-      maxZoom: 19,
-      detectRetina: true
-    }).addTo(map);
-
-    // Maßstabsanzeige unten rechts
-    L.control.scale({ position: 'bottomright' }).addTo(map);
-
-    // Suchfeld (Geocoder) hinzufügen
-    L.Control.geocoder({
-      defaultMarkGeocode: false
-    })
-    .on('markgeocode', function(e) {
-      var bbox = e.geocode.bbox;
-      map.fitBounds(bbox);
-    })
-    .addTo(map);
-
-    // Funktionen zur Hervorhebung von Polygonen bei Mouseover
-    var geojsonLayer;
-    function highlightFeature(e) {
-      var layer = e.target;
-      layer.setStyle({
-        weight: 3,
-        color: '#666',
-        fillOpacity: getFillOpacity()
-      });
-      if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-        layer.bringToFront();
-      }
-    }
-    function resetHighlight(e) {
-      geojsonLayer.resetStyle(e.target);
-    }
-
-    // Style-Funktion für die Polygone: Stufenlos gefärbt und dynamische Transparenz
-    function style(feature) {
-      var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-      return {
-        fillColor: getColor(rawValue, currentParty),
-        weight: 0,
-        opacity: 1,
-        color: 'transparent',
-        fillOpacity: getFillOpacity()
-      };
-    }
-
-    // Popup und Ereignisse für jedes Polygon: Popup erscheint bei Klick, Hervorhebung bei Mouseover
-    function onEachFeature(feature, layer) {
-      layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight,
-        click: function(e) {
-          var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-          var percent = (rawValue * 100).toFixed(2) + '%';
-          var popupContent = '<b>' + feature.properties.Bezirk + '</b><br>' +
-            'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
-            'Ergebnis: ' + percent + ' (' + currentParty + ')';
-          layer.bindPopup(popupContent).openPopup();
-        }
-      });
-    }
-
-    // GeoJSON-Daten laden und zur Karte hinzufügen
-    fetch('https://kxljxv.github.io/wahlergebnisse.json')
-      .then(function(response) { return response.json(); })
-      .then(function(data) {
-        geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
-        // Aktualisierung bei Änderung der Parteiauswahl
-        document.getElementById('partySelect').addEventListener('change', function(e) {
-          currentParty = e.target.value;
-          geojsonLayer.setStyle(style);
-        });
-      })
-      .catch(function(error) {
-        console.error('Fehler beim Laden der GeoJSON-Daten:', error);
-      });
-
-    // Aktualisiere die Polygon-Transparenz bei Zoomänderung
-    map.on('zoomend', function() {
-      if (geojsonLayer) {
-        geojsonLayer.setStyle(style);
-      }
-    });
-  </script>
-</body>
-</html>
+     
+::contentReference[oaicite:1]{index=1}
+ 
