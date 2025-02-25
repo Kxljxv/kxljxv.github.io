@@ -48,18 +48,17 @@
   </style>
 </head>
 <body>
-
   <h1>Wahlergebnisse in Berlin</h1>
-  <p class="description">Hier können Sie die Wahlergebnisse von verschiedenen Parteien visualisieren. Wählen Sie eine Partei aus, um deren Wahlergebnisse auf der Karte anzuzeigen.</p>
+  <p class="description">Hier können Sie die Wahlergebnisse von verschiedenen Parteien visualisieren. Wählen Sie eine Partei aus, um deren Wahlergebnisse auf einer Karte anzuzeigen.</p>
   
   <!-- Party Auswahl -->
   <select id="partySelect">
-      <option value="SPDinkBW">SPD</option>
-      <option value="GrueninkBW">Grüne</option>
-      <option value="CDUinkBW">CDU</option>
-      <option value="LINKEinkBW">Die Linke</option>
-      <option value="AfDinkBW">AfD</option>
-      <option value="FDPinkBW">FDP</option>
+    <option value="SPDinkBW">SPD</option>
+    <option value="GrueninkBW">Grüne</option>
+    <option value="CDUinkBW">CDU</option>
+    <option value="LINKEinkBW">Die Linke</option>
+    <option value="AfDinkBW">AfD</option>
+    <option value="FDPinkBW">FDP</option>
   </select>
 
   <!-- Karte -->
@@ -68,17 +67,17 @@
   <!-- Leaflet JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script>
-    // Global definierte Variable für die aktuell ausgewählte Partei
-    var currentParty = "SPDinkBW"; // Standardpartei
+    // Globale Variable für die aktuell ausgewählte Partei
+    var currentParty = "SPDinkBW";
 
     // Basisfarben für jede Partei (Hex-Werte)
     var partyBaseColors = {
-      "SPDinkBW": "#1E90FF",   // DodgerBlue
-      "GrueninkBW": "#32CD32", // LimeGreen
-      "CDUinkBW": "#FF6347",   // Tomato
-      "LINKEinkBW": "#800080", // Purple
-      "AfDinkBW": "#FFD700",   // Gold
-      "FDPinkBW": "#FFA500"    // Orange
+      "SPDinkBW": "#1E90FF",    // DodgerBlue
+      "GrueninkBW": "#32CD32",  // LimeGreen
+      "CDUinkBW": "#FF6347",    // Tomato
+      "LINKEinkBW": "#800080",  // Purple
+      "AfDinkBW": "#FFD700",    // Gold
+      "FDPinkBW": "#FFA500"     // Orange
     };
 
     // Manuell definierte Minimal- und Maximalwerte für jede Partei
@@ -89,10 +88,9 @@
       "LINKEinkBW": { min: 0.04, max: 0.5 },
       "AfDinkBW": { min: 0.02, max: 0.5 },
       "FDPinkBW": { min: 0.004, max: 0.16 }
-      // Falls benötigt: "BSWinkBWB": { min: 0.01, max: 0.16 }
     };
 
-    // Hilfsfunktion: Konvertiert Hex in ein RGB-Objekt
+    // Hilfsfunktionen für Farbkonvertierung und -interpolation
     function hexToRgb(hex) {
       hex = hex.replace(/^#/, '');
       if(hex.length === 3) {
@@ -101,69 +99,95 @@
       var bigint = parseInt(hex, 16);
       return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
     }
-
-    // Hilfsfunktion: Konvertiert RGB in Hex
     function rgbToHex(r, g, b) {
       return "#" + ((1 << 24) + (r << 16) + (g << 8) + b)
           .toString(16).slice(1).toUpperCase();
     }
-
-    // Interpoliert zwischen Weiß (niedrig) und der Basisfarbe (hoch)
-    // value: normierter Wert zwischen 0 und 1
+    // Interpoliert zwischen Weiß (niedrig) und der Basisfarbe (hoch) basierend auf einem normierten Wert (0 bis 1)
     function interpolateColor(baseHex, value) {
       var base = hexToRgb(baseHex);
-      // Linearer Interpolationsmix zwischen 255 (Weiß) und base.r,g,b
       var r = Math.round(255 + (base.r - 255) * value);
       var g = Math.round(255 + (base.g - 255) * value);
       var b = Math.round(255 + (base.b - 255) * value);
       return rgbToHex(r, g, b);
     }
+    // Berechnet die stufenlose Farbe: Zuerst wird der Rohwert normalisiert (min/max) und dann interpoliert
+    function getColor(rawValue, party) {
+      var range = partyRanges[party];
+      var normalized = (rawValue - range.min) / (range.max - range.min);
+      if (normalized < 0) normalized = 0;
+      if (normalized > 1) normalized = 1;
+      return interpolateColor(partyBaseColors[party], normalized);
+    }
 
-    // Karte initialisieren
-    var map = L.map('map').setView([52.52, 13.40], 12);
-
-    // Schlichte Hintergrundkarte: CartoDB Positron
+    // Begrenzungen für die Karte (ungefähr Berlin und ein wenig drumherum)
+    var bounds = L.latLngBounds([[52.3, 13.0], [52.7, 13.8]]);
+    // Karte initialisieren (mit minZoom, maxBounds, und deaktivierter Inertia)
+    var map = L.map('map', {
+      center: [52.52, 13.40],
+      zoom: 12,
+      minZoom: 11,
+      maxBounds: bounds,
+      inertia: false
+    });
+    // Schlichte Basemap (CartoDB Positron)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap & CartoDB',
       maxZoom: 19
     }).addTo(map);
+    // Maßstabsanzeige unten rechts
+    L.control.scale({position: 'bottomright'}).addTo(map);
 
-    // Style-Funktion: Normalisiert den Rohwert mithilfe der Party-spezifischen Range und interpoliert die Farbe
+    // Variablen für GeoJSON-Layer
+    var geojsonLayer;
+    // Funktionen zur Hervorhebung und Rücksetzung des Stils beim Hovern
+    function highlightFeature(e) {
+      var layer = e.target;
+      layer.setStyle({
+        weight: 3,
+        color: '#666',
+        fillOpacity: 0.7
+      });
+      if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+        layer.bringToFront();
+      }
+    }
+    function resetHighlight(e) {
+      geojsonLayer.resetStyle(e.target);
+    }
+
+    // Style-Funktion: Verwendet die stufenlose Farbinterpolation
     function style(feature) {
       var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-      var range = partyRanges[currentParty];
-      // Normierung: (Wert - min) / (max - min)
-      var normalized = (rawValue - range.min) / (range.max - range.min);
-      // Clamp zwischen 0 und 1
-      if (normalized < 0) normalized = 0;
-      if (normalized > 1) normalized = 1;
-      var color = interpolateColor(partyBaseColors[currentParty], normalized);
       return {
-        fillColor: color,
-        weight: 0,   // Keine Linien
+        fillColor: getColor(rawValue, currentParty),
+        weight: 0,            // Keine Linien
         opacity: 1,
         color: 'transparent',
         fillOpacity: 0.7
       };
     }
 
-    // Popup-Funktion für jedes Polygon
+    // onEachFeature: Legt Ereignisse für jedes Polygon fest
     function onEachFeature(feature, layer) {
-      layer.on('mouseover', function () {
-        var popupContent = '<b>' + feature.properties.Bezirk + '</b><br>' +
-          'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
-          feature.properties[currentParty] + ' der Partei: ' + currentParty;
-        layer.bindPopup(popupContent).openPopup();
+      layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight,
+        click: function(e) {
+          var popupContent = '<b>' + feature.properties.Bezirk + '</b><br>' +
+            'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
+            feature.properties[currentParty] + ' der Partei: ' + currentParty;
+          layer.bindPopup(popupContent).openPopup();
+        }
       });
     }
 
-    // GeoJSON laden und zur Karte hinzufügen
+    // GeoJSON-Daten laden und hinzufügen
     fetch('https://kxljxv.github.io/wahlergebnisse.json')
       .then(function(response) { return response.json(); })
       .then(function(data) {
-        var geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
-
-        // Party-Auswahl: Aktualisiert currentParty und setzt den Stil neu
+        geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
+        // Aktualisierung bei Auswahlwechsel
         document.getElementById('partySelect').addEventListener('change', function(e) {
           currentParty = e.target.value;
           geojsonLayer.setStyle(style);
@@ -173,6 +197,5 @@
         console.error('Fehler beim Laden der GeoJSON-Daten:', error);
       });
   </script>
-
 </body>
 </html>
