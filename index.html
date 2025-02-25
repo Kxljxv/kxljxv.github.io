@@ -176,42 +176,9 @@
     })
     .addTo(map);
 
-    // Hervorhebung und Reset beim Mouseover (Nur Umrandung wird geändert)
-    var geojsonLayer;
-    function highlightFeature(e) {
-      var layer = e.target;
-      layer.setStyle({
-        weight: 3,            // Umrandungsbreite ändern
-        color: '#666',        // Farbe der Umrandung
-        fillOpacity: 0.7      // Umrandung bleibt sichtbar
-      });
-      if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-        layer.bringToFront();
-      }
-    }
-    function resetHighlight(e) {
-      geojsonLayer.resetStyle(e.target);
-    }
-
-    // Polygon-Style-Funktion (keine Transparenzänderung beim Hover)
-    function style(feature) {
-      var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-      var zoom = map.getZoom();
-      var opacity = 0.7 + (zoom - 12) * 0.05; // Dynamische Transparenz
-      return {
-        fillColor: getColor(rawValue, currentParty),
-        weight: 0,                // Keine Umrandung beim normalen Zustand
-        opacity: 1,               // Keine Transparenzänderung beim Hover
-        color: 'transparent',     // Keine Randfarbe (wird später durch Mouseover gesetzt)
-        fillOpacity: opacity
-      };
-    }
-
     // Popup und Ereignisse für Polygone
     function onEachFeature(feature, layer) {
       layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight,
         click: function(e) {
           var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
           var percent = (rawValue * 100).toFixed(2) + '%';
@@ -223,11 +190,25 @@
       });
     }
 
+    // Polygon-Style-Funktion (keine Transparenzänderung beim Hover)
+    function style(feature) {
+      var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
+      var zoom = map.getZoom();
+      var opacity = 0.7 + (zoom - 12) * 0.05; // Dynamische Transparenz
+      return {
+        fillColor: getColor(rawValue, currentParty),
+        weight: 0,                // Keine Umrandung
+        opacity: 1,               // Keine Transparenzänderung beim Hover
+        color: 'transparent',     // Keine Randfarbe
+        fillOpacity: opacity
+      };
+    }
+
     // GeoJSON-Daten laden
     fetch('https://kxljxv.github.io/wahlergebnisse.json')
       .then(function(response) { return response.json(); })
       .then(function(data) {
-        geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
+        var geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
         document.getElementById('partySelect').addEventListener('change', function(e) {
           currentParty = e.target.value;
           geojsonLayer.setStyle(style);
