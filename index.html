@@ -78,20 +78,24 @@
             maxZoom: 19
         }).addTo(map);
 
-        // Funktion zur Bestimmung der Farbe basierend auf dem Wahlergebnis (0 bis 1)
-        function getPartyColor(value) {
-            // Definiere Farben für jede Partei
-            const partyColors = {
-                SPD: "#1E90FF",  // Blau
-                Gruen: "#32CD32",  // Grün
-                CDU: "#FF6347",  // Tomatenrot
-                LINKE: "#800080",  // Lila
-                AfD: "#FFD700",  // Gold
-                FDP: "#FFA500"   // Orange
+        // Farbskala erstellen (stufenweise von grün bis rot)
+        function getColor(value) {
+            return value > 0.75 ? '#006400' : // Dunkelgrün für hohe Werte
+                   value > 0.5  ? '#228B22' : // Mittelgrün für mittlere Werte
+                   value > 0.25 ? '#FFFF00' : // Gelb für niedrige Werte
+                                  '#FF4500';  // Rot für sehr niedrige Werte
+        }
+
+        // Funktion zum Anpassen der Farben je nach Ergebnis
+        function style(feature) {
+            var value = parseFloat(feature.properties[currentParty].replace(',', '.'));
+            return {
+                fillColor: getColor(value),
+                weight: 0,   // Keine Linie um die Polygone
+                opacity: 1,
+                color: 'transparent', // Keine Linien
+                fillOpacity: 0.7
             };
-            
-            // Rückgabe der Farbe für die entsprechende Partei
-            return partyColors[value] || '#FFFFFF';  // Standard weiß
         }
 
         // GeoJSON laden und Karte aktualisieren
@@ -99,19 +103,6 @@
             .then(response => response.json())
             .then(data => {
                 var currentParty = "SPDinkBW"; // Standardpartei
-
-                // Funktion zum Anpassen der Farben je nach Ergebnis
-                function style(feature) {
-                    var value = parseFloat(feature.properties[currentParty].replace(',', '.'));
-                    var color = getPartyColor(currentParty.split("inkBW")[0]);
-                    return {
-                        fillColor: color,
-                        weight: 0,   // Keine Linie um die Polygone
-                        opacity: 1,
-                        color: 'transparent', // Keine Linien
-                        fillOpacity: 0.7
-                    };
-                }
 
                 // Popup für jedes Polygon
                 function onEachFeature(feature, layer) {
