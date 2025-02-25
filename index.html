@@ -71,17 +71,28 @@
     // Global definierte Variable für die aktuell ausgewählte Partei
     var currentParty = "SPDinkBW"; // Standardpartei
 
-    // Basisfarben für jede Partei (in Hex)
+    // Basisfarben für jede Partei (Hex-Werte)
     var partyBaseColors = {
-      "SPDinkBW": "#1E90FF",  // DodgerBlue
-      "GrueninkBW": "#32CD32",  // LimeGreen
-      "CDUinkBW": "#FF6347",  // Tomato
-      "LINKEinkBW": "#800080",  // Purple
-      "AfDinkBW": "#FFD700",  // Gold
-      "FDPinkBW": "#FFA500"   // Orange
+      "SPDinkBW": "#1E90FF",   // DodgerBlue
+      "GrueninkBW": "#32CD32", // LimeGreen
+      "CDUinkBW": "#FF6347",   // Tomato
+      "LINKEinkBW": "#800080", // Purple
+      "AfDinkBW": "#FFD700",   // Gold
+      "FDPinkBW": "#FFA500"    // Orange
     };
 
-    // Hilfsfunktion: Konvertiert Hex in RGB-Objekt
+    // Manuell definierte Minimal- und Maximalwerte für jede Partei
+    var partyRanges = {
+      "SPDinkBW": { min: 0.06, max: 0.26 },
+      "GrueninkBW": { min: 0.015, max: 0.41 },
+      "CDUinkBW": { min: 0.031, max: 0.46 },
+      "LINKEinkBW": { min: 0.04, max: 0.5 },
+      "AfDinkBW": { min: 0.02, max: 0.5 },
+      "FDPinkBW": { min: 0.004, max: 0.16 }
+      // Falls benötigt: "BSWinkBWB": { min: 0.01, max: 0.16 }
+    };
+
+    // Hilfsfunktion: Konvertiert Hex in ein RGB-Objekt
     function hexToRgb(hex) {
       hex = hex.replace(/^#/, '');
       if(hex.length === 3) {
@@ -97,10 +108,11 @@
           .toString(16).slice(1).toUpperCase();
     }
 
-    // Interpoliert zwischen Weiß und der Basisfarbe, basierend auf value (0 bis 1)
+    // Interpoliert zwischen Weiß (niedrig) und der Basisfarbe (hoch)
+    // value: normierter Wert zwischen 0 und 1
     function interpolateColor(baseHex, value) {
-      // Wenn value == 0 -> weiß, wenn value == 1 -> baseHex
       var base = hexToRgb(baseHex);
+      // Linearer Interpolationsmix zwischen 255 (Weiß) und base.r,g,b
       var r = Math.round(255 + (base.r - 255) * value);
       var g = Math.round(255 + (base.g - 255) * value);
       var b = Math.round(255 + (base.b - 255) * value);
@@ -116,14 +128,19 @@
       maxZoom: 19
     }).addTo(map);
 
-    // Style-Funktion: berechnet die Farbe stufenlos, basierend auf dem Wahlergebnis
+    // Style-Funktion: Normalisiert den Rohwert mithilfe der Party-spezifischen Range und interpoliert die Farbe
     function style(feature) {
       var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-      // Interpoliere zwischen weiß (0) und der Basisfarbe (1)
-      var color = interpolateColor(partyBaseColors[currentParty], rawValue);
+      var range = partyRanges[currentParty];
+      // Normierung: (Wert - min) / (max - min)
+      var normalized = (rawValue - range.min) / (range.max - range.min);
+      // Clamp zwischen 0 und 1
+      if (normalized < 0) normalized = 0;
+      if (normalized > 1) normalized = 1;
+      var color = interpolateColor(partyBaseColors[currentParty], normalized);
       return {
         fillColor: color,
-        weight: 0,  // Keine Linien
+        weight: 0,   // Keine Linien
         opacity: 1,
         color: 'transparent',
         fillOpacity: 0.7
