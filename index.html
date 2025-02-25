@@ -5,38 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wahlergebnisse Karte</title>
     
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     
+    <!-- noUiSlider CSS (optional, da kein Schieberegler mehr benötigt wird) -->
     <style>
         body {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
         }
         #map {
-            width: 100%;
-            height: 500px;
-        }
-        #slider-container {
-            width: 100%;
-            text-align: center;
-            margin-top: 20px;
-        }
-        #slider {
             width: 80%;
-            margin: 0 auto;
+            height: 70vh;
+            margin-top: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
         }
-        .info {
-            padding: 6px 8px;
-            font: 14px/16px Arial, Helvetica, sans-serif;
-            background: white;
-            background: rgba(255, 255, 255, 0.8);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        h1 {
+            font-size: 2em;
+            margin-top: 30px;
+            text-align: center;
+            color: #333;
+        }
+        p.description {
+            font-size: 1.1em;
+            text-align: center;
+            max-width: 800px;
+            margin-top: 15px;
+            color: #555;
+        }
+        select {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 1em;
             border-radius: 5px;
+            border: 1px solid #ccc;
         }
         .legend {
-            line-height: 18px;
-            color: #555;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            width: 150px;
+            font-size: 14px;
         }
         .legend i {
             width: 18px;
@@ -49,15 +71,9 @@
 </head>
 <body>
 
-    <div id="map"></div>
-
-    <!-- Schieberegler für die Partei -->
-    <div id="slider-container">
-        <label for="slider">Wählergebnis anpassen (0 bis 1):</label>
-        <div id="slider"></div>
-        <p id="slider-value">Aktueller Wert: 0</p>
-    </div>
-
+    <h1>Wahlergebnisse in Berlin</h1>
+    <p class="description">Hier können Sie die Wahlergebnisse von verschiedenen Parteien visualisieren. Wählen Sie eine Partei aus, um deren Wahlergebnisse auf einer Karte anzuzeigen.</p>
+    
     <!-- Party Auswahl -->
     <select id="partySelect">
         <option value="SPDinkBW">SPD</option>
@@ -68,44 +84,81 @@
         <option value="FDPinkBW">FDP</option>
     </select>
 
+    <!-- Karte -->
+    <div id="map"></div>
+
+    <!-- Farbskala -->
+    <div class="legend">
+        <h4>Farbskala</h4>
+        <i style="background: #00BFFF"></i> Hohe Ergebnisse<br>
+        <i style="background: #FF6347"></i> Niedrige Ergebnisse
+    </div>
+
     <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/nouislider@14.6.3/distribute/nouislider.min.js"></script>
     <script>
         var map = L.map('map').setView([52.52, 13.40], 12); // Berlin als Zentrum
 
-        // Schlichte Hintergrundkarte (statt OpenStreetMap)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        // Schlichte Hintergrundkarte: CartoDB Positron (leichte, saubere Karte)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & <a href="https://carto.com/attributions">CartoDB</a>',
+            maxZoom: 19
         }).addTo(map);
 
-        // Funktion zur Farbskala (zwischen 0 und 1)
+        // Funktion zur Bestimmung der Farbe basierend auf dem Wahlergebnis (0 bis 1)
         function getPartyColor(value) {
-            var red = Math.min(255, Math.max(0, Math.floor(value * 255))); // Skaliert von 0 bis 255
-            return `rgb(${red}, ${255 - red}, ${255 - red})`; // Übergang von Weiß nach Rot
+            // Definiere Farben für jede Partei
+            const partyColors = {
+                SPD: "#1E90FF",  // Blau
+                Gruen: "#32CD32",  // Grün
+                CDU: "#FF6347",  // Tomatenrot
+                LINKE: "#800080",  // Lila
+                AfD: "#FFD700",  // Gold
+                FDP: "#FFA500"   // Orange
+            };
+            
+            // Rückgabe der Farbe für die entsprechende Partei
+            return partyColors[value] || '#FFFFFF';  // Standard weiß
         }
 
-        // GeoJSON laden
+        // Funktion, um die maximalen und minimalen Werte für die Farbanpassung zu definieren
+        function getMaxMinValues(features, party) {
+            let max = -Infinity;
+            let min = Infinity;
+            features.forEach(function(feature) {
+                let value = parseFloat(feature.properties[party].replace(',', '.'));
+                if (value > max) max = value;
+                if (value < min) min = value;
+            });
+            return { max, min };
+        }
+
+        // GeoJSON laden und Karte aktualisieren
         fetch('https://kxljxv.github.io/wahlergebnisse.json')
             .then(response => response.json())
             .then(data => {
                 var currentParty = "SPDinkBW"; // Standardpartei
 
-                // Stil für die GeoJSON-Polygone
+                // Maximal- und Minimalwerte für die Farbanpassung
+                var { max, min } = getMaxMinValues(data.features, currentParty);
+
+                // Funktion zum Anpassen der Farben je nach Ergebnis
                 function style(feature) {
-                    var value = parseFloat(feature.properties[currentParty].replace(',', '.')); // Wert aus der GeoJSON
+                    var value = parseFloat(feature.properties[currentParty].replace(',', '.'));
+                    // Normalisiere den Wert zwischen 0 und 1
+                    var normalizedValue = (value - min) / (max - min); 
+                    var color = getPartyColor(currentParty.split("inkBW")[0]);
                     return {
-                        fillColor: getPartyColor(value),  // Färbe Polygon je nach Wert
-                        weight: 0,
+                        fillColor: color,
+                        weight: 1,
                         opacity: 1,
-                        color: 'white',
+                        color: '#ffffff',
                         dashArray: '3',
                         fillOpacity: 0.7
                     };
                 }
 
-                // Funktion für das Popup mit Informationen
+                // Popup für jedes Polygon
                 function onEachFeature(feature, layer) {
                     layer.on('mouseover', function (e) {
                         var popupContent = '<b>' + feature.properties.Bezirk + '</b><br>' +
@@ -115,48 +168,18 @@
                     });
                 }
 
-                // Hinzufügen der GeoJSON-Daten
+                // Hinzufügen der GeoJSON-Daten zur Karte
                 var geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
 
-                // Funktion für Party-Auswahl
+                // Party-Auswahl-Handler
                 document.getElementById('partySelect').addEventListener('change', function (e) {
                     currentParty = e.target.value;
+                    var { max, min } = getMaxMinValues(data.features, currentParty); // Neu berechnen bei jedem Wechsel
                     geojsonLayer.setStyle(style); // Update der Farben nach Partyauswahl
-                });
-
-                // Fancy Schieberegler für den Vergleich der Wahlergebnisse
-                var slider = document.getElementById('slider');
-                noUiSlider.create(slider, {
-                    start: [0],
-                    range: {
-                        'min': [0],
-                        'max': [1]  // Slider von 0 bis 1 für Wahlergebnisse
-                    },
-                    step: 0.01, // Schrittweite
-                    connect: [true, false],
-                    format: {
-                        to: function (value) {
-                            return value.toFixed(2); // Formatierung auf 2 Dezimalstellen
-                        },
-                        from: function (value) {
-                            return value;
-                        }
-                    }
-                });
-
-                // Zeigt den Slider-Wert an und aktualisiert die Karte
-                slider.noUiSlider.on('update', function (values, handle) {
-                    var percentage = values[handle];
-                    document.getElementById('slider-value').textContent = 'Aktueller Wert: ' + percentage;
-                    // Hier kann Logik hinzugefügt werden, um die Karte basierend auf dem Wert zu aktualisieren
-                    geojsonLayer.setStyle(function(feature) {
-                        var value = parseFloat(feature.properties[currentParty].replace(',', '.'));
-                        var adjustedValue = value * percentage; // Anpassung basierend auf dem Schieberegler
-                        return { fillColor: getPartyColor(adjustedValue) };
-                    });
                 });
             })
             .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
     </script>
+
 </body>
 </html>
