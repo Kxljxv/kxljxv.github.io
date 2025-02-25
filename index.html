@@ -88,7 +88,7 @@
 
         // Funktion zum Anpassen der Farben je nach Ergebnis
         function style(feature) {
-            var value = parseFloat(feature.properties[currentParty].replace(',', '.'));
+            var value = parseFloat(feature.properties[currentParty].replace(',', '.')); // Verwenden des ausgewählten Partei-Werts
             return {
                 fillColor: getColor(value),
                 weight: 0,   // Keine Linie um die Polygone
