@@ -182,7 +182,7 @@
       var layer = e.target;
       layer.setStyle({
         weight: 3,
-        color: '#666',
+        color: '#666',  // Umrandungsfarbe ändern
         fillOpacity: 0.7
       });
       if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
@@ -202,7 +202,7 @@
         fillColor: getColor(rawValue, currentParty),
         weight: 0,
         opacity: 1,
-        color: 'transparent',
+        color: 'transparent', // Keine Randfarbe (wird später durch Mouseover gesetzt)
         fillOpacity: opacity
       };
     }
