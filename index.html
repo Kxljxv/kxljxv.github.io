@@ -148,10 +148,12 @@
     // Dynamische Transparenz basierend auf Zoomlevel
     map.on('zoomend', function() {
       var zoom = map.getZoom();
-      if (zoom > 13) {
-        basemap.setOpacity(1);
+      if (zoom > 14) {
+        basemap.setOpacity(0.4); // Höhere Transparenz bei starkem Zoom
+      } else if (zoom > 12) {
+        basemap.setOpacity(0.6); // Mittlere Transparenz bei mittlerem Zoom
       } else {
-        basemap.setOpacity(zoom / 13);
+        basemap.setOpacity(1); // Keine Transparenz bei wenig Zoom
       }
     });
 
