@@ -8,7 +8,6 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     
-    <!-- noUiSlider CSS (optional, da kein Schieberegler mehr benötigt wird) -->
     <style>
         body {
             margin: 0;
@@ -48,25 +47,6 @@
             border-radius: 5px;
             border: 1px solid #ccc;
         }
-        .legend {
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 1000;
-            width: 150px;
-            font-size: 14px;
-        }
-        .legend i {
-            width: 18px;
-            height: 18px;
-            float: left;
-            margin-right: 8px;
-            opacity: 0.7;
-        }
     </style>
 </head>
 <body>
@@ -86,13 +66,6 @@
 
     <!-- Karte -->
     <div id="map"></div>
-
-    <!-- Farbskala -->
-    <div class="legend">
-        <h4>Farbskala</h4>
-        <i style="background: #00BFFF"></i> Hohe Ergebnisse<br>
-        <i style="background: #FF6347"></i> Niedrige Ergebnisse
-    </div>
 
     <!-- Leaflet JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -121,39 +94,21 @@
             return partyColors[value] || '#FFFFFF';  // Standard weiß
         }
 
-        // Funktion, um die maximalen und minimalen Werte für die Farbanpassung zu definieren
-        function getMaxMinValues(features, party) {
-            let max = -Infinity;
-            let min = Infinity;
-            features.forEach(function(feature) {
-                let value = parseFloat(feature.properties[party].replace(',', '.'));
-                if (value > max) max = value;
-                if (value < min) min = value;
-            });
-            return { max, min };
-        }
-
         // GeoJSON laden und Karte aktualisieren
         fetch('https://kxljxv.github.io/wahlergebnisse.json')
             .then(response => response.json())
             .then(data => {
                 var currentParty = "SPDinkBW"; // Standardpartei
 
-                // Maximal- und Minimalwerte für die Farbanpassung
-                var { max, min } = getMaxMinValues(data.features, currentParty);
-
                 // Funktion zum Anpassen der Farben je nach Ergebnis
                 function style(feature) {
                     var value = parseFloat(feature.properties[currentParty].replace(',', '.'));
-                    // Normalisiere den Wert zwischen 0 und 1
-                    var normalizedValue = (value - min) / (max - min); 
                     var color = getPartyColor(currentParty.split("inkBW")[0]);
                     return {
                         fillColor: color,
-                        weight: 1,
+                        weight: 0,   // Keine Linie um die Polygone
                         opacity: 1,
-                        color: '#ffffff',
-                        dashArray: '3',
+                        color: 'transparent', // Keine Linien
                         fillOpacity: 0.7
                     };
                 }
@@ -174,7 +129,6 @@
                 // Party-Auswahl-Handler
                 document.getElementById('partySelect').addEventListener('change', function (e) {
                     currentParty = e.target.value;
-                    var { max, min } = getMaxMinValues(data.features, currentParty); // Neu berechnen bei jedem Wechsel
                     geojsonLayer.setStyle(style); // Update der Farben nach Partyauswahl
                 });
             })
