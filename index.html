@@ -16,16 +16,14 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      min-height: 100vh;
       background-color: #f4f4f4;
     }
     #map {
       width: 80%;
       height: 70vh;
-      margin-top: 20px;
+      margin: 20px 0;
       border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
     h1 {
       font-size: 2em;
@@ -52,7 +50,7 @@
 <body>
 
   <h1>Wahlergebnisse in Berlin</h1>
-  <p class="description">Hier können Sie die Wahlergebnisse von verschiedenen Parteien visualisieren. Wählen Sie eine Partei aus, um deren Wahlergebnisse auf einer Karte anzuzeigen.</p>
+  <p class="description">Hier können Sie die Wahlergebnisse von verschiedenen Parteien visualisieren. Wählen Sie eine Partei aus, um deren Wahlergebnisse auf der Karte anzuzeigen.</p>
   
   <!-- Party Auswahl -->
   <select id="partySelect">
@@ -70,62 +68,93 @@
   <!-- Leaflet JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script>
-    // Global definierte Variable
+    // Global definierte Variable für die aktuell ausgewählte Partei
     var currentParty = "SPDinkBW"; // Standardpartei
 
-    var map = L.map('map').setView([52.52, 13.40], 12); // Berlin als Zentrum
+    // Basisfarben für jede Partei (in Hex)
+    var partyBaseColors = {
+      "SPDinkBW": "#1E90FF",  // DodgerBlue
+      "GrueninkBW": "#32CD32",  // LimeGreen
+      "CDUinkBW": "#FF6347",  // Tomato
+      "LINKEinkBW": "#800080",  // Purple
+      "AfDinkBW": "#FFD700",  // Gold
+      "FDPinkBW": "#FFA500"   // Orange
+    };
+
+    // Hilfsfunktion: Konvertiert Hex in RGB-Objekt
+    function hexToRgb(hex) {
+      hex = hex.replace(/^#/, '');
+      if(hex.length === 3) {
+        hex = hex.split('').map(function(c) { return c + c; }).join('');
+      }
+      var bigint = parseInt(hex, 16);
+      return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
+    }
+
+    // Hilfsfunktion: Konvertiert RGB in Hex
+    function rgbToHex(r, g, b) {
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b)
+          .toString(16).slice(1).toUpperCase();
+    }
+
+    // Interpoliert zwischen Weiß und der Basisfarbe, basierend auf value (0 bis 1)
+    function interpolateColor(baseHex, value) {
+      // Wenn value == 0 -> weiß, wenn value == 1 -> baseHex
+      var base = hexToRgb(baseHex);
+      var r = Math.round(255 + (base.r - 255) * value);
+      var g = Math.round(255 + (base.g - 255) * value);
+      var b = Math.round(255 + (base.b - 255) * value);
+      return rgbToHex(r, g, b);
+    }
+
+    // Karte initialisieren
+    var map = L.map('map').setView([52.52, 13.40], 12);
 
     // Schlichte Hintergrundkarte: CartoDB Positron
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & <a href="https://carto.com/attributions">CartoDB</a>',
+      attribution: '&copy; OpenStreetMap & CartoDB',
       maxZoom: 19
     }).addTo(map);
 
-    // Farbskala (stufenweise: hier von dunkelgrün bis rot)
-    function getColor(value) {
-      return value > 0.75 ? '#006400' : // Dunkelgrün
-             value > 0.5  ? '#228B22' : // Mittelgrün
-             value > 0.25 ? '#FFFF00' : // Gelb
-                            '#FF4500';  // Rot
-    }
-
-    // Style-Funktion nutzt die globale Variable currentParty
+    // Style-Funktion: berechnet die Farbe stufenlos, basierend auf dem Wahlergebnis
     function style(feature) {
-      var value = parseFloat(feature.properties[currentParty].replace(',', '.'));
+      var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
+      // Interpoliere zwischen weiß (0) und der Basisfarbe (1)
+      var color = interpolateColor(partyBaseColors[currentParty], rawValue);
       return {
-        fillColor: getColor(value),
-        weight: 0,   // Keine Linien
+        fillColor: color,
+        weight: 0,  // Keine Linien
         opacity: 1,
         color: 'transparent',
         fillOpacity: 0.7
       };
     }
 
-    // GeoJSON laden und Karte aktualisieren
+    // Popup-Funktion für jedes Polygon
+    function onEachFeature(feature, layer) {
+      layer.on('mouseover', function () {
+        var popupContent = '<b>' + feature.properties.Bezirk + '</b><br>' +
+          'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
+          feature.properties[currentParty] + ' der Partei: ' + currentParty;
+        layer.bindPopup(popupContent).openPopup();
+      });
+    }
+
+    // GeoJSON laden und zur Karte hinzufügen
     fetch('https://kxljxv.github.io/wahlergebnisse.json')
-      .then(response => response.json())
-      .then(data => {
-
-        // Popup-Funktion
-        function onEachFeature(feature, layer) {
-          layer.on('mouseover', function () {
-            var popupContent = '<b>' + feature.properties.Bezirk + '</b><br>' +
-              'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
-              feature.properties[currentParty] + ' der Partei: ' + currentParty + '<br>';
-            layer.bindPopup(popupContent).openPopup();
-          });
-        }
-
-        // GeoJSON-Layer hinzufügen
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
         var geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
 
-        // Party-Auswahl-Handler: Aktualisiert currentParty und setzt den Stil neu
-        document.getElementById('partySelect').addEventListener('change', function (e) {
+        // Party-Auswahl: Aktualisiert currentParty und setzt den Stil neu
+        document.getElementById('partySelect').addEventListener('change', function(e) {
           currentParty = e.target.value;
           geojsonLayer.setStyle(style);
         });
       })
-      .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
+      .catch(function(error) {
+        console.error('Fehler beim Laden der GeoJSON-Daten:', error);
+      });
   </script>
 
 </body>
