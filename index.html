@@ -1,172 +1,153 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wahlergebnisse Karte</title>
-  
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-  
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
-    #map {
-      width: 90%;
-      height: 70vh;
-      margin: 20px auto;
-    }
-    select {
-      margin: 10px;
-      padding: 5px;
-      font-size: 1em;
-    }
-    .legend {
-      background: white;
-      padding: 10px;
-      line-height: 1.5;
-      font-size: 12px;
-      border-radius: 5px;
-    }
-    .legend i {
-      width: 18px;
-      height: 18px;
-      float: left;
-      margin-right: 8px;
-      opacity: 0.8;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wahlergebnisse Berlin</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map { height: 100vh; }
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-  <h1>Wahlergebnisse in Berlin</h1>
-  
-  <select id="partySelect">
-    <option value="SPDinkBW">SPD</option>
-    <option value="GrueninkBW">Grüne</option>
-    <option value="CDUinkBW">CDU</option>
-    <option value="LINKEinkBW">Die Linke</option>
-    <option value="AfDinkBW">AfD</option>
-    <option value="FDPinkBW">FDP</option>
-    <option value="BSWinkBWB">Bündnis Sahra Wagenknecht</option>
-  </select>
 
-  <div id="map"></div>
+<div id="map"></div>
 
-  <p>Quellen: <a href="https://wahlen-berlin.de" target="_blank">wahlen-berlin.de</a>, <a href="https://daten.berlin.de" target="_blank">Open Data Portal Berlin</a></p>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-  
-  <script>
-    var map = L.map('map', {
-      minZoom: 10,
-      maxZoom: 17,
-      zoomControl: true
-    }).setView([52.52, 13.405], 11);
-
-    var baseMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      opacity: 1
+<script>
+    var map = L.map('map').setView([52.52, 13.405], 10);
+    
+    var basemap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        minZoom: 12 // Basemap erst ab Zoom-Level 12 sichtbar
     }).addTo(map);
 
-    // Farben der Parteien
+    // Zoom-Beschränkung
+    map.setMinZoom(9);
+    map.setMaxZoom(18);
+
+    // Farbwerte für Parteien
     var partyColors = {
-      "SPDinkBW": "#E3000F",
-      "GrueninkBW": "#1AA037",
-      "CDUinkBW": "#000000",
-      "LINKEinkBW": "#A6006B",
-      "AfDinkBW": "#0489DB",
-      "FDPinkBW": "#FFEF00",
-      "BSWinkBWB": "#008000"
+        "SPD": "#E3000F",
+        "Grüne": "#1AA037",
+        "CDU": "#000000",
+        "LINKE": "#BE3075",
+        "AfD": "#009EE0",
+        "FDP": "#FFED00",
+        "BSW": "#E98300",
+        "Volt": "#5D2E8C",
+        "FW": "#FF9E00",
+        "Tierschutzpartei": "#0074A8",
+        "MLPD": "#FF0000"
     };
 
-    // Wertebereiche der Parteien
-    var partyRanges = {
-      "SPDinkBW": { min: 0.06, max: 0.26 },
-      "GrueninkBW": { min: 0.015, max: 0.41 },
-      "CDUinkBW": { min: 0.031, max: 0.46 },
-      "LINKEinkBW": { min: 0.04, max: 0.5 },
-      "AfDinkBW": { min: 0.02, max: 0.5 },
-      "FDPinkBW": { min: 0.004, max: 0.16 },
-      "BSWinkBWB": { min: 0.01, max: 0.16 }
+    // Normalisierte Werte für Farbskala (händisch definiert)
+    var minMaxValues = {
+        "LINKE": [0.04, 0.5],
+        "AfD": [0.02, 0.5],
+        "SPD": [0.06, 0.26],
+        "Grüne": [0.015, 0.41],
+        "FDP": [0.004, 0.16],
+        "BSW": [0.01, 0.16],
+        "CDU": [0.031, 0.46]
     };
 
-    function getColor(value, party) {
-      var range = partyRanges[party];
-      var normValue = (value - range.min) / (range.max - range.min);
-      normValue = Math.max(0, Math.min(1, normValue));
-      return `rgba(${hexToRgb(partyColors[party]).join(',')}, ${normValue})`;
+    function normalize(value, min, max) {
+        return (value - min) / (max - min);
     }
 
-    function hexToRgb(hex) {
-      hex = hex.replace(/^#/, '');
-      return [
-        parseInt(hex.substring(0,2), 16),
-        parseInt(hex.substring(2,4), 16),
-        parseInt(hex.substring(4,6), 16)
-      ];
+    function getDominantParty(feature) {
+        var parties = Object.keys(minMaxValues);
+        var maxValue = 0;
+        var dominantParty = "CDU";
+
+        parties.forEach(party => {
+            var rawValue = parseFloat(feature.properties[party + "inkBW"]);
+            if (!isNaN(rawValue)) {
+                var [min, max] = minMaxValues[party];
+                var normalizedValue = normalize(rawValue, min, max);
+                if (normalizedValue > maxValue) {
+                    maxValue = normalizedValue;
+                    dominantParty = party;
+                }
+            }
+        });
+
+        return { party: dominantParty, intensity: maxValue };
     }
 
     function style(feature) {
-      var party = document.getElementById("partySelect").value;
-      var value = parseFloat(feature.properties[party]);
-      return {
-        fillColor: getColor(value, party),
-        weight: 1,
-        opacity: 1,
-        color: "#ffffff",
-        fillOpacity: 1 - (map.getZoom() - 10) / 7
-      };
+        var result = getDominantParty(feature);
+        return {
+            fillColor: partyColors[result.party],
+            weight: 1,
+            opacity: 1,
+            color: 'white',
+            fillOpacity: getPolygonOpacity(map.getZoom()) * result.intensity
+        };
     }
 
-    var geojsonLayer = L.geoJson(null, {
-      style: style,
-      onEachFeature: function (feature, layer) {
-        layer.on("click", function () {
-          var party = document.getElementById("partySelect").value;
-          var percentage = (parseFloat(feature.properties[party]) * 100).toFixed(1);
-          layer.bindPopup(`Bezirk: ${feature.properties.Bezirk}<br>${party}: ${percentage}%`).openPopup();
-        });
-        layer.on("mouseover", function () {
-          layer.setStyle({ weight: 3, color: "black" });
-        });
-        layer.on("mouseout", function () {
-          geojsonLayer.resetStyle(layer);
-        });
-      }
+    function getPolygonOpacity(zoomLevel) {
+        return Math.max(0.2, 1 - (zoomLevel - 10) * 0.1);
+    }
+
+    var geojsonLayer = L.geoJSON(geojsonData, {
+        style: style,
+        onEachFeature: function(feature, layer) {
+            layer.on({
+                mouseover: function(e) {
+                    var layer = e.target;
+                    layer.setStyle({ weight: 3, color: '#666' });
+                },
+                mouseout: function(e) {
+                    geojsonLayer.resetStyle(e.target);
+                },
+                click: function(e) {
+                    var props = e.target.feature.properties;
+                    var partyResult = getDominantParty(e.target.feature);
+                    L.popup()
+                        .setLatLng(e.latlng)
+                        .setContent(`<b>${props.Bezirk}</b><br>${partyResult.party}: ${(parseFloat(props[partyResult.party + "inkBW"]) * 100).toFixed(2)}%`)
+                        .openOn(map);
+                }
+            });
+        }
     }).addTo(map);
 
-    fetch("geojson-data.json")
-      .then(response => response.json())
-      .then(data => geojsonLayer.addData(data))
-      .catch(error => console.error("Fehler beim Laden der GeoJSON-Daten:", error));
-
-    document.getElementById("partySelect").addEventListener("change", function () {
-      geojsonLayer.setStyle(style);
+    map.on('zoomend', function() {
+        var currentZoom = map.getZoom();
+        geojsonLayer.setStyle({ fillOpacity: getPolygonOpacity(currentZoom) });
+        basemap.setOpacity(currentZoom >= 12 ? 1 : 0);
     });
 
-    L.Control.geocoder().addTo(map);
-
-    var legend = L.control({ position: "bottomright" });
-    legend.onAdd = function (map) {
-      var div = L.DomUtil.create("div", "legend");
-      div.innerHTML = "<b>Parteien</b><br>";
-      for (var party in partyColors) {
-        div.innerHTML += `<i style="background:${partyColors[party]}"></i> ${party}<br>`;
-      }
-      return div;
+    // Legende hinzufügen
+    var legend = L.control({ position: 'bottomleft' });
+    legend.onAdd = function () {
+        var div = L.DomUtil.create('div', 'legend');
+        div.innerHTML = '<strong>Parteifarben</strong><br>';
+        for (var party in partyColors) {
+            div.innerHTML += `<i style="background:${partyColors[party]}; width: 20px; height: 10px; display: inline-block;"></i> ${party}<br>`;
+        }
+        return div;
     };
     legend.addTo(map);
 
-    map.on("zoomend", function () {
-      geojsonLayer.setStyle(style);
-    });
+    // Suchfeld hinzufügen
+    L.Control.geocoder().addTo(map);
 
-  </script>
+</script>
+
 </body>
 </html>
