@@ -81,13 +81,13 @@
 
     // Partei-spezifische Farben und minimale/maximale Werte
     var partyBaseColors = {
-      "SPDinkBW": "#1E90FF",    // DodgerBlue
-      "GrueninkBW": "#32CD32",  // LimeGreen
-      "CDUinkBW": "#FF6347",    // Tomato
-      "LINKEinkBW": "#800080",  // Purple
-      "AfDinkBW": "#FFD700",    // Gold
-      "FDPinkBW": "#FFA500",    // Orange
-      "BSWinkBWB": "#A9A9A9"     // DarkGray (für BSW)
+      "SPDinkBW": "#e3010f",    // DodgerBlue
+      "GrueninkBW": "#00432c",  // LimeGreen
+      "CDUinkBW": "#151518",    // Tomato
+      "LINKEinkBW": "#a40372",  // Purple
+      "AfDinkBW": "#1e5cc3",    // Gold
+      "FDPinkBW": "#cd8208",    // Orange
+      "BSWinkBWB": "#67173e"     // DarkGray (für BSW)
     };
 
     var partyRanges = {
@@ -149,11 +149,11 @@
     map.on('zoomend', function() {
       var zoom = map.getZoom();
       if (zoom > 14) {
-        basemap.setOpacity(1); // Höhere Transparenz bei starkem Zoom
+        basemap.setOpacity(0.4); // Höhere Transparenz bei starkem Zoom
       } else if (zoom > 12) {
         basemap.setOpacity(0.6); // Mittlere Transparenz bei mittlerem Zoom
       } else {
-        basemap.setOpacity(0.3); // Keine Transparenz bei wenig Zoom
+        basemap.setOpacity(1); // Keine Transparenz bei wenig Zoom
       }
     });
 
@@ -190,20 +190,16 @@
       });
     }
 
-    // Polygon-Style-Funktion mit dynamischer Umrandung je nach Zoomlevel
+    // Polygon-Style-Funktion (keine Transparenzänderung beim Hover)
     function style(feature) {
       var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
       var zoom = map.getZoom();
       var opacity = 0.7 + (zoom - 12) * 0.05; // Dynamische Transparenz
-
-      // Wenn das Zoomlevel hoch genug ist, eine Umrandung anzeigen
-      var weight = (zoom >= 13) ? 2 : 0; // Umrandung wird bei Zoomlevel 14 oder höher sichtbar
-
       return {
         fillColor: getColor(rawValue, currentParty),
-        weight: weight,               // Umrandung je nach Zoomlevel
-        opacity: 1,                   // Keine Transparenzänderung beim Hover
-        color: 'black',               // Umrandungsfarbe
+        weight: 0,                // Keine Umrandung
+        opacity: 1,               // Keine Transparenzänderung beim Hover
+        color: 'transparent',     // Keine Randfarbe
         fillOpacity: opacity
       };
     }
