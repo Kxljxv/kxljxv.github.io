@@ -149,11 +149,11 @@
     map.on('zoomend', function() {
       var zoom = map.getZoom();
       if (zoom > 14) {
-        basemap.setOpacity(0.4); // Höhere Transparenz bei starkem Zoom
+        basemap.setOpacity(1); // Höhere Transparenz bei starkem Zoom
       } else if (zoom > 12) {
         basemap.setOpacity(0.6); // Mittlere Transparenz bei mittlerem Zoom
       } else {
-        basemap.setOpacity(1); // Keine Transparenz bei wenig Zoom
+        basemap.setOpacity(0.4); // Keine Transparenz bei wenig Zoom
       }
     });
 
