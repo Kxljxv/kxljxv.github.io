@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <!-- Leaflet Control Geocoder CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <!-- Leaflet Locate CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.79.0/L.Control.Locate.min.css" />
   <style>
     body {
       margin: 0;
@@ -76,6 +78,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <!-- Leaflet Control Geocoder JS -->
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+  <!-- Leaflet Locate JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.79.0/L.Control.Locate.min.js"></script>
   <script>
     // Global definierte Variable für die aktuell ausgewählte Partei
     var currentParty = "WahlbeteiligunginkBW"; // Standardpartei an den Select-Wert angepasst
@@ -153,7 +157,7 @@
     var basemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap, CartoDB, Amt für Statistik Berlin-Brandenburg',
       maxZoom: 19,
-      opacity: 0.3 // Korrigiert von 0,3 zu 0.3
+      opacity: 0.3
     }).addTo(map);
   
     // Dynamische Transparenz basierend auf Zoomlevel
@@ -164,7 +168,7 @@
       } else if (zoom > 12) {
         basemap.setOpacity(0.6); // Mittlere Transparenz bei mittlerem Zoom
       } else {
-        basemap.setOpacity(0.3); // Korrigiert von 0,3 zu 0.3
+        basemap.setOpacity(0.3);
       }
     });
   
@@ -186,6 +190,28 @@
       map.fitBounds(poly.getBounds());
     })
     .addTo(map);
+    
+    // Standort-Control hinzufügen
+    var lc = L.control.locate({
+      position: 'topleft',
+      strings: {
+        title: "Meinen Standort anzeigen",
+        popup: "Sie befinden sich innerhalb von {distance} {unit} von diesem Punkt entfernt",
+        outsideMapBoundsMsg: "Sie scheinen sich außerhalb der Kartengrenzen zu befinden"
+      },
+      locateOptions: {
+        maxZoom: 16,
+        enableHighAccuracy: true
+      },
+      icon: 'fa fa-map-marker', // Font Awesome Icon
+      showPopup: true,          // Zeigt ein Popup am Standort
+      onLocationError: function(err) {
+        alert("Standorterfassung fehlgeschlagen: " + err.message);
+      },
+      onLocationOutsideMapBounds: function(context) {
+        alert("Sie befinden sich außerhalb des kartierten Bereichs von Berlin!");
+      }
+    }).addTo(map);
   
     // Popup und Ereignisse für Polygone
     function onEachFeature(feature, layer) {
