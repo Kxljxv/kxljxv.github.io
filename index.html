@@ -57,6 +57,7 @@
   
   <!-- Party-Auswahl -->
   <select id="partySelect">
+    <option value="Wahlbeteiligung">Wahlbeteiligung</option>
     <option value="SPDinkBW">SPD</option>
     <option value="GrueninkBW">Grüne</option>
     <option value="CDUinkBW">CDU</option>
@@ -64,6 +65,10 @@
     <option value="AfDinkBW">AfD</option>
     <option value="FDPinkBW">FDP</option>
     <option value="BSWinkBWB">BSW</option>
+    <option value="PARTEIMENSCHUMWELTTIERSCHUTZinkBW">Tierschutzpartei</option>
+    <option value="VoltDeutschlandinkBW">Volt</option>
+    <option value="FWinkBW">FW</option>
+    <option value="MLPDinkBW">MLPD</option>
   </select>
 
   <!-- Karte -->
@@ -80,23 +85,33 @@
 
     // Partei-spezifische Farben und minimale/maximale Werte
     var partyBaseColors = {
-      "SPDinkBW": "#e3010f",    // DodgerBlue
-      "GrueninkBW": "#009e00",  // LimeGreen
-      "CDUinkBW": "#151518",    // Tomato
-      "LINKEinkBW": "#a40372",  // Purple
-      "AfDinkBW": "#1e5cc3",    // Gold
-      "FDPinkBW": "#cd8208",    // Orange
-      "BSWinkBWB": "#67173e"     // DarkGray (für BSW)
+      "WahlbeteiligunginkBW": "#e3010f",
+      "SPDinkBW": "#e3010f",    
+      "GrueninkBW": "#009e00",  
+      "CDUinkBW": "#151518",    
+      "LINKEinkBW": "#a40372",  
+      "AfDinkBW": "#1e5cc3",    
+      "FDPinkBW": "#cd8208",   
+      "BSWinkBWB": "#67173e",
+      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#e3010f",
+      "VoltDeutschlandinkBW": "#cd8208",
+      "FWinkBW": "#cd8208",
+      "MLPDinkBW": "#cd8208"
     };
 
     var partyRanges = {
+      "WahlbeteiligunginkBW": { min: 0.06, max: 0.26 },
       "SPDinkBW": { min: 0.06, max: 0.26 },
       "GrueninkBW": { min: 0.015, max: 0.41 },
       "CDUinkBW": { min: 0.031, max: 0.46 },
       "LINKEinkBW": { min: 0.04, max: 0.5 },
       "AfDinkBW": { min: 0.02, max: 0.5 },
       "FDPinkBW": { min: 0.004, max: 0.16 },
-      "BSWinkBWB": { min: 0.012, max: 0.16 }  // BSW (frisch hinzugefügt)
+      "BSWinkBWB": { min: 0.012, max: 0.16 },  
+      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.057 },
+      "VoltDeutschlandinkBW": { min: 0.0, max: 0.029 },
+      "FWinkBW": { min: 0.0, max: 0.017 },
+      "MLPDinkBW": { min: 0.0, max: 0.009 }
     };
 
     // Hilfsfunktionen zur Farbinterpolation
