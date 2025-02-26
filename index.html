@@ -4,11 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wahlergebnisse Karte</title>
-  
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <!-- Leaflet Control Geocoder CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-  
   <style>
     body {
       margin: 0;
@@ -53,7 +52,8 @@
   <p class="description">
     In diesen Karten sind die Urnen- und Briefwahlergebnisse auf Urnenwahlbezirksebene visualisiert.
   </p>
-  
+
+  <!-- Party-Auswahl -->
   <select id="partySelect">
     <option value="WahlbeteiligunginkBW">Wahlbeteiligung</option>
     <option value="SPDinkBW">SPD</option>
@@ -69,29 +69,33 @@
     <option value="MLPDinkBW">MLPD</option>
   </select>
 
+  <!-- Karte -->
   <div id="map"></div>
 
+  <!-- Leaflet JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <!-- Leaflet Control Geocoder JS -->
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-  
   <script>
-    var currentParty = "SPDinkBW";
+    // Global definierte Variable für die aktuell ausgewählte Partei
+    var currentParty = "WahlbeteiligunginkBW"; // Standardpartei an den Select-Wert angepasst
 
+    // Partei-spezifische Farben und minimale/maximale Werte
     var partyBaseColors = {
       "WahlbeteiligunginkBW": "#e3010f",
-      "SPDinkBW": "#e3010f",    
-      "GrueninkBW": "#009e00",  
-      "CDUinkBW": "#151518",    
-      "LINKEinkBW": "#a40372",  
-      "AfDinkBW": "#1e5cc3",    
-      "FDPinkBW": "#cd8208",   
-      "BSWinkBWB": "#67173e",
-      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#e3010f",
-      "VoltDeutschlandinkBW": "#cd8208",
-      "FWinkBW": "#cd8208",
-      "MLPDinkBW": "#cd8208"
+      "SPDinkBW": "#e3010f",      
+      "GrueninkBW": "#009e00",    
+      "CDUinkBW": "#151518",      
+      "LINKEinkBW": "#a40372",    
+      "AfDinkBW": "#1e5cc3",      
+      "FDPinkBW": "#cd8208",     
+      "BSWinkBWB": "#67173e",  
+      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#e3010f",  
+      "VoltDeutschlandinkBW": "#cd8208",  
+      "FWinkBW": "#cd8208",  
+      "MLPDinkBW": "#cd8208"  
     };
-
+  
     var partyRanges = {
       "WahlbeteiligunginkBW": { min: 0.06, max: 0.26 },
       "SPDinkBW": { min: 0.06, max: 0.26 },
@@ -100,20 +104,42 @@
       "LINKEinkBW": { min: 0.04, max: 0.5 },
       "AfDinkBW": { min: 0.02, max: 0.5 },
       "FDPinkBW": { min: 0.004, max: 0.16 },
-      "BSWinkBWB": { min: 0.012, max: 0.16 },  
-      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.057 },
-      "VoltDeutschlandinkBW": { min: 0.0, max: 0.029 },
-      "FWinkBW": { min: 0.0, max: 0.017 },
-      "MLPDinkBW": { min: 0.0, max: 0.009 }
+      "BSWinkBWB": { min: 0.012, max: 0.16 },    
+      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.057 },  
+      "VoltDeutschlandinkBW": { min: 0.0, max: 0.029 },  
+      "FWinkBW": { min: 0.0, max: 0.017 },  
+      "MLPDinkBW": { min: 0.0, max: 0.009 }  
     };
-
+  
+    // Hilfsfunktionen zur Farbinterpolation
+    function hexToRgb(hex) {
+      hex = hex.replace(/^#/, '');
+      if(hex.length === 3) {
+        hex = hex.split('').map(function(c) { return c + c; }).join('');
+      }
+      var bigint = parseInt(hex, 16);
+      return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
+    }
+    function rgbToHex(r, g, b) {
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b)
+          .toString(16).slice(1).toUpperCase();
+    }
+    function interpolateColor(baseHex, value) {
+      var base = hexToRgb(baseHex);
+      var r = Math.round(255 + (base.r - 255) * value);
+      var g = Math.round(255 + (base.g - 255) * value);
+      var b = Math.round(255 + (base.b - 255) * value);
+      return rgbToHex(r, g, b);
+    }
     function getColor(rawValue, party) {
       var range = partyRanges[party];
       var normalized = (rawValue - range.min) / (range.max - range.min);
-      normalized = Math.max(0, Math.min(1, normalized));
-      return `rgba(${255 - normalized * 200}, ${255 - normalized * 255}, ${255 - normalized * 255}, 1)`;
+      if (normalized < 0) normalized = 0;
+      if (normalized > 1) normalized = 1;
+      return interpolateColor(partyBaseColors[party], normalized);
     }
-
+  
+    // Begrenzungen für Berlin und Umgebung
     var bounds = L.latLngBounds([[52.3, 13.0], [52.7, 13.8]]);
     var map = L.map('map', {
       center: [52.52, 13.40],
@@ -122,53 +148,86 @@
       maxBounds: bounds,
       inertia: false
     });
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+  
+    // Basemap mit Zoom-abhängiger Sichtbarkeit und Transparenz
+    var basemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap, CartoDB, Amt für Statistik Berlin-Brandenburg',
-      maxZoom: 19
+      maxZoom: 19,
+      opacity: 0.3 // Korrigiert von 0,3 zu 0.3
     }).addTo(map);
-
+  
+    // Dynamische Transparenz basierend auf Zoomlevel
+    map.on('zoomend', function() {
+      var zoom = map.getZoom();
+      if (zoom > 14) {
+        basemap.setOpacity(1); // Höhere Transparenz bei starkem Zoom
+      } else if (zoom > 12) {
+        basemap.setOpacity(0.6); // Mittlere Transparenz bei mittlerem Zoom
+      } else {
+        basemap.setOpacity(0.3); // Korrigiert von 0,3 zu 0.3
+      }
+    });
+  
+    // Maßstab
     L.control.scale({position: 'bottomright'}).addTo(map);
-
-    L.Control.geocoder({ defaultMarkGeocode: false })
-      .on('markgeocode', function(e) {
-        map.fitBounds(e.geocode.bbox);
-      })
-      .addTo(map);
-
+  
+    // Geocoder für die Suche
+    L.Control.geocoder({
+      defaultMarkGeocode: false
+    })
+    .on('markgeocode', function(e) {
+      var bbox = e.geocode.bbox;
+      var poly = L.polygon([
+        bbox.getSouthEast(),
+        bbox.getNorthEast(),
+        bbox.getNorthWest(),
+        bbox.getSouthWest()
+      ]).addTo(map);
+      map.fitBounds(poly.getBounds());
+    })
+    .addTo(map);
+  
+    // Popup und Ereignisse für Polygone
     function onEachFeature(feature, layer) {
       layer.on({
         click: function(e) {
-          var rawValue = parseFloat((feature.properties[currentParty] || "0").replace(',', '.'));
+          var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
           var percent = (rawValue * 100).toFixed(2) + '%';
-          var popupContent = `<b>${feature.properties.Bezirk}</b><br>
-            Wahlbeteiligung: ${(parseFloat((feature.properties.WahlbeteiligunginkBW || "0").replace(',', '.')) * 100).toFixed(2)}%<br>
-            Ergebnis: ${percent} (${currentParty})`;
+          var popupContent = '<b>' + feature.properties.Bezirk + '</b><br>' +
+            'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
+            'Ergebnis: ' + percent + ' (' + currentParty + ')';
           layer.bindPopup(popupContent).openPopup();
         }
       });
     }
-
+  
+    // Polygon-Style-Funktion (keine Transparenzänderung beim Hover)
     function style(feature) {
-      var rawValue = parseFloat((feature.properties[currentParty] || "0").replace(',', '.'));
+      var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
+      var zoom = map.getZoom();
+      var opacity = 0.7 + (zoom - 12) * 0.05; // Dynamische Transparenz
       return {
         fillColor: getColor(rawValue, currentParty),
-        weight: 1,
-        color: '#555',
-        fillOpacity: 0.7
+        weight: 0,                // Keine Umrandung
+        opacity: 1,               // Keine Transparenzänderung beim Hover
+        color: 'transparent',     // Keine Randfarbe
+        fillOpacity: opacity
       };
     }
-
+  
+    // GeoJSON-Daten laden
     fetch('https://kxljxv.github.io/wahlergebnisse.json')
-      .then(response => response.json())
-      .then(data => {
-        var geojsonLayer = L.geoJSON(data, { style, onEachFeature }).addTo(map);
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        var geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
         document.getElementById('partySelect').addEventListener('change', function(e) {
           currentParty = e.target.value;
           geojsonLayer.setStyle(style);
         });
       })
-      .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
+      .catch(function(error) {
+        console.error('Fehler beim Laden der GeoJSON-Daten:', error);
+      });
   </script>
 </body>
 </html>
