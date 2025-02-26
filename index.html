@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
   <!-- Leaflet Locate CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.79.0/L.Control.Locate.min.css" />
+  <!-- Font Awesome für Symbole -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     body {
       margin: 0;
@@ -46,6 +48,23 @@
       font-size: 1em;
       border-radius: 5px;
       border: 1px solid #ccc;
+    }
+    /* Anpassung für den Standort-Button */
+    .custom-locate-button {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: white;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 5px;
+    }
+    .custom-locate-button i {
+      color: #2d85cc;
+      font-size: 16px;
     }
   </style>
 </head>
@@ -191,69 +210,26 @@
     })
     .addTo(map);
     
-    // Standort-Control hinzufügen
-    var lc = L.control.locate({
-      position: 'topleft',
-      strings: {
-        title: "Meinen Standort anzeigen",
-        popup: "Sie befinden sich innerhalb von {distance} {unit} von diesem Punkt entfernt",
-        outsideMapBoundsMsg: "Sie scheinen sich außerhalb der Kartengrenzen zu befinden"
+    // Benutzerdefinierter Standort-Button
+    var StandortButton = L.Control.extend({
+      options: {
+        position: 'topleft'
       },
-      locateOptions: {
-        maxZoom: 16,
-        enableHighAccuracy: true
-      },
-      icon: 'fa fa-map-marker', // Font Awesome Icon
-      showPopup: true,          // Zeigt ein Popup am Standort
-      onLocationError: function(err) {
-        alert("Standorterfassung fehlgeschlagen: " + err.message);
-      },
-      onLocationOutsideMapBounds: function(context) {
-        alert("Sie befinden sich außerhalb des kartierten Bereichs von Berlin!");
-      }
-    }).addTo(map);
-  
-    // Popup und Ereignisse für Polygone
-    function onEachFeature(feature, layer) {
-      layer.on({
-        click: function(e) {
-          var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-          var percent = (rawValue * 100).toFixed(2) + '%';
-          var popupContent = '<b>' + feature.properties.Bezirk + '</b><br>' +
-            'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
-            'Ergebnis: ' + percent + ' (' + currentParty + ')';
-          layer.bindPopup(popupContent).openPopup();
-        }
-      });
-    }
-  
-    // Polygon-Style-Funktion (keine Transparenzänderung beim Hover)
-    function style(feature) {
-      var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-      var zoom = map.getZoom();
-      var opacity = 0.7 + (zoom - 12) * 0.05; // Dynamische Transparenz
-      return {
-        fillColor: getColor(rawValue, currentParty),
-        weight: 0,                // Keine Umrandung
-        opacity: 1,               // Keine Transparenzänderung beim Hover
-        color: 'transparent',     // Keine Randfarbe
-        fillOpacity: opacity
-      };
-    }
-  
-    // GeoJSON-Daten laden
-    fetch('https://kxljxv.github.io/wahlergebnisse.json')
-      .then(function(response) { return response.json(); })
-      .then(function(data) {
-        var geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
-        document.getElementById('partySelect').addEventListener('change', function(e) {
-          currentParty = e.target.value;
-          geojsonLayer.setStyle(style);
+      
+      onAdd: function(map) {
+        var container = L.DomUtil.create('div', 'custom-locate-button');
+        var icon = L.DomUtil.create('i', 'fas fa-crosshairs', container);
+        
+        L.DomEvent.on(container, 'click', function() {
+          map.locate({
+            setView: true,
+            maxZoom: 16,
+            enableHighAccuracy: true
+          });
         });
-      })
-      .catch(function(error) {
-        console.error('Fehler beim Laden der GeoJSON-Daten:', error);
-      });
-  </script>
-</body>
-</html>
+        
+        return container;
+      }
+    });
+    
+    // Standort-Button zur K
