@@ -219,7 +219,7 @@
         click: function(e) {
           var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
           var percent = (rawValue * 100).toFixed(2) + '%';
-          var popupContent = '<b>' + feature.properties.Bezirk + '</b><br>' +
+          var popupContent = '<b>' + feature.properties.Bezirk + feature.properties.UWB + '</b><br>' +
             'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
             'Ergebnis: ' + percent + ' (' + currentParty + ')';
           layer.bindPopup(popupContent).openPopup();
