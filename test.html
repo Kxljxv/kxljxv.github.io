@@ -4,8 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wahlergebnisse Karte</title>
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <!-- Leaflet Control Geocoder CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <!-- Leaflet Locate CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.79.0/L.Control.Locate.min.css" />
   <style>
     body {
@@ -30,6 +33,13 @@
       text-align: center;
       color: #333;
     }
+    p.description {
+      font-size: 1.1em;
+      text-align: center;
+      max-width: 800px;
+      margin-top: 15px;
+      color: #555;
+    }
     .controls {
       margin-top: 20px;
       display: flex;
@@ -50,6 +60,11 @@
 </head>
 <body>
   <h1>Wahlergebnisse in Berlin</h1>
+  <p class="description">
+    In diesen Karten sind die Urnen- und Briefwahlergebnisse auf Urnenwahlbezirksebene visualisiert.
+  </p>
+
+  <!-- Steuerung: Wahljahr und Partei-Auswahl -->
   <div class="controls">
     <div>
       <label for="datasetSelect">Wahljahr:</label>
@@ -64,92 +79,285 @@
     </div>
   </div>
 
+  <!-- Karte -->
   <div id="map"></div>
 
+  <!-- Leaflet JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <!-- Leaflet Control Geocoder JS -->
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+  <!-- Leaflet Locate JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.79.0/L.Control.Locate.min.js"></script>
   <script>
+    // Mapping für Anzeige-Namen der Parteien (funktioniert für beide Datensätze)
     var partyDisplayNames = {
-      "SPDinkBW": "SPD", "GrueninkBW": "Grüne", "CDUinkBW": "CDU", "LINKEinkBW": "Die Linke",
-      "LinkeinkBW": "Die Linke", "AfDinkBW": "AfD", "FDPinkBW": "FDP", "BSWinkBWB": "BSW",
-      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "Tierschutzpartei", "VoltDeutschlandinkBW": "Volt",
-      "VoltinkBW": "Volt", "FWinkBW": "FW", "MLPDinkBW": "MLPD"
+      "WahlbeteiligunginkBW": "Wahlbeteiligung",
+      "SPDinkBW": "SPD",
+      "GrueninkBW": "Grüne",
+      "CDUinkBW": "CDU",
+      "LINKEinkBW": "Die Linke",
+      "LinkeinkBW": "Die Linke",
+      "AfDinkBW": "AfD",
+      "FDPinkBW": "FDP",
+      "BSWinkBWB": "BSW",
+      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "Tierschutzpartei",
+      "VoltDeutschlandinkBW": "Volt",
+      "VoltinkBW": "Volt",
+      "FWinkBW": "FW",
+      "MLPDinkBW": "MLPD"
     };
 
+    // Datensatz 2025 (wie bisher)
     var dataset2025 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
-      partyGradientColors: {
-        "SPDinkBW": ["#ff9999", "#e3010f"], "GrueninkBW": ["#99ff99", "#009e00"],
-        "CDUinkBW": ["#b3b3b3", "#151518"], "LINKEinkBW": ["#ffb3e6", "#a40372"],
-        "AfDinkBW": ["#99ccff", "#1e5cc3"], "FDPinkBW": ["#ffcc99", "#cd8208"],
-        "BSWinkBWB": ["#cc99cc", "#67173e"], "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": ["#66cccc", "#00555f"],
-        "VoltDeutschlandinkBW": ["#9966ff", "#4c247a"], "FWinkBW": ["#ffb366", "#ff7800"],
-        "MLPDinkBW": ["#ff6666", "#b01935"]
+      partyBaseColors: {
+        "WahlbeteiligunginkBW": "#042c1c",
+        "SPDinkBW": "#e3010f",      
+        "GrueninkBW": "#009e00",    
+        "CDUinkBW": "#151518",      
+        "LINKEinkBW": "#a40372",    
+        "AfDinkBW": "#1e5cc3",      
+        "FDPinkBW": "#cd8208",     
+        "BSWinkBWB": "#67173e",  
+        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#00555f",  
+        "VoltDeutschlandinkBW": "#4c247a",  
+        "FWinkBW": "#ff7800",  
+        "MLPDinkBW": "#b01935"  
       },
-      availableParties: ["SPDinkBW", "GrueninkBW", "CDUinkBW", "LINKEinkBW", "AfDinkBW",
-        "FDPinkBW", "BSWinkBWB", "PARTEIMENSCHUMWELTTIERSCHUTZinkBW", "VoltDeutschlandinkBW",
-        "FWinkBW", "MLPDinkBW"]
+      partyRanges: {
+        "WahlbeteiligunginkBW": { min: 0.5, max: 0.96 },
+        "SPDinkBW": { min: 0.06, max: 0.26 },
+        "GrueninkBW": { min: 0.015, max: 0.41 },
+        "CDUinkBW": { min: 0.031, max: 0.46 },
+        "LINKEinkBW": { min: 0.04, max: 0.5 },
+        "AfDinkBW": { min: 0.02, max: 0.5 },
+        "FDPinkBW": { min: 0.004, max: 0.16 },
+        "BSWinkBWB": { min: 0.012, max: 0.16 },    
+        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.057 },  
+        "VoltDeutschlandinkBW": { min: 0.0, max: 0.029 },  
+        "FWinkBW": { min: 0.0, max: 0.017 },  
+        "MLPDinkBW": { min: 0.0, max: 0.009 }  
+      },
+      availableParties: [
+        "WahlbeteiligunginkBW", "SPDinkBW", "GrueninkBW", "CDUinkBW", "LINKEinkBW",
+        "AfDinkBW", "FDPinkBW", "BSWinkBWB", "PARTEIMENSCHUMWELTTIERSCHUTZinkBW",
+        "VoltDeutschlandinkBW", "FWinkBW", "MLPDinkBW"
+      ]
     };
 
+    // Datensatz 2021 (angepasst an die in 2021 vorhandenen Schlüssel)
     var dataset2021 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2021.json',
-      partyGradientColors: {
-        "SPDinkBW": ["#ff9999", "#e3010f"], "GrueninkBW": ["#b3ffb3", "#009e00"],
-        "CDUinkBW": ["#b3b3b3", "#151518"], "LinkeinkBW": ["#ffb3e6", "#a40372"],
-        "AfDinkBW": ["#b3d9ff", "#1e5cc3"], "FDPinkBW": ["#ffdbb3", "#cd8208"],
-        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": ["#80e5e5", "#00555f"], "VoltinkBW": ["#b380ff", "#4c247a"],
-        "FWinkBW": ["#ffc299", "#ff7800"], "MLPDinkBW": ["#ff9999", "#b01935"]
+      partyBaseColors: {
+        "WahlbeteiligunginkBW": "#042c1c",
+        "SPDinkBW": "#e3010f",      
+        "GrueninkBW": "#009e00",    
+        "CDUinkBW": "#151518",      
+        "LinkeinkBW": "#a40372",    
+        "AfDinkBW": "#1e5cc3",      
+        "FDPinkBW": "#cd8208",     
+        // BSW gibt es in 2021 nicht
+        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#00555f",  
+        "VoltinkBW": "#4c247a",  
+        "FWinkBW": "#ff7800",  
+        "MLPDinkBW": "#b01935"  
       },
-      availableParties: ["SPDinkBW", "GrueninkBW", "CDUinkBW", "LinkeinkBW", "AfDinkBW",
-        "FDPinkBW", "PARTEIMENSCHUMWELTTIERSCHUTZinkBW", "VoltinkBW", "FWinkBW", "MLPDinkBW"]
+      partyRanges: {
+        "WahlbeteiligunginkBW": { min: 0.454105275, max: 1 },
+        "SPDinkBW": { min: 0.110996917, max: 0.39984263 },
+        "GrueninkBW": { min: 0.030045343, max: 0.541414141 },
+        "CDUinkBW": { min: 0.025714286, max: 0.430626927 },
+        "LinkeinkBW": { min: 0.011583012, max: 0.313521545 },
+        "AfDinkBW": { min: 0.005931198, max: 0.282779584 },
+        "FDPinkBW": { min: 0.015686275, max: 0.268841395 },
+        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.002724796, max: 0.085704944 },  
+        "VoltinkBW": { min: 0.0, max: 0.020571429 },  
+        "FWinkBW": { min: 0.0, max: 0.034937014 },  
+        "MLPDinkBW": { min: 0.0, max: 0.012658228 }  
+      },
+      availableParties: [
+        "WahlbeteiligunginkBW", "SPDinkBW", "GrueninkBW", "CDUinkBW", "LinkeinkBW",
+        "AfDinkBW", "FDPinkBW", "PARTEIMENSCHUMWELTTIERSCHUTZinkBW",
+        "VoltinkBW", "FWinkBW", "MLPDinkBW"
+      ]
     };
 
+    // Aktueller Datensatz (initial 2025)
     var currentDataset = dataset2025;
-    var currentParty = "SPDinkBW";
-    var geojsonLayer;
+    var currentParty = "WahlbeteiligunginkBW"; // Standardpartei
+    var geojsonLayer; // Referenz zum aktuellen GeoJSON-Layer
 
+    // Hilfsfunktionen zur Farbinterpolation
     function hexToRgb(hex) {
       hex = hex.replace(/^#/, '');
+      if(hex.length === 3) {
+        hex = hex.split('').map(function(c) { return c + c; }).join('');
+      }
       var bigint = parseInt(hex, 16);
       return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
     }
-
     function rgbToHex(r, g, b) {
-      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b)
+          .toString(16).slice(1).toUpperCase();
     }
-
-    function interpolateColor(startHex, endHex, value) {
-      var start = hexToRgb(startHex);
-      var end = hexToRgb(endHex);
-      var r = Math.round(start.r + (end.r - start.r) * value);
-      var g = Math.round(start.g + (end.g - start.g) * value);
-      var b = Math.round(start.b + (end.b - start.b) * value);
+    function interpolateColor(baseHex, value) {
+      var base = hexToRgb(baseHex);
+      var r = Math.round(255 + (base.r - 255) * value);
+      var g = Math.round(255 + (base.g - 255) * value);
+      var b = Math.round(255 + (base.b - 255) * value);
       return rgbToHex(r, g, b);
     }
-
-    function getColor(value, party) {
-      var colors = currentDataset.partyGradientColors[party];
-      return interpolateColor(colors[0], colors[1], value);
+    function getColor(rawValue, party) {
+      var range = currentDataset.partyRanges[party];
+      var normalized = (rawValue - range.min) / (range.max - range.min);
+      normalized = Math.max(0, Math.min(1, normalized));
+      return interpolateColor(currentDataset.partyBaseColors[party], normalized);
     }
-
+  
+    // Polygon-Style-Funktion
     function style(feature) {
       var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-      return { fillColor: getColor(rawValue, currentParty), weight: 0, opacity: 1, color: 'transparent', fillOpacity: 0.7 };
+      var zoom = map.getZoom();
+      var opacity = 0.7 + (zoom - 12) * 0.05; // Dynamische Transparenz
+      return {
+        fillColor: getColor(rawValue, currentParty),
+        weight: 0,
+        opacity: 1,
+        color: 'transparent',
+        fillOpacity: opacity
+      };
     }
-
+  
+    // Popup und Ereignisse für Polygone
+    function onEachFeature(feature, layer) {
+      layer.on({
+        click: function(e) {
+          var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
+          var percent = (rawValue * 100).toFixed(2) + '%';
+          var popupContent = '<b>' + feature.properties.UWB + '</b><br>' +
+            'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
+            'Ergebnis: ' + percent + ' (' + partyDisplayNames[currentParty] + ')';
+          layer.bindPopup(popupContent).openPopup();
+        }
+      });
+    }
+  
+    // Kartenbegrenzungen und Basemap
+    var bounds = L.latLngBounds([[52.3, 13.0], [52.7, 13.8]]);
+    var map = L.map('map', {
+      center: [52.52, 13.40],
+      zoom: 10,
+      minZoom: 9,
+      maxBounds: bounds,
+      inertia: false
+    });
+  
+    var basemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap, CartoDB, Amt für Statistik Berlin-Brandenburg',
+      maxZoom: 19,
+      opacity: 0.3
+    }).addTo(map);
+  
+    map.on('zoomend', function() {
+      var zoom = map.getZoom();
+      if (zoom > 14) {
+        basemap.setOpacity(1);
+      } else if (zoom > 12) {
+        basemap.setOpacity(0.6);
+      } else {
+        basemap.setOpacity(0.3);
+      }
+    });
+  
+    L.control.scale({position: 'bottomright'}).addTo(map);
+  
+    L.Control.geocoder({
+      defaultMarkGeocode: false
+    })
+    .on('markgeocode', function(e) {
+      var bbox = e.geocode.bbox;
+      var poly = L.polygon([
+        bbox.getSouthEast(),
+        bbox.getNorthEast(),
+        bbox.getNorthWest(),
+        bbox.getSouthWest()
+      ]).addTo(map);
+      map.fitBounds(poly.getBounds());
+    })
+    .addTo(map);
+    
+    var lc = L.control.locate({
+      position: 'topleft',
+      strings: {
+        title: "Meinen Standort anzeigen",
+        popup: "Sie befinden sich innerhalb von {distance} {unit} von diesem Punkt entfernt",
+        outsideMapBoundsMsg: "Sie scheinen sich außerhalb der Kartengrenzen zu befinden"
+      },
+      locateOptions: {
+        maxZoom: 16,
+        enableHighAccuracy: true
+      },
+      icon: 'fa fa-map-marker',
+      showPopup: true,
+      onLocationError: function(err) {
+        alert("Standorterfassung fehlgeschlagen: " + err.message);
+      },
+      onLocationOutsideMapBounds: function(context) {
+        alert("Sie befinden sich außerhalb des kartierten Bereichs von Berlin!");
+      }
+    }).addTo(map);
+  
+    // Funktion zum Laden des aktuellen GeoJSON-Datensatzes
     function loadGeoJson() {
       fetch(currentDataset.url)
-        .then(response => response.json())
-        .then(data => {
-          if (geojsonLayer) geojsonLayer.remove();
-          geojsonLayer = L.geoJSON(data, { style: style }).addTo(map);
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+          if (geojsonLayer) {
+            map.removeLayer(geojsonLayer);
+          }
+          geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
+        })
+        .catch(function(error) {
+          console.error('Fehler beim Laden der GeoJSON-Daten:', error);
         });
     }
-
+  
+    // Funktion zum Aufbau des Partei-Dropdowns anhand des aktuellen Datensatzes
+    function populatePartySelect() {
+      var partySelect = document.getElementById('partySelect');
+      partySelect.innerHTML = "";
+      currentDataset.availableParties.forEach(function(key) {
+        var option = document.createElement('option');
+        option.value = key;
+        option.text = partyDisplayNames[key] || key;
+        partySelect.appendChild(option);
+      });
+      // Setze Standardpartei
+      currentParty = partySelect.value;
+    }
+  
+    // Event-Listener für Parteien-Wechsel
+    document.getElementById('partySelect').addEventListener('change', function(e) {
+      currentParty = e.target.value;
+      if (geojsonLayer) {
+        geojsonLayer.setStyle(style);
+      }
+    });
+  
+    // Event-Listener für Datensatz-Wechsel
     document.getElementById('datasetSelect').addEventListener('change', function(e) {
-      currentDataset = e.target.value === "2025" ? dataset2025 : dataset2021;
+      var selectedYear = e.target.value;
+      if (selectedYear === "2025") {
+        currentDataset = dataset2025;
+      } else if (selectedYear === "2021") {
+        currentDataset = dataset2021;
+      }
+      populatePartySelect();
       loadGeoJson();
     });
-
+  
+    // Initialer Aufbau
+    populatePartySelect();
     loadGeoJson();
   </script>
 </body>
