@@ -30,13 +30,6 @@
       text-align: center;
       color: #333;
     }
-    p.description {
-      font-size: 1.1em;
-      text-align: center;
-      max-width: 800px;
-      margin-top: 15px;
-      color: #555;
-    }
     .controls {
       margin-top: 20px;
       display: flex;
@@ -57,10 +50,6 @@
 </head>
 <body>
   <h1>Wahlergebnisse in Berlin</h1>
-  <p class="description">
-    In diesen Karten sind die Urnen- und Briefwahlergebnisse auf Urnenwahlbezirksebene visualisiert.
-  </p>
-
   <div class="controls">
     <div>
       <label for="datasetSelect">Wahljahr:</label>
@@ -80,53 +69,38 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script>
     var partyDisplayNames = {
-      "WahlbeteiligunginkBW": "Wahlbeteiligung",
-      "SPDinkBW": "SPD",
-      "GrueninkBW": "Grüne",
-      "CDUinkBW": "CDU",
-      "LINKEinkBW": "Die Linke",
-      "LinkeinkBW": "Die Linke",
-      "AfDinkBW": "AfD",
-      "FDPinkBW": "FDP",
-      "BSWinkBWB": "BSW",
-      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "Tierschutzpartei",
-      "VoltDeutschlandinkBW": "Volt",
-      "VoltinkBW": "Volt",
-      "FWinkBW": "FW",
-      "MLPDinkBW": "MLPD"
+      "SPDinkBW": "SPD", "GrueninkBW": "Grüne", "CDUinkBW": "CDU", "LINKEinkBW": "Die Linke",
+      "LinkeinkBW": "Die Linke", "AfDinkBW": "AfD", "FDPinkBW": "FDP", "BSWinkBWB": "BSW",
+      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "Tierschutzpartei", "VoltDeutschlandinkBW": "Volt",
+      "VoltinkBW": "Volt", "FWinkBW": "FW", "MLPDinkBW": "MLPD"
     };
 
     var dataset2025 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
       partyGradientColors: {
-        "SPDinkBW": ["#ff6666", "#e3010f"],
-        "GrueninkBW": ["#99ff99", "#009e00"],
-        "CDUinkBW": ["#999999", "#151518"],
-        "LINKEinkBW": ["#ff99cc", "#a40372"],
-        "AfDinkBW": ["#99ccff", "#1e5cc3"],
-        "FDPinkBW": ["#ffcc99", "#cd8208"],
-        "BSWinkBWB": ["#cc99cc", "#67173e"],
-        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": ["#66cccc", "#00555f"],
-        "VoltDeutschlandinkBW": ["#9966ff", "#4c247a"],
-        "FWinkBW": ["#ffb366", "#ff7800"],
+        "SPDinkBW": ["#ff9999", "#e3010f"], "GrueninkBW": ["#99ff99", "#009e00"],
+        "CDUinkBW": ["#b3b3b3", "#151518"], "LINKEinkBW": ["#ffb3e6", "#a40372"],
+        "AfDinkBW": ["#99ccff", "#1e5cc3"], "FDPinkBW": ["#ffcc99", "#cd8208"],
+        "BSWinkBWB": ["#cc99cc", "#67173e"], "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": ["#66cccc", "#00555f"],
+        "VoltDeutschlandinkBW": ["#9966ff", "#4c247a"], "FWinkBW": ["#ffb366", "#ff7800"],
         "MLPDinkBW": ["#ff6666", "#b01935"]
-      }
+      },
+      availableParties: ["SPDinkBW", "GrueninkBW", "CDUinkBW", "LINKEinkBW", "AfDinkBW",
+        "FDPinkBW", "BSWinkBWB", "PARTEIMENSCHUMWELTTIERSCHUTZinkBW", "VoltDeutschlandinkBW",
+        "FWinkBW", "MLPDinkBW"]
     };
 
     var dataset2021 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2021.json',
       partyGradientColors: {
-        "SPDinkBW": ["#ff9999", "#e3010f"],
-        "GrueninkBW": ["#b3ffb3", "#009e00"],
-        "CDUinkBW": ["#b3b3b3", "#151518"],
-        "LinkeinkBW": ["#ffb3e6", "#a40372"],
-        "AfDinkBW": ["#b3d9ff", "#1e5cc3"],
-        "FDPinkBW": ["#ffdbb3", "#cd8208"],
-        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": ["#80e5e5", "#00555f"],
-        "VoltinkBW": ["#b380ff", "#4c247a"],
-        "FWinkBW": ["#ffc299", "#ff7800"],
-        "MLPDinkBW": ["#ff9999", "#b01935"]
-      }
+        "SPDinkBW": ["#ff9999", "#e3010f"], "GrueninkBW": ["#b3ffb3", "#009e00"],
+        "CDUinkBW": ["#b3b3b3", "#151518"], "LinkeinkBW": ["#ffb3e6", "#a40372"],
+        "AfDinkBW": ["#b3d9ff", "#1e5cc3"], "FDPinkBW": ["#ffdbb3", "#cd8208"],
+        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": ["#80e5e5", "#00555f"], "VoltinkBW": ["#b380ff", "#4c247a"],
+        "FWinkBW": ["#ffc299", "#ff7800"], "MLPDinkBW": ["#ff9999", "#b01935"]
+      },
+      availableParties: ["SPDinkBW", "GrueninkBW", "CDUinkBW", "LinkeinkBW", "AfDinkBW",
+        "FDPinkBW", "PARTEIMENSCHUMWELTTIERSCHUTZinkBW", "VoltinkBW", "FWinkBW", "MLPDinkBW"]
     };
 
     var currentDataset = dataset2025;
@@ -135,9 +109,6 @@
 
     function hexToRgb(hex) {
       hex = hex.replace(/^#/, '');
-      if (hex.length === 3) {
-        hex = hex.split('').map(c => c + c).join('');
-      }
       var bigint = parseInt(hex, 16);
       return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
     }
@@ -162,20 +133,14 @@
 
     function style(feature) {
       var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-      return {
-        fillColor: getColor(rawValue, currentParty),
-        weight: 0,
-        opacity: 1,
-        color: 'transparent',
-        fillOpacity: 0.7
-      };
+      return { fillColor: getColor(rawValue, currentParty), weight: 0, opacity: 1, color: 'transparent', fillOpacity: 0.7 };
     }
 
     function loadGeoJson() {
       fetch(currentDataset.url)
         .then(response => response.json())
         .then(data => {
-          if (geojsonLayer) map.removeLayer(geojsonLayer);
+          if (geojsonLayer) geojsonLayer.remove();
           geojsonLayer = L.geoJSON(data, { style: style }).addTo(map);
         });
     }
