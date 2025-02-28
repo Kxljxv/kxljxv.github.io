@@ -45,6 +45,8 @@
       display: flex;
       gap: 20px;
       align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
     }
     select {
       padding: 10px;
@@ -55,6 +57,24 @@
     label {
       font-size: 1em;
       color: #333;
+    }
+    .color-picker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    input[type="color"] {
+      border: none;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .color-label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.8em;
     }
   </style>
 </head>
@@ -76,6 +96,16 @@
     <div>
       <label for="partySelect">Partei:</label>
       <select id="partySelect"></select>
+    </div>
+    <div class="color-picker">
+      <div class="color-label">
+        <label for="minColor">Min Farbe:</label>
+        <input type="color" id="minColor" value="#ffffff">
+      </div>
+      <div class="color-label">
+        <label for="maxColor">Max Farbe:</label>
+        <input type="color" id="maxColor" value="#000000">
+      </div>
     </div>
   </div>
 
@@ -118,23 +148,27 @@
       "VoltinkBW": "VoltDeutschlandinkBW"
     };
 
+    // Farbpaare für die Parteien (Min- und Max-Farben)
+    var partyColors = {
+      "WahlbeteiligunginkBW": { min: "#E0B4AB", max: "#042c1c" },
+      "SPDinkBW": { min: "#C3E3CB", max: "#e3010f" },
+      "GrueninkBW": { min: "#EDCCDD", max: "#009e00" },
+      "CDUinkBW": { min: "#EEE2CB", max: "#151518" },
+      "LINKEinkBW": { min: "#C2EBBC", max: "#a40372" },
+      "LinkeinkBW": { min: "#C2EBBC", max: "#a40372" },
+      "AfDinkBW": { min: "#F0E4CC", max: "#0047C2" },
+      "FDPinkBW": { min: "#A1A4C2", max: "#C29800" },
+      "BSWinkBWB": { min: "#BDDBBD", max: "#67173e" },
+      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: "#E6D7CC", max: "#00555f" },
+      "VoltDeutschlandinkBW": { min: "#D4D3BA", max: "#4c247a" },
+      "VoltinkBW": { min: "#D4D3BA", max: "#4c247a" },
+      "FWinkBW": { min: "#D2F5FC", max: "#ff7800" },
+      "MLPDinkBW": { min: "#CDF7D5", max: "#b01935" }
+    };
+
     // Datensatz 2025 (wie bisher)
     var dataset2025 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
-      partyBaseColors: {
-        "WahlbeteiligunginkBW": "#042c1c",
-        "SPDinkBW": "#e3010f",      
-        "GrueninkBW": "#009e00",    
-        "CDUinkBW": "#151518",      
-        "LINKEinkBW": "#a40372",    
-        "AfDinkBW": "#1e5cc3",      
-        "FDPinkBW": "#cd8208",     
-        "BSWinkBWB": "#67173e",  
-        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#00555f",  
-        "VoltDeutschlandinkBW": "#4c247a",  
-        "FWinkBW": "#ff7800",  
-        "MLPDinkBW": "#b01935"  
-      },
       partyRanges: {
         "WahlbeteiligunginkBW": { min: 0.5, max: 0.96 },
         "SPDinkBW": { min: 0.06, max: 0.26 },
@@ -159,20 +193,6 @@
     // Datensatz 2021 (angepasst an die in 2021 vorhandenen Schlüssel)
     var dataset2021 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2021.json',
-      partyBaseColors: {
-        "WahlbeteiligunginkBW": "#042c1c",
-        "SPDinkBW": "#e3010f",      
-        "GrueninkBW": "#009e00",    
-        "CDUinkBW": "#151518",      
-        "LinkeinkBW": "#a40372",    
-        "AfDinkBW": "#1e5cc3",      
-        "FDPinkBW": "#cd8208",     
-        // BSW gibt es in 2021 nicht
-        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#00555f",  
-        "VoltinkBW": "#4c247a",  
-        "FWinkBW": "#ff7800",  
-        "MLPDinkBW": "#b01935"  
-      },
       partyRanges: {
         "WahlbeteiligunginkBW": { min: 0.454105275, max: 1 },
         "SPDinkBW": { min: 0.110996917, max: 0.39984263 },
@@ -197,6 +217,7 @@
     var currentDataset = dataset2025;
     var currentParty = "WahlbeteiligunginkBW"; // Standardpartei
     var geojsonLayer; // Referenz zum aktuellen GeoJSON-Layer
+    var userCustomColors = {}; // Speichert benutzerdefinierte Farben für Parteien
 
     // Hilfsfunktionen zur Farbinterpolation
     function hexToRgb(hex) {
@@ -207,22 +228,37 @@
       var bigint = parseInt(hex, 16);
       return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
     }
+    
     function rgbToHex(r, g, b) {
       return "#" + ((1 << 24) + (r << 16) + (g << 8) + b)
           .toString(16).slice(1).toUpperCase();
     }
-    function interpolateColor(baseHex, value) {
-      var base = hexToRgb(baseHex);
-      var r = Math.round(255 + (base.r - 255) * value);
-      var g = Math.round(255 + (base.g - 255) * value);
-      var b = Math.round(255 + (base.b - 255) * value);
+    
+    function interpolateColor(minColor, maxColor, value) {
+      var minRgb = hexToRgb(minColor);
+      var maxRgb = hexToRgb(maxColor);
+      
+      var r = Math.round(minRgb.r + (maxRgb.r - minRgb.r) * value);
+      var g = Math.round(minRgb.g + (maxRgb.g - minRgb.g) * value);
+      var b = Math.round(minRgb.b + (maxRgb.b - minRgb.b) * value);
+      
       return rgbToHex(r, g, b);
     }
+    
     function getColor(rawValue, party) {
       var range = currentDataset.partyRanges[party];
       var normalized = (rawValue - range.min) / (range.max - range.min);
       normalized = Math.max(0, Math.min(1, normalized));
-      return interpolateColor(currentDataset.partyBaseColors[party], normalized);
+      
+      // Benutze benutzerdefinierte Farben, wenn vorhanden, sonst die Standardfarben
+      var minColor = userCustomColors[party] ? 
+                    userCustomColors[party].min : 
+                    partyColors[party].min;
+      var maxColor = userCustomColors[party] ? 
+                    userCustomColors[party].max : 
+                    partyColors[party].max;
+      
+      return interpolateColor(minColor, maxColor, normalized);
     }
   
     // Polygon-Style-Funktion
@@ -383,11 +419,31 @@
         // Standardpartei setzen, wenn keine vorherige Auswahl vorhanden
         currentParty = partySelect.value;
       }
+      
+      // Farbpicker mit aktuellen Farben für die gewählte Partei aktualisieren
+      updateColorPickers();
+    }
+
+    // Funktion zum Aktualisieren der Farbpicker basierend auf der aktuellen Partei
+    function updateColorPickers() {
+      var minColorPicker = document.getElementById('minColor');
+      var maxColorPicker = document.getElementById('maxColor');
+      
+      // Wenn benutzerdefinierte Farben für diese Partei existieren, diese verwenden
+      if (userCustomColors[currentParty]) {
+        minColorPicker.value = userCustomColors[currentParty].min;
+        maxColorPicker.value = userCustomColors[currentParty].max;
+      } else {
+        // Sonst die Standardfarben verwenden
+        minColorPicker.value = partyColors[currentParty].min;
+        maxColorPicker.value = partyColors[currentParty].max;
+      }
     }
   
     // Event-Listener für Parteien-Wechsel
     document.getElementById('partySelect').addEventListener('change', function(e) {
       currentParty = e.target.value;
+      updateColorPickers();
       if (geojsonLayer) {
         geojsonLayer.setStyle(style);
       }
@@ -407,6 +463,33 @@
       // Parteiauswahl aktualisieren und dabei die vorherige Auswahl berücksichtigen
       populatePartySelect();
       loadGeoJson();
+    });
+    
+    // Event-Listener für Farbpicker
+    document.getElementById('minColor').addEventListener('change', function(e) {
+      if (!userCustomColors[currentParty]) {
+        userCustomColors[currentParty] = {
+          min: partyColors[currentParty].min,
+          max: partyColors[currentParty].max
+        };
+      }
+      userCustomColors[currentParty].min = e.target.value;
+      if (geojsonLayer) {
+        geojsonLayer.setStyle(style);
+      }
+    });
+    
+    document.getElementById('maxColor').addEventListener('change', function(e) {
+      if (!userCustomColors[currentParty]) {
+        userCustomColors[currentParty] = {
+          min: partyColors[currentParty].min,
+          max: partyColors[currentParty].max
+        };
+      }
+      userCustomColors[currentParty].max = e.target.value;
+      if (geojsonLayer) {
+        geojsonLayer.setStyle(style);
+      }
     });
   
     // Initialer Aufbau
