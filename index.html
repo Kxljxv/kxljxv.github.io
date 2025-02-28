@@ -242,7 +242,7 @@
     }
   
     // GeoJSON-Daten laden
-    fetch('https://kxljxv.github.io/wahlergebnisse.json')
+    fetch('https://kxljxv.github.io/wahlergebnisse2025.json')
       .then(function(response) { return response.json(); })
       .then(function(data) {
         var geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
