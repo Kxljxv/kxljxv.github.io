@@ -310,23 +310,21 @@
     // Funktion zum Laden des aktuellen GeoJSON-Datensatzes
     function loadGeoJson() {
       fetch(currentDataset.url)
-        .then(function(response) { return response.json(); })
-        .then(function(data) {
+        .then(response => response.json())
+        .then(data => {
           if (geojsonLayer) {
             map.removeLayer(geojsonLayer);
           }
           geojsonLayer = L.geoJSON(data, {
             style: style,
             onEachFeature: onEachFeature,
-            simplifyFactor: 0,  // Verhindert das Vereinfachen der Geometrie
-            noClip: true        // Verhindert das Beschneiden der Geometrie am Kartenrand
+            smoothFactor: 0,  // Erzwingt maximale Details ohne Vereinfachung
+            noClip: true       // Verhindert Abschneiden am Rand
           }).addTo(map);
-
         })
-        .catch(function(error) {
-          console.error('Fehler beim Laden der GeoJSON-Daten:', error);
-        });
+        .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
     }
+
   
     // Funktion zum Aufbau des Partei-Dropdowns anhand des aktuellen Datensatzes
     function populatePartySelect() {
