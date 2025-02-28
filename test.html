@@ -315,7 +315,13 @@
           if (geojsonLayer) {
             map.removeLayer(geojsonLayer);
           }
-          geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
+          geojsonLayer = L.geoJSON(data, {
+            style: style,
+            onEachFeature: onEachFeature,
+            simplifyFactor: 0,  // Verhindert das Vereinfachen der Geometrie
+            noClip: true        // Verhindert das Beschneiden der Geometrie am Kartenrand
+          }).addTo(map);
+
         })
         .catch(function(error) {
           console.error('Fehler beim Laden der GeoJSON-Daten:', error);
