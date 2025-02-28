@@ -263,7 +263,7 @@
       var zoom = map.getZoom();
   
       // Je weiter herausgezoomt, desto blasser die Karte
-      var opacity = 0.1 + (zoom - 14) * 0.15;  
+      var opacity = 0.1 + (zoom - 12) * 0.15;  
       opacity = Math.max(0.1, Math.min(1, opacity)); // Begrenzen zwischen 0.1 und 1
 
       basemap.setOpacity(opacity);
