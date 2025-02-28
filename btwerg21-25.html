@@ -108,6 +108,16 @@
       "MLPDinkBW": "MLPD"
     };
 
+    // Mapping zwischen ähnlichen Parteibezeichnungen für 2021 und 2025
+    var partyMapping = {
+      // 2025 -> 2021
+      "LINKEinkBW": "LinkeinkBW",
+      "VoltDeutschlandinkBW": "VoltinkBW",
+      // 2021 -> 2025
+      "LinkeinkBW": "LINKEinkBW",
+      "VoltinkBW": "VoltDeutschlandinkBW"
+    };
+
     // Datensatz 2025 (wie bisher)
     var dataset2025 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
@@ -326,10 +336,32 @@
         .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
     }
 
+    // Prüft, ob eine Partei im aktuellen Datensatz verfügbar ist
+    function isPartyAvailable(party, dataset) {
+      return dataset.availableParties.includes(party);
+    }
+
+    // Sucht nach einer entsprechenden Partei im anderen Datensatz
+    function findEquivalentParty(party, targetDataset) {
+      // Direktes Mapping prüfen
+      if (partyMapping[party] && isPartyAvailable(partyMapping[party], targetDataset)) {
+        return partyMapping[party];
+      }
+      
+      // Prüfen, ob die Partei unverändert im Zieldatensatz verfügbar ist
+      if (isPartyAvailable(party, targetDataset)) {
+        return party;
+      }
+      
+      // Standardpartei zurückgeben, wenn keine Entsprechung gefunden wurde
+      return "WahlbeteiligunginkBW";
+    }
   
     // Funktion zum Aufbau des Partei-Dropdowns anhand des aktuellen Datensatzes
     function populatePartySelect() {
       var partySelect = document.getElementById('partySelect');
+      var currentValue = partySelect.value; // Aktuelle Auswahl speichern
+      
       partySelect.innerHTML = "";
       currentDataset.availableParties.forEach(function(key) {
         var option = document.createElement('option');
@@ -337,8 +369,20 @@
         option.text = partyDisplayNames[key] || key;
         partySelect.appendChild(option);
       });
-      // Setze Standardpartei
-      currentParty = partySelect.value;
+      
+      // Versuchen, die vorherige Auswahl beizubehalten oder eine entsprechende Partei zu finden
+      if (currentValue && isPartyAvailable(currentValue, currentDataset)) {
+        partySelect.value = currentValue;
+        currentParty = currentValue;
+      } else if (currentValue) {
+        // Versuchen, eine äquivalente Partei zu finden
+        var equivalentParty = findEquivalentParty(currentValue, currentDataset);
+        partySelect.value = equivalentParty;
+        currentParty = equivalentParty;
+      } else {
+        // Standardpartei setzen, wenn keine vorherige Auswahl vorhanden
+        currentParty = partySelect.value;
+      }
     }
   
     // Event-Listener für Parteien-Wechsel
@@ -352,11 +396,15 @@
     // Event-Listener für Datensatz-Wechsel
     document.getElementById('datasetSelect').addEventListener('change', function(e) {
       var selectedYear = e.target.value;
+      var previousParty = currentParty; // Speichern der aktuellen Parteiauswahl
+      
       if (selectedYear === "2025") {
         currentDataset = dataset2025;
       } else if (selectedYear === "2021") {
         currentDataset = dataset2021;
       }
+      
+      // Parteiauswahl aktualisieren und dabei die vorherige Auswahl berücksichtigen
       populatePartySelect();
       loadGeoJson();
     });
