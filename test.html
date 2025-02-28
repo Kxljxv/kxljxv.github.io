@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wahlergebnisse Karte</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.79.0/L.Control.Locate.min.css" />
+  <style>
+    body { text-align: center; font-family: Arial, sans-serif; background-color: #f4f4f4; }
+    #map { width: 80%; height: 70vh; margin: 20px auto; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+    select, button { margin: 10px; padding: 10px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h1>Wahlergebnisse in Berlin</h1>
+  <p class="description">Visualisierung der Urnen- und Briefwahlergebnisse auf Urnenwahlbezirksebene.</p>
+  <select id="partySelect">
+    <option value="WahlbeteiligunginkBW">Wahlbeteiligung</option>
+    <option value="SPDinkBW">SPD</option>
+    <option value="GrueninkBW">Grüne</option>
+    <option value="CDUinkBW">CDU</option>
+    <option value="LINKEinkBW">Die Linke</option>
+    <option value="AfDinkBW">AfD</option>
+    <option value="FDPinkBW">FDP</option>
+  </select>
+  <button id="toggleYear">Wechsle zu 2021</button>
+  <div id="map"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script>
+    var currentParty = "WahlbeteiligunginkBW";
+    var currentYear = 2025;
+    var geojsonLayer;
+    var map = L.map('map').setView([52.52, 13.40], 10);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap, CartoDB'
+    }).addTo(map);
+    function getColor(value) { return value > 0.5 ? "#800026" : "#BD0026"; }
+    function style(feature) {
+      return { fillColor: getColor(feature.properties[currentParty]), weight: 0, fillOpacity: 0.7 };
+    }
+    function loadGeoJson(year) {
+      var url = year === 2025 ? 'https://kxljxv.github.io/wahlergebnisse2025.json' : 'https://kxljxv.github.io/wahlergebnisse2021.json';
+      fetch(url).then(res => res.json()).then(data => {
+        if (geojsonLayer) map.removeLayer(geojsonLayer);
+        geojsonLayer = L.geoJSON(data, { style: style }).addTo(map);
+      });
+    }
+    document.getElementById('partySelect').addEventListener('change', function(e) {
+      currentParty = e.target.value;
+      geojsonLayer.setStyle(style);
+    });
+    document.getElementById('toggleYear').addEventListener('click', function() {
+      currentYear = currentYear === 2025 ? 2021 : 2025;
+      this.textContent = `Wechsle zu ${currentYear === 2025 ? '2021' : '2025'}`;
+      loadGeoJson(currentYear);
+    });
+    loadGeoJson(currentYear);
+  </script>
+</body>
+</html>
