@@ -1,17 +1,50 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wahlergebnisse Karte</title>
-  <!-- OpenLayers CSS -->
-  <link rel="stylesheet" href="https://openlayers.org/en/latest/css/ol.css">
-  <!-- Eigene CSS -->
-  <link rel="stylesheet" href="main.css">
+  <!-- MapLibre GL CSS -->
+  <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
+  <!-- MapLibre GL Geocoder CSS -->
+  <link href="https://unpkg.com/@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f4f4f4;
+    }
+    #map {
+      width: 80%;
+      height: 70vh;
+      margin: 20px auto;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h1 { margin-top: 30px; color: #333; }
+    p.description { max-width: 800px; margin: 15px auto; color: #555; }
+    .controls {
+      margin: 20px auto;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      align-items: center;
+    }
+    select {
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
 <body>
   <h1>Wahlergebnisse in Berlin</h1>
-  <p class="description">In diesen Karten sind die Urnen- und Briefwahlergebnisse auf Urnenwahlbezirksebene visualisiert.</p>
+  <p class="description">
+    In diesen Karten sind die Urnen- und Briefwahlergebnisse auf Urnenwahlbezirksebene visualisiert.
+  </p>
   <div class="controls">
     <div>
       <label for="datasetSelect">Wahljahr:</label>
@@ -25,19 +58,210 @@
       <select id="partySelect"></select>
     </div>
   </div>
-  <!-- Kartencontainer -->
-  <div id="map" class="map"></div>
+  <div id="map"></div>
+  
+  <!-- MapLibre GL JS -->
+  <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+  <!-- MapLibre GL Geocoder JS -->
+  <script src="https://unpkg.com/@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.min.js"></script>
+  <script>
+    // Datensätze
+    const datasets = {
+      "2025": { url: "https://kxljxv.github.io/wahlergebnisse2025.json" },
+      "2021": { url: "https://kxljxv.github.io/wahlergebnisse2021.json" }
+    };
 
-  <!-- Popup für Feature-Infos -->
-  <div id="popup" class="ol-popup">
-    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
-    <div id="popup-content"></div>
-  </div>
+    // Kompakte Definition der Parteien mit zugehörigen Keys, Farben und Wertebereichen
+    const parties = {
+      "Wahlbeteiligung": {
+        id2025: "WahlbeteiligunginkBW",
+        id2021: "WahlbeteiligunginkBW",
+        gradient: { min: "#FFF7F5", max: "#002617" },
+        range2025: { min: 0.454105275, max: 0.98 },
+        range2021: { min: 0.454105275, max: 0.98 }
+      },
+      "SPD": {
+        id2025: "SPDinkBW",
+        id2021: "SPDinkBW",
+        gradient: { min: "#FFF7F5", max: "#570000" },
+        range2025: { min: 0.06, max: 0.39984263 },
+        range2021: { min: 0.06, max: 0.39984263 }
+      },
+      "Grüne": {
+        id2025: "GrueninkBW",
+        id2021: "GrueninkBW",
+        gradient: { min: "#FFF7F5", max: "#004F00" },
+        range2025: { min: 0.015, max: 0.541414141 },
+        range2021: { min: 0.015, max: 0.541414141 }
+      },
+      "CDU": {
+        id2025: "CDUinkBW",
+        id2021: "CDUinkBW",
+        gradient: { min: "#FFF7F5", max: "#09090A" },
+        range2025: { min: 0.025714286, max: 0.46 },
+        range2021: { min: 0.025714286, max: 0.46 }
+      },
+      "Die Linke": {
+        id2025: "LINKEinkBW",
+        id2021: "LinkeinkBW",
+        gradient: { min: "#FFF7F5", max: "#8F0354" },
+        range2025: { min: 0.011583012, max: 0.5 },
+        range2021: { min: 0.011583012, max: 0.5 }
+      },
+      "AfD": {
+        id2025: "AfDinkBW",
+        id2021: "AfDinkBW",
+        gradient: { min: "#FFF7F5", max: "#002B9C" },
+        range2025: { min: 0.005931198, max: 0.5 },
+        range2021: { min: 0.005931198, max: 0.5 }
+      },
+      "FDP": {
+        id2025: "FDPinkBW",
+        id2021: "FDPinkBW",
+        gradient: { min: "#FFF7F5", max: "#5E4A00" },
+        range2025: { min: 0.004, max: 0.268841395 },
+        range2021: { min: 0.004, max: 0.268841395 }
+      },
+      "Tierschutzpartei": {
+        id2025: "PARTEIMENSCHUMWELTTIERSCHUTZinkBW",
+        id2021: "PARTEIMENSCHUMWELTTIERSCHUTZinkBW",
+        gradient: { min: "#FFF7F5", max: "#00454D" },
+        range2025: { min: 0.0, max: 0.085704944 },
+        range2021: { min: 0.0, max: 0.085704944 }
+      },
+      "Volt": {
+        id2025: "VoltDeutschlandinkBW",
+        id2021: "VoltinkBW",
+        gradient: { min: "#FFF7F5", max: "#462270" },
+        range2025: { min: 0.0, max: 0.029 },
+        range2021: { min: 0.0, max: 0.029 }
+      },
+      "FW": {
+        id2025: "FWinkBW",
+        id2021: "FWinkBW",
+        gradient: { min: "#FFF7F5", max: "#9C4900" },
+        range2025: { min: 0.0, max: 0.034937014 },
+        range2021: { min: 0.0, max: 0.034937014 }
+      },
+      "MLPD": {
+        id2025: "MLPDinkBW",
+        id2021: "MLPDinkBW",
+        gradient: { min: "#FFF7F5", max: "#8C142A" },
+        range2025: { min: 0.0, max: 0.012658228 },
+        range2021: { min: 0.0, max: 0.012658228 }
+      }
+    };
 
-  <!-- OpenLayers und ol-mapbox-style -->
-  <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/ol-mapbox-style@6.6.0/dist/olms.js"></script>
-  <!-- Eigene JS -->
-  <script src="main.js"></script>
+    // Für beide Datensätze gleich verfügbare Parteien (Anmerkung: BSW ist nur in 2025 vorhanden und wird hier ausgelassen)
+    const availableParties = { "2025": Object.keys(parties), "2021": Object.keys(parties) };
+
+    let currentYear = "2025", currentParty = "Wahlbeteiligung";
+
+    // MapLibre GL Map initialisieren
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: 'https://kxljxv.github.io/style.json',
+      center: [13.40, 52.52],
+      zoom: 10
+    });
+    map.addControl(new maplibregl.NavigationControl());
+    map.addControl(new maplibregl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: true }));
+
+    // Geocoder (Nominatim als Basis)
+    const geocoder = new MaplibreGlGeocoder({
+      maplibregl: maplibregl,
+      marker: false,
+      placeholder: 'Suche Ort',
+      geocoder: new MaplibreGlGeocoder.NominatimGeocoder()
+    });
+    map.addControl(geocoder);
+
+    // Nach Style-Laden: Choroplethen-Quelle und -Layer hinzufügen
+    map.on('load', () => {
+      map.addSource('choropleth', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      // Den Füll-Layer unter den ersten Style-Layern einfügen
+      map.addLayer({
+        id: 'choropleth',
+        type: 'fill',
+        source: 'choropleth',
+        paint: {
+          'fill-color': getFillExpression(),
+          'fill-opacity': 1
+        }
+      }, map.getStyle().layers[0].id);
+      loadGeoJson();
+      populatePartySelect();
+    });
+
+    // Berechnet die fill-color Expression anhand der aktuellen Partei und des Datensatzes
+    function getFillExpression() {
+      const party = parties[currentParty],
+            prop = party['id' + currentYear],
+            range = party['range' + currentYear];
+      return [
+        "interpolate", ["linear"],
+        ["to-number", ["get", prop]],
+        range.min, party.gradient.min,
+        range.max, party.gradient.max
+      ];
+    }
+
+    // Lädt die GeoJSON-Daten des aktuellen Datensatzes und setzt sie als Source-Daten
+    function loadGeoJson() {
+      fetch(datasets[currentYear].url)
+        .then(res => res.json())
+        .then(data => map.getSource('choropleth').setData(data))
+        .catch(err => console.error('Fehler beim Laden der GeoJSON-Daten:', err));
+    }
+
+    // Aktualisiert den Choroplethen-Layer bei Partei-/Datensatzwechsel
+    function updateChoroplethStyle() {
+      map.setPaintProperty('choropleth', 'fill-color', getFillExpression());
+    }
+
+    // Befüllt das Partei-Dropdown
+    function populatePartySelect() {
+      const select = document.getElementById('partySelect');
+      select.innerHTML = "";
+      availableParties[currentYear].forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.textContent = p;
+        if(p === currentParty) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    // Event-Listener
+    document.getElementById('datasetSelect').addEventListener('change', e => {
+      currentYear = e.target.value;
+      if (!availableParties[currentYear].includes(currentParty)) currentParty = "Wahlbeteiligung";
+      populatePartySelect();
+      loadGeoJson();
+      updateChoroplethStyle();
+    });
+    document.getElementById('partySelect').addEventListener('change', e => {
+      currentParty = e.target.value;
+      updateChoroplethStyle();
+    });
+
+    // Popup bei Klick auf ein Polygon
+    map.on('click', 'choropleth', e => {
+      const feat = e.features[0],
+            party = parties[currentParty],
+            prop = party['id' + currentYear],
+            raw = parseFloat(feat.properties[prop].replace(',', '.')),
+            percent = (raw * 100).toFixed(2) + '%',
+            wb = parseFloat(feat.properties["WahlbeteiligunginkBW"].replace(',', '.')) * 100;
+      new maplibregl.Popup()
+        .setLngLat(e.lngLat)
+        .setHTML(`<strong>${feat.properties.UWB}</strong><br>
+                  Wahlbeteiligung: ${wb.toFixed(2)}%<br>
+                  Ergebnis: ${percent} (${currentParty})`)
+        .addTo(map);
+    });
+    map.on('mouseenter', 'choropleth', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'choropleth', () => map.getCanvas().style.cursor = '');
+  </script>
 </body>
 </html>
