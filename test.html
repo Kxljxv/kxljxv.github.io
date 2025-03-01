@@ -286,8 +286,8 @@
       currentZoom = map.getZoom();
       
       // Je weiter herausgezoomt, desto blasser die Basemap
-      var baseOpacity = (currentZoom - 10) * 0.15;  
-      baseOpacity = Math.max(0.1, Math.min(1, baseOpacity)); // Begrenzen zwischen 0.1 und 1
+      var baseOpacity = 0.7 + (currentZoom - 10) * 0.15;  
+      baseOpacity = Math.max(0.1, Math.min(0.9, baseOpacity)); // Begrenzen zwischen 0.1 und 1
       basemap.setOpacity(baseOpacity);
       
       // Polygone mit aktualisierter Transparenz versehen
