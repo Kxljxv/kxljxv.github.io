@@ -1,259 +1,43 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wahlergebnisse Karte</title>
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <!-- Leaflet Control Geocoder CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-  <!-- Leaflet Locate CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.79.0/L.Control.Locate.min.css" />
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background-color: #f4f4f4;
-    }
-    #map {
-      width: 80%;
-      height: 70vh;
-      margin: 20px 0;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    }
-    h1 {
-      font-size: 2em;
-      margin-top: 30px;
-      text-align: center;
-      color: #333;
-    }
-    p.description {
-      font-size: 1.1em;
-      text-align: center;
-      max-width: 800px;
-      margin-top: 15px;
-      color: #555;
-    }
-    select {
-      margin-top: 20px;
-      padding: 10px;
-      font-size: 1em;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-  </style>
+  <!-- OpenLayers CSS -->
+  <link rel="stylesheet" href="https://openlayers.org/en/latest/css/ol.css">
+  <!-- Eigene CSS -->
+  <link rel="stylesheet" href="main.css">
 </head>
 <body>
   <h1>Wahlergebnisse in Berlin</h1>
-  <p class="description">
-    In diesen Karten sind die Urnen- und Briefwahlergebnisse auf Urnenwahlbezirksebene visualisiert.
-  </p>
+  <p class="description">In diesen Karten sind die Urnen- und Briefwahlergebnisse auf Urnenwahlbezirksebene visualisiert.</p>
+  <div class="controls">
+    <div>
+      <label for="datasetSelect">Wahljahr:</label>
+      <select id="datasetSelect">
+        <option value="2025" selected>2025</option>
+        <option value="2021">2021</option>
+      </select>
+    </div>
+    <div>
+      <label for="partySelect">Partei:</label>
+      <select id="partySelect"></select>
+    </div>
+  </div>
+  <!-- Kartencontainer -->
+  <div id="map" class="map"></div>
 
-  <!-- Party-Auswahl -->
-  <select id="partySelect">
-    <option value="WahlbeteiligunginkBW">Wahlbeteiligung</option>
-    <option value="SPDinkBW">SPD</option>
-    <option value="GrueninkBW">Grüne</option>
-    <option value="CDUinkBW">CDU</option>
-    <option value="LINKEinkBW">Die Linke</option>
-    <option value="AfDinkBW">AfD</option>
-    <option value="FDPinkBW">FDP</option>
-    <option value="BSWinkBWB">BSW</option>
-    <option value="PARTEIMENSCHUMWELTTIERSCHUTZinkBW">Tierschutzpartei</option>
-    <option value="VoltDeutschlandinkBW">Volt</option>
-    <option value="FWinkBW">FW</option>
-    <option value="MLPDinkBW">MLPD</option>
-  </select>
+  <!-- Popup für Feature-Infos -->
+  <div id="popup" class="ol-popup">
+    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+    <div id="popup-content"></div>
+  </div>
 
-  <!-- Karte -->
-  <div id="map"></div>
-
-  <!-- Leaflet JS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <!-- Leaflet Control Geocoder JS -->
-  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-  <!-- Leaflet Locate JS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.79.0/L.Control.Locate.min.js"></script>
-  <script>
-    // Global definierte Variable für die aktuell ausgewählte Partei
-    var currentParty = "WahlbeteiligunginkBW"; // Standardpartei an den Select-Wert angepasst
-
-    // Partei-spezifische Farben und minimale/maximale Werte
-    var partyBaseColors = {
-      "WahlbeteiligunginkBW": "#042c1c",
-      "SPDinkBW": "#e3010f",      
-      "GrueninkBW": "#009e00",    
-      "CDUinkBW": "#151518",      
-      "LINKEinkBW": "#a40372",    
-      "AfDinkBW": "#1e5cc3",      
-      "FDPinkBW": "#cd8208",     
-      "BSWinkBWB": "#67173e",  
-      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#00555f",  
-      "VoltDeutschlandinkBW": "#4c247a",  
-      "FWinkBW": "#ff7800",  
-      "MLPDinkBW": "#b01935"  
-    };
-  
-    var partyRanges = {
-      "WahlbeteiligunginkBW": { min: 0.5, max: 0.96 },
-      "SPDinkBW": { min: 0.06, max: 0.26 },
-      "GrueninkBW": { min: 0.015, max: 0.41 },
-      "CDUinkBW": { min: 0.031, max: 0.46 },
-      "LINKEinkBW": { min: 0.04, max: 0.5 },
-      "AfDinkBW": { min: 0.02, max: 0.5 },
-      "FDPinkBW": { min: 0.004, max: 0.16 },
-      "BSWinkBWB": { min: 0.012, max: 0.16 },    
-      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.057 },  
-      "VoltDeutschlandinkBW": { min: 0.0, max: 0.029 },  
-      "FWinkBW": { min: 0.0, max: 0.017 },  
-      "MLPDinkBW": { min: 0.0, max: 0.009 }  
-    };
-  
-    // Hilfsfunktionen zur Farbinterpolation
-    function hexToRgb(hex) {
-      hex = hex.replace(/^#/, '');
-      if(hex.length === 3) {
-        hex = hex.split('').map(function(c) { return c + c; }).join('');
-      }
-      var bigint = parseInt(hex, 16);
-      return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
-    }
-    function rgbToHex(r, g, b) {
-      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b)
-          .toString(16).slice(1).toUpperCase();
-    }
-    function interpolateColor(baseHex, value) {
-      var base = hexToRgb(baseHex);
-      var r = Math.round(255 + (base.r - 255) * value);
-      var g = Math.round(255 + (base.g - 255) * value);
-      var b = Math.round(255 + (base.b - 255) * value);
-      return rgbToHex(r, g, b);
-    }
-    function getColor(rawValue, party) {
-      var range = partyRanges[party];
-      var normalized = (rawValue - range.min) / (range.max - range.min);
-      if (normalized < 0) normalized = 0;
-      if (normalized > 1) normalized = 1;
-      return interpolateColor(partyBaseColors[party], normalized);
-    }
-  
-    // Begrenzungen für Berlin und Umgebung
-    var bounds = L.latLngBounds([[52.3, 13.0], [52.7, 13.8]]);
-    var map = L.map('map', {
-      center: [52.52, 13.40],
-      zoom: 10,
-      minZoom: 9,
-      maxBounds: bounds,
-      inertia: false
-    });
-  
-    // Basemap mit Zoom-abhängiger Sichtbarkeit und Transparenz
-    var basemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap, CartoDB, Amt für Statistik Berlin-Brandenburg',
-      maxZoom: 19,
-      opacity: 0.3
-    }).addTo(map);
-  
-    // Dynamische Transparenz basierend auf Zoomlevel
-    map.on('zoomend', function() {
-      var zoom = map.getZoom();
-      if (zoom > 14) {
-        basemap.setOpacity(1); // Höhere Transparenz bei starkem Zoom
-      } else if (zoom > 12) {
-        basemap.setOpacity(0.6); // Mittlere Transparenz bei mittlerem Zoom
-      } else {
-        basemap.setOpacity(0.3);
-      }
-    });
-  
-    // Maßstab
-    L.control.scale({position: 'bottomright'}).addTo(map);
-  
-    // Geocoder für die Suche
-    L.Control.geocoder({
-      defaultMarkGeocode: false
-    })
-    .on('markgeocode', function(e) {
-      var bbox = e.geocode.bbox;
-      var poly = L.polygon([
-        bbox.getSouthEast(),
-        bbox.getNorthEast(),
-        bbox.getNorthWest(),
-        bbox.getSouthWest()
-      ]).addTo(map);
-      map.fitBounds(poly.getBounds());
-    })
-    .addTo(map);
-    
-    // Standort-Control hinzufügen
-    var lc = L.control.locate({
-      position: 'topleft',
-      strings: {
-        title: "Meinen Standort anzeigen",
-        popup: "Sie befinden sich innerhalb von {distance} {unit} von diesem Punkt entfernt",
-        outsideMapBoundsMsg: "Sie scheinen sich außerhalb der Kartengrenzen zu befinden"
-      },
-      locateOptions: {
-        maxZoom: 16,
-        enableHighAccuracy: true
-      },
-      icon: 'fa fa-map-marker', // Font Awesome Icon
-      showPopup: true,          // Zeigt ein Popup am Standort
-      onLocationError: function(err) {
-        alert("Standorterfassung fehlgeschlagen: " + err.message);
-      },
-      onLocationOutsideMapBounds: function(context) {
-        alert("Sie befinden sich außerhalb des kartierten Bereichs von Berlin!");
-      }
-    }).addTo(map);
-  
-    // Popup und Ereignisse für Polygone
-    function onEachFeature(feature, layer) {
-      layer.on({
-        click: function(e) {
-          var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-          var percent = (rawValue * 100).toFixed(2) + '%';
-          var popupContent = '<b>' + feature.properties.Bezirk + '</b><br>' +
-            'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
-            'Ergebnis: ' + percent + ' (' + currentParty + ')';
-          layer.bindPopup(popupContent).openPopup();
-        }
-      });
-    }
-  
-    // Polygon-Style-Funktion (keine Transparenzänderung beim Hover)
-    function style(feature) {
-      var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-      var zoom = map.getZoom();
-      var opacity = 0.7 + (zoom - 12) * 0.05; // Dynamische Transparenz
-      return {
-        fillColor: getColor(rawValue, currentParty),
-        weight: 0,                // Keine Umrandung
-        opacity: 1,               // Keine Transparenzänderung beim Hover
-        color: 'transparent',     // Keine Randfarbe
-        fillOpacity: opacity
-      };
-    }
-  
-    // GeoJSON-Daten laden
-    fetch('https://kxljxv.github.io/wahlergebnisse2025.json')
-      .then(function(response) { return response.json(); })
-      .then(function(data) {
-        var geojsonLayer = L.geoJSON(data, { style: style, onEachFeature: onEachFeature }).addTo(map);
-        document.getElementById('partySelect').addEventListener('change', function(e) {
-          currentParty = e.target.value;
-          geojsonLayer.setStyle(style);
-        });
-      })
-      .catch(function(error) {
-        console.error('Fehler beim Laden der GeoJSON-Daten:', error);
-      });
-  </script>
+  <!-- OpenLayers und ol-mapbox-style -->
+  <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ol-mapbox-style@6.6.0/dist/olms.js"></script>
+  <!-- Eigene JS -->
+  <script src="main.js"></script>
 </body>
 </html>
