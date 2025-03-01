@@ -187,6 +187,7 @@
     var currentDataset = dataset2025;
     var currentParty = "WahlbeteiligunginkBW"; // Standardpartei
     var geojsonLayer; // Referenz zum aktuellen GeoJSON-Layer
+    var streetMapLayer; // Referenz zum straßen-Layer
 
     // Hilfsfunktionen zur Farbinterpolation
     function hexToRgb(hex) {
@@ -233,13 +234,19 @@
     // Variable für den aktuellen Zoom-Level
     var currentZoom = 10; // Startwert
     
-    // Funktion zur Berechnung der dynamischen Transparenz
-    function getOpacityForZoom(zoom) {
-      var opacity = 0.7 + (zoom - 12) * 0.05; // Dynamische Transparenz
-      return Math.max(0.3, Math.min(0.9, opacity)); // Begrenzen zwischen 0.3 und 0.9
+    // Funktion zur Berechnung der Straßen-Transparenz basierend auf dem Zoom-Level
+    function getStreetMapOpacity(zoom) {
+      if (zoom <= 13) {
+        return 0; // Komplett unsichtbar bei Zoom <= 13
+      } else if (zoom >= 15) {
+        return 1; // Komplett sichtbar bei Zoom >= 15
+      } else {
+        // Lineare Interpolation zwischen 13 und 15
+        return (zoom - 13) / 2;
+      }
     }
   
-    // Polygon-Style-Funktion (aktualisiert)
+    // Polygon-Style-Funktion
     function style(feature) {
       var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
       return {
@@ -247,7 +254,7 @@
         weight: 0,
         opacity: 1,
         color: 'transparent',
-        fillOpacity: getOpacityForZoom(currentZoom)
+        fillOpacity: 0.9 // Konstante Opazität für die Polygone
       };
     }
   
@@ -265,7 +272,7 @@
       });
     }
   
-    // Kartenbegrenzungen und Basemap
+    // Kartenbegrenzungen
     var bounds = L.latLngBounds([[52.3, 13.0], [52.7, 13.8]]);
     var map = L.map('map', {
       center: [52.52, 13.40],
@@ -275,25 +282,27 @@
       inertia: false
     });
   
-    var basemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap, CartoDB, Amt für Statistik Berlin-Brandenburg',
+    // Straßen-Layer mit basemap.de Style
+    var streetMapLayer = L.tileLayer('https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/de_basemapde_web_vector/default/WEBMERCATOR/{z}/{y}/{x}.png', {
+      attribution: '&copy; basemap.de, Bundesamt für Kartographie und Geodäsie',
       maxZoom: 19,
-      opacity: 0.3
+      opacity: 0 // Initial unsichtbar
+    }).addTo(map);
+    
+    // Hintergrund-Kartenlayer für Bereiche ohne Wahldaten (sehr blass)
+    var backgroundMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap, CartoDB',
+      maxZoom: 19,
+      opacity: 0.2 // Sehr blass im Hintergrund
     }).addTo(map);
   
     // Aktualisierte Zoom-Event-Funktion
     map.on('zoomend', function() {
       currentZoom = map.getZoom();
       
-      // Je weiter herausgezoomt, desto blasser die Basemap
-      var baseOpacity = (currentZoom - 10) * 0.15;  
-      baseOpacity = Math.max(0.1, Math.min(1, baseOpacity)); // Begrenzen zwischen 0.1 und 1
-      basemap.setOpacity(baseOpacity);
-      
-      // Polygone mit aktualisierter Transparenz versehen
-      if (geojsonLayer) {
-        geojsonLayer.setStyle(style);
-      }
+      // Straßen-Transparenz basierend auf Zoom aktualisieren
+      var streetOpacity = getStreetMapOpacity(currentZoom);
+      streetMapLayer.setOpacity(streetOpacity);
     });
   
     L.control.scale({position: 'bottomright'}).addTo(map);
@@ -346,8 +355,16 @@
             style: style,
             onEachFeature: onEachFeature,
             smoothFactor: 0,  // Erzwingt maximale Details ohne Vereinfachung
-            noClip: true       // Verhindert Abschneiden am Rand
+            noClip: true      // Verhindert Abschneiden am Rand
           }).addTo(map);
+          
+          // GeoJSON-Layer unter den Straßen-Layer legen
+          geojsonLayer.bringToBack();
+          backgroundMap.bringToBack();
+          
+          // Straßen-Transparenz basierend auf aktuellem Zoom anpassen
+          var streetOpacity = getStreetMapOpacity(currentZoom);
+          streetMapLayer.setOpacity(streetOpacity);
         })
         .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
     }
@@ -405,7 +422,7 @@
     document.getElementById('partySelect').addEventListener('change', function(e) {
       currentParty = e.target.value;
       if (geojsonLayer) {
-        geojsonLayer.setStyle(style); // Aktualisiert alle Polygone mit neuem Style inkl. Transparenz
+        geojsonLayer.setStyle(style);
       }
     });
   
