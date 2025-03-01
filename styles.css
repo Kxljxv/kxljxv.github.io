@@ -1,0 +1,45 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f4f4f4;
+}
+#map {
+  width: 80%;
+  height: 70vh;
+  margin: 20px 0;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+h1 {
+  font-size: 2em;
+  margin-top: 30px;
+  text-align: center;
+  color: #333;
+}
+p.description {
+  font-size: 1.1em;
+  text-align: center;
+  max-width: 800px;
+  margin-top: 15px;
+  color: #555;
+}
+.controls {
+  margin-top: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+select {
+  padding: 10px;
+  font-size: 1em;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+label {
+  font-size: 1em;
+  color: #333;
+}
