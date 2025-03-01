@@ -235,8 +235,8 @@
     
     // Funktion zur Berechnung der dynamischen Transparenz
     function getOpacityForZoom(zoom) {
-      var opacity = 0.1 + (zoom - 12) * 0.05; // Dynamische Transparenz
-      return Math.max(0.2, Math.min(1, opacity)); // Begrenzen zwischen 0.3 und 0.9
+      var opacity = (zoom - 12) * 0.05; // Dynamische Transparenz
+      return Math.max(0, Math.min(0,9, opacity)); // Begrenzen zwischen 0.3 und 0.9
     }
   
     // Polygon-Style-Funktion (aktualisiert)
