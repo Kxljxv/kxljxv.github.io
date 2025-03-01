@@ -89,8 +89,8 @@
   <!-- Leaflet Locate JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.79.0/L.Control.Locate.min.js"></script>
   <script>
+    // Grundkonfiguration und Variablen
     L.Polyline.prototype.options.smoothFactor = 0;
-    // Mapping für Anzeige-Namen der Parteien (funktioniert für beide Datensätze)
     var partyDisplayNames = {
       "WahlbeteiligunginkBW": "Wahlbeteiligung",
       "SPDinkBW": "SPD",
@@ -108,17 +108,13 @@
       "MLPDinkBW": "MLPD"
     };
 
-    // Mapping zwischen ähnlichen Parteibezeichnungen für 2021 und 2025
     var partyMapping = {
-      // 2025 -> 2021
       "LINKEinkBW": "LinkeinkBW",
       "VoltDeutschlandinkBW": "VoltinkBW",
-      // 2021 -> 2025
       "LinkeinkBW": "LINKEinkBW",
       "VoltinkBW": "VoltDeutschlandinkBW"
     };
 
-    // Farbpaletten für jede Partei (Min- und Max-Werte)
     var partyColorGradients = {
       "WahlbeteiligunginkBW": { min: "#FFF7F5", max: "#002617" },
       "SPDinkBW": { min: "#FFF7F5", max: "#570000" },
@@ -136,7 +132,6 @@
       "MLPDinkBW": { min: "#FFF7F5", max: "#8C142A" }
     };
 
-    // Datensatz 2025 (wie bisher)
     var dataset2025 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
       partyRanges: {
@@ -160,7 +155,6 @@
       ]
     };
 
-    // Datensatz 2021 (angepasst an die in 2021 vorhandenen Schlüssel)
     var dataset2021 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2021.json',
       partyRanges: {
@@ -183,11 +177,10 @@
       ]
     };
 
-    // Aktueller Datensatz (initial 2025)
+    // Anfangswerte
     var currentDataset = dataset2025;
     var currentParty = "WahlbeteiligunginkBW"; // Standardpartei
     var geojsonLayer; // Referenz zum aktuellen GeoJSON-Layer
-    var streetMapLayer; // Referenz zum straßen-Layer
 
     // Hilfsfunktionen zur Farbinterpolation
     function hexToRgb(hex) {
@@ -204,7 +197,6 @@
           .toString(16).slice(1).toUpperCase();
     }
     
-    // Neue Funktion zur Interpolation zwischen zwei Farben
     function interpolateColors(color1Hex, color2Hex, value) {
       var color1 = hexToRgb(color1Hex);
       var color2 = hexToRgb(color2Hex);
@@ -219,34 +211,15 @@
     function getColor(rawValue, party) {
       var range = currentDataset.partyRanges[party];
       var normalized = (rawValue - range.min) / (range.max - range.min);
-      normalized = Math.max(0, Math.min(1, normalized)); // Wert zwischen 0 und 1 begrenzen
-      
-      // Gradient-Farben verwenden
+      normalized = Math.max(0, Math.min(1, normalized));
       var gradient = partyColorGradients[party];
       if (!gradient) {
-        // Fallback, falls keine Gradient-Definition gefunden wurde
         return "#CCCCCC";
       }
-      
       return interpolateColors(gradient.min, gradient.max, normalized);
     }
-
-    // Variable für den aktuellen Zoom-Level
-    var currentZoom = 10; // Startwert
     
-    // Funktion zur Berechnung der Straßen-Transparenz basierend auf dem Zoom-Level
-    function getStreetMapOpacity(zoom) {
-      if (zoom <= 13) {
-        return 0; // Komplett unsichtbar bei Zoom <= 13
-      } else if (zoom >= 15) {
-        return 1; // Komplett sichtbar bei Zoom >= 15
-      } else {
-        // Lineare Interpolation zwischen 13 und 15
-        return (zoom - 13) / 2;
-      }
-    }
-  
-    // Polygon-Style-Funktion
+    // Stil für die Polygone – feste Füllopazität, da die Polygone als Grundlayer dienen
     function style(feature) {
       var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
       return {
@@ -254,11 +227,11 @@
         weight: 0,
         opacity: 1,
         color: 'transparent',
-        fillOpacity: 0.9 // Konstante Opazität für die Polygone
+        fillOpacity: 0.7
       };
     }
-  
-    // Popup und Ereignisse für Polygone
+    
+    // Popup und Ereignisse für die Polygone
     function onEachFeature(feature, layer) {
       layer.on({
         click: function(e) {
@@ -271,8 +244,8 @@
         }
       });
     }
-  
-    // Kartenbegrenzungen
+    
+    // Karteneinstellungen: Begrenzungen, Zentrum und Zoom – bleiben unverändert, auch beim Wechseln der Datensätze
     var bounds = L.latLngBounds([[52.3, 13.0], [52.7, 13.8]]);
     var map = L.map('map', {
       center: [52.52, 13.40],
@@ -281,32 +254,41 @@
       maxBounds: bounds,
       inertia: false
     });
-  
-    // Straßen-Layer mit basemap.de Style
-    var streetMapLayer = L.tileLayer('https://sgx.geodatenzentrum.de/wmts_basemapde/tile/1.0.0/de_basemapde_web_vector/default/WEBMERCATOR/{z}/{y}/{x}.png', {
-      attribution: '&copy; basemap.de, Bundesamt für Kartographie und Geodäsie',
-      maxZoom: 19,
-      opacity: 0 // Initial unsichtbar
-    }).addTo(map);
     
-    // Hintergrund-Kartenlayer für Bereiche ohne Wahldaten (sehr blass)
-    var backgroundMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap, CartoDB',
-      maxZoom: 19,
-      opacity: 0.2 // Sehr blass im Hintergrund
-    }).addTo(map);
-  
-    // Aktualisierte Zoom-Event-Funktion
+    // Wir entfernen den bisherigen Basemap-Layer (z. B. von Carto) und setzen stattdessen
+    // die Polygone als Grundlayer. Für den Overlay-Layer mit den Straßen verwenden wir den Stil von basemap.de.
+    var streetsLayer;
+    fetch('https://kxljxv.github.io/style_11_49_57.json')
+      .then(response => response.json())
+      .then(styleJson => {
+        // Annahme: styleJson.tiles[0] enthält das URL-Template für den Straßen-Layer.
+        var tileUrl = styleJson.tiles[0];
+        streetsLayer = L.tileLayer(tileUrl, {
+          attribution: 'basemap.de',
+          maxZoom: 19,
+          opacity: 0  // Startet unsichtbar (Zoom ≤ 13)
+        }).addTo(map);
+      })
+      .catch(error => console.error('Fehler beim Laden des basemap.de Stils:', error));
+    
+    // Neuer zoomabhängiger Event-Listener für den Straßen-Overlay-Layer:
     map.on('zoomend', function() {
-      currentZoom = map.getZoom();
-      
-      // Straßen-Transparenz basierend auf Zoom aktualisieren
-      var streetOpacity = getStreetMapOpacity(currentZoom);
-      streetMapLayer.setOpacity(streetOpacity);
+      if (!streetsLayer) return;
+      var zoom = map.getZoom();
+      var newOpacity = 0;
+      if (zoom <= 13) {
+        newOpacity = 0;
+      } else if (zoom >= 15) {
+        newOpacity = 1;
+      } else {
+        newOpacity = (zoom - 13) / 2;  // Linear von 0 (bei 13) zu 1 (bei 15)
+      }
+      streetsLayer.setOpacity(newOpacity);
     });
-  
+    
+    // Maßstab und weitere Controls
     L.control.scale({position: 'bottomright'}).addTo(map);
-  
+    
     L.Control.geocoder({
       defaultMarkGeocode: false
     })
@@ -327,7 +309,7 @@
       strings: {
         title: "Meinen Standort anzeigen",
         popup: "Sie befinden sich innerhalb von {distance} {unit} von diesem Punkt entfernt",
-        outsideMapBoundsMsg: "Sie scheinen sich außerhalb der Kartengrenzen zu befinden"
+        outsideMapBoundsMsg: "Sie scheinen sich außerhalb des kartierten Bereichs zu befinden"
       },
       locateOptions: {
         maxZoom: 16,
@@ -339,11 +321,11 @@
         alert("Standorterfassung fehlgeschlagen: " + err.message);
       },
       onLocationOutsideMapBounds: function(context) {
-        alert("Sie befinden sich außerhalb des kartierten Bereichs von Berlin!");
+        alert("Sie befinden sich außerhalb des kartierten Bereichs!");
       }
     }).addTo(map);
-  
-    // Funktion zum Laden des aktuellen GeoJSON-Datensatzes
+    
+    // Funktion zum Laden des aktuellen GeoJSON-Datensatzes (Polygone als Grundlayer)
     function loadGeoJson() {
       fetch(currentDataset.url)
         .then(response => response.json())
@@ -354,46 +336,33 @@
           geojsonLayer = L.geoJSON(data, {
             style: style,
             onEachFeature: onEachFeature,
-            smoothFactor: 0,  // Erzwingt maximale Details ohne Vereinfachung
-            noClip: true      // Verhindert Abschneiden am Rand
+            smoothFactor: 0,
+            noClip: true
           }).addTo(map);
-          
-          // GeoJSON-Layer unter den Straßen-Layer legen
-          geojsonLayer.bringToBack();
-          backgroundMap.bringToBack();
-          
-          // Straßen-Transparenz basierend auf aktuellem Zoom anpassen
-          var streetOpacity = getStreetMapOpacity(currentZoom);
-          streetMapLayer.setOpacity(streetOpacity);
         })
         .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
     }
-
-    // Prüft, ob eine Partei im aktuellen Datensatz verfügbar ist
+    
+    // Überprüfen, ob eine Partei im aktuellen Datensatz verfügbar ist
     function isPartyAvailable(party, dataset) {
       return dataset.availableParties.includes(party);
     }
-
-    // Sucht nach einer entsprechenden Partei im anderen Datensatz
+    
+    // Suche nach einer entsprechenden Partei im anderen Datensatz
     function findEquivalentParty(party, targetDataset) {
-      // Direktes Mapping prüfen
       if (partyMapping[party] && isPartyAvailable(partyMapping[party], targetDataset)) {
         return partyMapping[party];
       }
-      
-      // Prüfen, ob die Partei unverändert im Zieldatensatz verfügbar ist
       if (isPartyAvailable(party, targetDataset)) {
         return party;
       }
-      
-      // Standardpartei zurückgeben, wenn keine Entsprechung gefunden wurde
       return "WahlbeteiligunginkBW";
     }
-  
-    // Funktion zum Aufbau des Partei-Dropdowns anhand des aktuellen Datensatzes
+    
+    // Aufbau des Partei-Dropdowns anhand des aktuellen Datensatzes
     function populatePartySelect() {
       var partySelect = document.getElementById('partySelect');
-      var currentValue = partySelect.value; // Aktuelle Auswahl speichern
+      var currentValue = partySelect.value;
       
       partySelect.innerHTML = "";
       currentDataset.availableParties.forEach(function(key) {
@@ -403,33 +372,30 @@
         partySelect.appendChild(option);
       });
       
-      // Versuchen, die vorherige Auswahl beizubehalten oder eine entsprechende Partei zu finden
       if (currentValue && isPartyAvailable(currentValue, currentDataset)) {
         partySelect.value = currentValue;
         currentParty = currentValue;
       } else if (currentValue) {
-        // Versuchen, eine äquivalente Partei zu finden
         var equivalentParty = findEquivalentParty(currentValue, currentDataset);
         partySelect.value = equivalentParty;
         currentParty = equivalentParty;
       } else {
-        // Standardpartei setzen, wenn keine vorherige Auswahl vorhanden
         currentParty = partySelect.value;
       }
     }
-  
-    // Event-Listener für Parteien-Wechsel
+    
+    // Event-Listener für den Wechsel der Partei
     document.getElementById('partySelect').addEventListener('change', function(e) {
       currentParty = e.target.value;
       if (geojsonLayer) {
         geojsonLayer.setStyle(style);
       }
     });
-  
-    // Event-Listener für Datensatz-Wechsel
+    
+    // Event-Listener für den Wechsel des Datensatzes (Jahr)
     document.getElementById('datasetSelect').addEventListener('change', function(e) {
       var selectedYear = e.target.value;
-      var previousParty = currentParty; // Speichern der aktuellen Parteiauswahl
+      var previousParty = currentParty;
       
       if (selectedYear === "2025") {
         currentDataset = dataset2025;
@@ -437,11 +403,11 @@
         currentDataset = dataset2021;
       }
       
-      // Parteiauswahl aktualisieren und dabei die vorherige Auswahl berücksichtigen
+      // Aktualisiere die Parteiauswahl, ohne den Zoom oder den Overlay-Zustand zu beeinflussen
       populatePartySelect();
       loadGeoJson();
     });
-  
+    
     // Initialer Aufbau
     populatePartySelect();
     loadGeoJson();
