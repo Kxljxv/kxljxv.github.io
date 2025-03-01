@@ -2,8 +2,9 @@
 <html>
 
 <head>
-   <title>basemap.de Web Vektor - Leaflet Demo</title>
-   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" />
+   <title>basemap.de Web Vektor - MapLibre GL JS Demo</title>
+   <script src='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js'></script>
+   <link href='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css' rel='stylesheet' />
    <style>
       body {
          margin: 0;
@@ -20,42 +21,32 @@
 </head>
 
 <body>
-   <div id="map"></div>
-   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
-   <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"></script>
-   <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.17/leaflet-maplibre-gl.js"></script>
+   <div id="map" class="map"></div>
    <script>
-      var map = L.map('map', {
-         minZoom: 6,
-         maxZoom: 18,
-      });
-      
-      // GeoJSON Layer (wird HINTER die Basemap gelegt)
-      var geojsonLayer = L.geoJSON(null, {
-         style: function (feature) {
-            return {
-               color: "red",
-               weight: 1,
-               fillOpacity: 0.5
-            };
-         }
-      }).addTo(map);
-      
-      // GeoJSON Daten laden
-      fetch('https://kxljxv.github.io/wahlergebnisse2025.json')
-         .then(response => response.json())
-         .then(data => {
-            console.log("GeoJSON geladen:", data); // Debugging-Ausgabe
-            geojsonLayer.addData(data);
-            map.fitBounds(geojsonLayer.getBounds()); // Karte an GeoJSON anpassen
-         })
-         .catch(error => console.error("Fehler beim Laden der GeoJSON:", error));
-      
-      var gl = L.maplibreGL({
+      var map = new maplibregl.Map({
+         container: 'map',
          style: 'https://kxljxv.github.io/style.json',
-      }).addTo(map);
-      
-      map.setView([51, 10], 6);
+         center: [10, 51],
+         zoom: 6,
+      });
+
+      map.on('load', function () {
+         map.addSource('geojson-layer', {
+            type: 'geojson',
+            data: 'https://kxljxv.github.io/wahlergebnisse2025.json'
+         });
+
+         map.addLayer({
+            id: 'geojson-fill',
+            type: 'fill',
+            source: 'geojson-layer',
+            layout: {},
+            paint: {
+               'fill-color': '#ff0000', // Rote Farbe für die Polygone
+               'fill-opacity': 0.5     // Halbdurchsichtig
+            }
+         }, map.getStyle().layers[0].id); // Fügt die GeoJSON-Ebene unter der ersten Basemap-Ebene ein
+      });
    </script>
 </body>
 
