@@ -1,6 +1,6 @@
 {
   "version": 8,
-  "name": "Bright",
+  "name": "style",
   "metadata": {
     "mapbox:autocomposite": false,
     "mapbox:groups": {
@@ -18,8 +18,8 @@
     "openmaptiles:version": "3.x",
     "maputnik:renderer": "mbgljs"
   },
-  "center": [0, 0],
-  "zoom": 1,
+  "center": [13.404954, 52.520008],
+  "zoom": 10,
   "bearing": 0,
   "pitch": 0,
   "sources": {
@@ -28,9 +28,9 @@
       "url": "https://api.maptiler.com/tiles/v3/tiles.json?key={key}"
     }
   },
-  "sprite": "https://openmaptiles.github.io/osm-bright-gl-style/sprite",
+  "sprite": "",
   "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key={key}",
-  "transition": {"duration": 1000},
+  "transition": {},
   "layers": [
     {
       "id": "background",
