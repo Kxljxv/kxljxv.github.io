@@ -1,53 +1,100 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="de">
 <head>
-   <title>basemap.de Web Vektor - MapLibre GL JS Demo</title>
-   <script src='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js'></script>
-   <link href='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css' rel='stylesheet' />
-   <style>
-      body {
-         margin: 0;
-         padding: 0;
-      }
-
-      #map {
-         position: absolute;
-         top: 0;
-         bottom: 0;
-         width: 100%;
-      }
-   </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wahlergebnisse Karte</title>
+  <script src='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js'></script>
+  <link href='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css' rel='stylesheet' />
+  <style>
+    body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    .controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 5px;
+    }
+    select { padding: 5px; margin: 5px; }
+  </style>
 </head>
-
 <body>
-   <div id="map" class="map"></div>
-   <script>
-      var map = new maplibregl.Map({
-         container: 'map',
-         style: 'https://kxljxv.github.io/bm_web_gry_5.json',
-         center: [10, 51],
-         zoom: 6,
-      });
+  <div id="map"></div>
+  <div class="controls">
+    <label for="datasetSelect">Wahljahr:</label>
+    <select id="datasetSelect">
+      <option value="2025" selected>2025</option>
+      <option value="2021">2021</option>
+    </select>
+    <label for="partySelect">Partei:</label>
+    <select id="partySelect"></select>
+  </div>
 
-      map.on('load', function () {
-         map.addSource('geojson-layer', {
-            type: 'geojson',
-            data: 'https://kxljxv.github.io/wahlergebnisse2025.json'
-         });
+  <script>
+    var map = new maplibregl.Map({
+      container: 'map',
+      style: 'https://kxljxv.github.io/bm_web_gry_5.json',
+      center: [13.4, 52.52],
+      zoom: 10
+    });
 
-         map.addLayer({
-            id: 'geojson-fill',
-            type: 'fill',
-            source: 'geojson-layer',
-            layout: {},
-            paint: {
-               'fill-color': '#ff0000', // Rote Farbe für die Polygone
-               'fill-opacity': 0.5     // Halbdurchsichtig
-            }
-         }, map.getStyle().layers[0].id); // Fügt die GeoJSON-Ebene unter der ersten Basemap-Ebene ein
-      });
-   </script>
+    var datasets = {
+      "2025": 'https://kxljxv.github.io/wahlergebnisse2025.json',
+      "2021": 'https://kxljxv.github.io/wahlergebnisse2021.json'
+    };
+
+    var partyData = {
+      "SPD": { color: "#E3000F", min: 0.06, max: 0.3998 },
+      "CDU": { color: "#000000", min: 0.0257, max: 0.46 },
+      "Gruene": { color: "#1AA037", min: 0.015, max: 0.5414 },
+      "FDP": { color: "#FFED00", min: 0.004, max: 0.2688 },
+      "AfD": { color: "#009EE0", min: 0.0059, max: 0.5 },
+      "Linke": { color: "#BE3075", min: 0.0115, max: 0.5 },
+      "BSW": { color: "#571334", min: 0.012, max: 0.16 },
+      "Tierschutzpartei": { color: "#00454D", min: 0.0, max: 0.0857 },
+      "Volt": { color: "#462270", min: 0.0, max: 0.029 },
+      "FW": { color: "#9C4900", min: 0.0, max: 0.0349 },
+      "MLPD": { color: "#8C142A", min: 0.0, max: 0.0126 },
+      "Wahlbeteiligung": { color: "#002617", min: 0.4541, max: 0.98 }
+    };
+
+    function updateMap(year, party) {
+      if (map.getSource('geojson-layer')) {
+        map.removeLayer('geojson-fill');
+        map.removeSource('geojson-layer');
+      }
+      map.addSource('geojson-layer', { type: 'geojson', data: datasets[year] });
+      map.addLayer({
+        id: 'geojson-fill',
+        type: 'fill',
+        source: 'geojson-layer',
+        layout: {},
+        paint: {
+          'fill-color': partyData[party]?.color || '#ff0000',
+          'fill-opacity': 0.6
+        }
+      }, map.getStyle().layers[0].id);
+    }
+
+    document.getElementById('datasetSelect').addEventListener('change', function() {
+      updateMap(this.value, document.getElementById('partySelect').value);
+    });
+
+    document.getElementById('partySelect').addEventListener('change', function() {
+      updateMap(document.getElementById('datasetSelect').value, this.value);
+    });
+
+    var partySelect = document.getElementById('partySelect');
+    Object.keys(partyData).forEach(party => {
+      var option = document.createElement('option');
+      option.value = party;
+      option.textContent = party;
+      partySelect.appendChild(option);
+    });
+
+    updateMap('2025', 'SPD');
+  </script>
 </body>
-
 </html>
