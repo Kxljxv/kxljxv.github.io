@@ -55,31 +55,6 @@
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
       z-index: 10;
     }
-    /* Wir entfernen hier die eigenen Anpassungen für .maplibregl-ctrl button,
-       sodass die von MapLibre vorgegebenen dunklen Controls genutzt werden. */
-    /*
-    .maplibregl-ctrl button {
-      background-color: var(--control-bg-color);
-      border: none;
-      color: var(--text-primary);
-      border-radius: 9999px;
-      width: 2.5rem;
-      height: 2.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .maplibregl-ctrl button svg {
-      width: 1.5rem;
-      height: 1.5rem;
-      stroke: var(--text-primary);
-    }
-    */
-    /* Attribution und Logo ausblenden */
-    .maplibregl-ctrl-attrib,
-    .maplibregl-ctrl-logo {
-      display: none;
-    }
     /* Vollbild-Button: links oben, rundes Icon */
     #fullscreenButton {
       position: absolute;
@@ -91,6 +66,32 @@
       padding: 0.5rem;
       border-radius: 9999px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+    /* Custom Map Controls: Container für Zoom und Standort-Buttons */
+    #customMapControls {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 20;
+    }
+    #customMapControls button {
+      background-color: var(--control-bg-color);
+      color: var(--text-primary);
+      border: none;
+      border-radius: 9999px;
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      transition: background-color 0.2s ease;
+    }
+    #customMapControls button:hover {
+      background-color: var(--accent-color);
     }
     /* Horizontal Radio List Group im Vollbildmodus */
     #fullscreenYearSwitch {
@@ -115,7 +116,7 @@
     }
   </style>
 
-  <!-- JS-Farben als Konstanten (für den Skriptteil) -->
+  <!-- JS-Farben als Konstanten -->
   <script>
     const COLORS = {
       bg: "#232221",
@@ -178,17 +179,36 @@
     </div>
   </div>
   
-  <!-- Kartencontainer mit Vollbild-Button -->
+  <!-- Kartencontainer mit Vollbild-Button und eigenen Flowbite-Steuerelementen -->
   <div id="mapContainer" class="relative w-4/5 h-[70vh] my-6 rounded-xl shadow-lg">
     <div id="map" class="w-full h-full rounded-xl"></div>
+    <!-- Vollbild-Button (links oben) -->
     <button id="fullscreenButton" title="Vollbild">
-      <!-- Vollbild-Symbol (SVG) -->
       <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4h4M20 16v4h-4M4 16v4h4M20 8V4h-4"></path>
       </svg>
     </button>
-    <!-- Horizontal Radio List Group im Vollbildmodus -->
-    <div id="fullscreenYearSwitch" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4 bg-[var(--control-bg-color)] p-2 rounded-full">
+    <!-- Eigene Map Controls: Flowbite Buttons für Zoom und Standort (rechts oben) -->
+    <div id="customMapControls">
+      <button id="zoomInBtn" title="Zoom in">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+        </svg>
+      </button>
+      <button id="zoomOutBtn" title="Zoom out">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4"></path>
+        </svg>
+      </button>
+      <button id="locateBtn" title="Standort anzeigen">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.24 7.76a6 6 0 11-8.48 0 6 6 0 018.48 0z"/>
+        </svg>
+      </button>
+    </div>
+    <!-- Horizontal Radio List Group im Vollbildmodus (für Jahreswechsel) -->
+    <div id="fullscreenYearSwitch" class="flex gap-4">
       <label class="flex items-center gap-2">
         <input type="radio" name="fsYear" value="2021" class="form-radio" style="color: var(--accent-color);">
         <span>2021</span>
@@ -268,14 +288,12 @@
       "FWinkBW": "FW",
       "MLPDinkBW": "MLPD"
     };
-
     var partyMapping = {
       "LINKEinkBW": "LinkeinkBW",
       "VoltDeutschlandinkBW": "VoltinkBW",
       "LinkeinkBW": "LINKEinkBW",
       "VoltinkBW": "VoltDeutschlandinkBW"
     };
-
     var partyColorGradients = {
       "WahlbeteiligunginkBW": { min: "#FFF7F5", max: "#002617" },
       "SPDinkBW": { min: "#FFF7F5", max: "#570000" },
@@ -292,7 +310,6 @@
       "FWinkBW": { min: "#FFF7F5", max: "#9C4900" },
       "MLPDinkBW": { min: "#FFF7F5", max: "#8C142A" }
     };
-
     var dataset2025 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
       partyRanges: {
@@ -315,7 +332,6 @@
         "VoltDeutschlandinkBW", "FWinkBW", "MLPDinkBW"
       ]
     };
-
     var dataset2021 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2021.json',
       partyRanges: {
@@ -337,11 +353,9 @@
         "VoltinkBW", "FWinkBW", "MLPDinkBW"
       ]
     };
-
     var currentDataset = dataset2025;
     var currentParty = "WahlbeteiligunginkBW";
     var geojsonData = null;
-
     function hexToRgb(hex) {
       hex = hex.replace(/^#/, '');
       if (hex.length === 3) { hex = hex.split('').map(c => c + c).join(''); }
@@ -374,8 +388,6 @@
       });
       return data;
     }
-    
-    // Maplibre Map initialisieren (nur Berlin, minZoom 10, Begrenzung auf Berliner Gebiet)
     var map = new maplibregl.Map({
       container: 'map',
       style: 'https://kxljxv.github.io/bm_web_gry_7.json',
@@ -385,30 +397,28 @@
       maxBounds: [[13.0884, 52.3383], [13.7612, 52.6755]],
       attributionControl: false
     });
-    // Verwende die eingebauten Controls von MapLibre (dunkle Zoom Buttons etc.)
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
-    // Verwende die eingebaute GeolocateControl von MapLibre
-    map.addControl(new maplibregl.GeolocateControl({
-         positionOptions: { enableHighAccuracy: true },
-         trackUserLocation: true,
-         showUserHeading: true
-    }), 'top-right');
     map.dragRotate.disable();
     map.touchZoomRotate.disableRotation();
-    
-    // Vollbild-Button
     document.getElementById('fullscreenButton').addEventListener('click', function() {
       let elem = document.getElementById('mapContainer');
       if (!document.fullscreenElement) {
-        elem.requestFullscreen().catch(err => {
-          console.error(`Fehler beim Aktivieren des Vollbilds: ${err.message} (${err.name})`);
-        });
+        elem.requestFullscreen().catch(err => { console.error(`Fehler beim Aktivieren des Vollbilds: ${err.message} (${err.name})`); });
       } else {
         document.exitFullscreen();
       }
     });
-    
-    // Partei-Dropdown befüllen
+    // Eigene Flowbite Buttons für Zoom & Location
+    document.getElementById("zoomInBtn").addEventListener("click", function() { map.zoomIn(); });
+    document.getElementById("zoomOutBtn").addEventListener("click", function() { map.zoomOut(); });
+    document.getElementById("locateBtn").addEventListener("click", function() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          map.flyTo({ center: [position.coords.longitude, position.coords.latitude] });
+        });
+      } else {
+        alert('Geolocation wird in diesem Browser nicht unterstützt.');
+      }
+    });
     function populatePartyDropdown() {
       var partyContainer = document.getElementById('dropdownPartyContent');
       partyContainer.innerHTML = "";
@@ -421,43 +431,32 @@
       });
       document.getElementById('selectedParty').innerText = partyDisplayNames[currentParty] || currentParty;
     }
-    
     document.addEventListener('change', function(e) {
       if (e.target.name === 'party') {
         currentParty = e.target.value;
         document.getElementById('selectedParty').innerText = partyDisplayNames[currentParty] || currentParty;
         if (geojsonData) {
           geojsonData = updateGeojsonData(geojsonData);
-          if (map.getSource('geojson-layer')) {
-            map.getSource('geojson-layer').setData(geojsonData);
-          }
+          if (map.getSource('geojson-layer')) { map.getSource('geojson-layer').setData(geojsonData); }
         }
       }
       if (e.target.name === 'year') {
         var selectedYear = e.target.value;
         document.getElementById('selectedYear').innerText = selectedYear;
-        if (selectedYear === "2025") {
-          currentDataset = dataset2025;
-        } else if (selectedYear === "2021") {
-          currentDataset = dataset2021;
-        }
-        if (!currentDataset.availableParties.includes(currentParty)) {
-          currentParty = "WahlbeteiligunginkBW";
-        }
+        if (selectedYear === "2025") { currentDataset = dataset2025; }
+        else if (selectedYear === "2021") { currentDataset = dataset2021; }
+        if (!currentDataset.availableParties.includes(currentParty)) { currentParty = "WahlbeteiligunginkBW"; }
         populatePartyDropdown();
         loadGeoJson();
       }
     });
-    
-    // Lädt die GeoJSON-Daten und fügt den Polygon-Layer hinter die Basemap ein
     function loadGeoJson() {
       fetch(currentDataset.url)
         .then(response => response.json())
         .then(data => {
           geojsonData = updateGeojsonData(data);
-          if (map.getSource('geojson-layer')) {
-            map.getSource('geojson-layer').setData(geojsonData);
-          } else {
+          if (map.getSource('geojson-layer')) { map.getSource('geojson-layer').setData(geojsonData); }
+          else {
             map.addSource('geojson-layer', { type: 'geojson', data: geojsonData });
             var firstLayerId = map.getStyle().layers[0].id;
             map.addLayer({
@@ -479,8 +478,6 @@
         })
         .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
     }
-    
-    // Popup beim Klick auf ein Polygon
     map.on('click', 'geojson-fill', function(e) {
       if (!e.features.length) return;
       var feature = e.features[0];
@@ -489,39 +486,24 @@
       var popupContent = '<b>' + feature.properties.UWB + '</b><br>' +
                          'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
                          'Ergebnis: ' + percent + ' (' + partyDisplayNames[currentParty] + ')';
-      new maplibregl.Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(popupContent)
-        .addTo(map);
+      new maplibregl.Popup().setLngLat(e.lngLat).setHTML(popupContent).addTo(map);
     });
     map.on('mouseenter', 'geojson-fill', function() { map.getCanvas().style.cursor = 'pointer'; });
     map.on('mouseleave', 'geojson-fill', function() { map.getCanvas().style.cursor = ''; });
-    
     populatePartyDropdown();
     map.on('load', loadGeoJson);
-    
-    // Horizontal Radio Group im Vollbildmodus
     document.querySelectorAll('input[name="fsYear"]').forEach(input => {
       input.addEventListener('change', function(e) {
         const selectedYear = e.target.value;
-        if (selectedYear === "2025") {
-          currentDataset = dataset2025;
-        } else if (selectedYear === "2021") {
-          currentDataset = dataset2021;
-        }
+        if (selectedYear === "2025") { currentDataset = dataset2025; }
+        else if (selectedYear === "2021") { currentDataset = dataset2021; }
         document.getElementById('selectedYear').innerText = selectedYear;
         loadGeoJson();
       });
     });
-    
-    // Zeige/Verrberge die horizontale Radio Group, je nach Vollbildstatus
     document.addEventListener('fullscreenchange', function() {
       const fsSwitch = document.getElementById('fullscreenYearSwitch');
-      if (document.fullscreenElement) {
-        fsSwitch.style.display = 'flex';
-      } else {
-        fsSwitch.style.display = 'none';
-      }
+      fsSwitch.style.display = document.fullscreenElement ? 'flex' : 'none';
     });
   </script>
   
