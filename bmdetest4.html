@@ -15,18 +15,17 @@
   <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
   
   <style>
-    /* Dunkles Grunddesign */
+    /* Dunkles Grundlayout */
     body {
       background-color: #232221;
       color: #ececeb;
       font-family: Arial, sans-serif;
     }
-    /* Überschreibe Maplibre-Controls für dunkle Buttons */
-    .maplibregl-ctrl button {
-      background-color: #2d2d2b;
-      border: none;
-      color: #ececeb;
+    /* Überschreibe Maplibre-Controls: entferne die Attribution */
+    .maplibregl-ctrl-attrib {
+      display: none;
     }
+    /* Zusätzliche Anpassungen an den Flowbite-Radio-Buttons können hier vorgenommen werden */
   </style>
 </head>
 <body class="min-h-screen flex flex-col items-center">
@@ -37,23 +36,32 @@
     </p>
   </header>
   
-  <!-- Steuerungsbereich: Wahljahr- und Parteiauswahl (Flowbite-Style) -->
-  <div class="w-full max-w-2xl mt-6 flex flex-wrap gap-4 justify-center">
-    <div class="w-48">
-      <label for="datasetSelect" class="block mb-2 text-sm font-medium text-[#ececeb]">Wahljahr:</label>
-      <select id="datasetSelect" class="bg-[#2d2d2b] border border-[#a6a39a] text-[#ececeb] text-sm rounded-lg focus:ring-[#a3512b] focus:border-[#a3512b] block w-full p-2.5">
-        <option value="2025" selected>2025</option>
-        <option value="2021">2021</option>
-      </select>
+  <!-- Steuerungsbereich: Wahljahr- und Parteiauswahl via Flowbite Radio-Buttons -->
+  <div class="w-full max-w-2xl mt-6 flex flex-wrap gap-8 justify-center">
+    <!-- Wahljahr-Radio-Gruppe -->
+    <div class="flex flex-col items-start">
+      <span class="block mb-2 text-sm font-medium">Wahljahr:</span>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center">
+          <input id="dataset2025" type="radio" name="dataset" value="2025" class="w-4 h-4 text-[#a3512b] bg-[#2d2d2b] border-gray-300 focus:ring-[#a3512b]" checked>
+          <label for="dataset2025" class="ml-2 text-sm font-medium">2025</label>
+        </div>
+        <div class="flex items-center">
+          <input id="dataset2021" type="radio" name="dataset" value="2021" class="w-4 h-4 text-[#a3512b] bg-[#2d2d2b] border-gray-300 focus:ring-[#a3512b]">
+          <label for="dataset2021" class="ml-2 text-sm font-medium">2021</label>
+        </div>
+      </div>
     </div>
-    <div class="w-48">
-      <label for="partySelect" class="block mb-2 text-sm font-medium text-[#ececeb]">Partei:</label>
-      <select id="partySelect" class="bg-[#2d2d2b] border border-[#a6a39a] text-[#ececeb] text-sm rounded-lg focus:ring-[#a3512b] focus:border-[#a3512b] block w-full p-2.5">
-      </select>
+    <!-- Partei-Radio-Gruppe -->
+    <div class="flex flex-col items-start">
+      <span class="block mb-2 text-sm font-medium">Partei:</span>
+      <div id="partyRadioGroup" class="flex flex-wrap gap-4">
+        <!-- Hier werden die Flowbite-Radio-Buttons dynamisch per JS eingefügt -->
+      </div>
     </div>
   </div>
   
-  <!-- Kartencontainer (unverändert) -->
+  <!-- Kartencontainer (Maplibre, Attribution deaktiviert) -->
   <div id="map" class="w-4/5 h-[70vh] my-6 rounded-xl shadow-lg"></div>
   
   <!-- Accordion unter der Karte (Flowbite) -->
@@ -61,7 +69,7 @@
     <div id="accordion-collapse" data-accordion="collapse">
       <!-- Accordion Item 1 -->
       <h2 id="accordion-collapse-heading-1">
-        <button type="button" class="flex items-center justify-between w-full p-5 font-medium text-left text-[#ececeb] bg-[#2d2d2b] border border-b-0 border-[#a6a39a] rounded-t-xl focus:ring-4 focus:ring-[#a3512b]" data-accordion-target="#accordion-collapse-body-1" aria-expanded="true" aria-controls="accordion-collapse-body-1">
+        <button type="button" class="flex items-center justify-between w-full p-5 font-medium text-left bg-[#2d2d2b] border border-b-0 border-[#a6a39a] rounded-t-xl focus:ring-4 focus:ring-[#a3512b]" data-accordion-target="#accordion-collapse-body-1" aria-expanded="true" aria-controls="accordion-collapse-body-1">
           <span>Accordion Item 1</span>
           <svg data-accordion-icon class="w-6 h-6 shrink-0 transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"></path>
@@ -75,7 +83,7 @@
       </div>
       <!-- Accordion Item 2 -->
       <h2 id="accordion-collapse-heading-2">
-        <button type="button" class="flex items-center justify-between w-full p-5 font-medium text-left text-[#ececeb] bg-[#2d2d2b] border border-b-0 border-[#a6a39a] focus:ring-4 focus:ring-[#a3512b]" data-accordion-target="#accordion-collapse-body-2" aria-expanded="false" aria-controls="accordion-collapse-body-2">
+        <button type="button" class="flex items-center justify-between w-full p-5 font-medium text-left bg-[#2d2d2b] border border-b-0 border-[#a6a39a] focus:ring-4 focus:ring-[#a3512b]" data-accordion-target="#accordion-collapse-body-2" aria-expanded="false" aria-controls="accordion-collapse-body-2">
           <span>Accordion Item 2</span>
           <svg data-accordion-icon class="w-6 h-6 shrink-0 transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"></path>
@@ -89,7 +97,7 @@
       </div>
       <!-- Accordion Item 3 -->
       <h2 id="accordion-collapse-heading-3">
-        <button type="button" class="flex items-center justify-between w-full p-5 font-medium text-left text-[#ececeb] bg-[#2d2d2b] border border-t-0 border-[#a6a39a] rounded-b-xl focus:ring-4 focus:ring-[#a3512b]" data-accordion-target="#accordion-collapse-body-3" aria-expanded="false" aria-controls="accordion-collapse-body-3">
+        <button type="button" class="flex items-center justify-between w-full p-5 font-medium text-left bg-[#2d2d2b] border border-t-0 border-[#a6a39a] rounded-b-xl focus:ring-4 focus:ring-[#a3512b]" data-accordion-target="#accordion-collapse-body-3" aria-expanded="false" aria-controls="accordion-collapse-body-3">
           <span>Accordion Item 3</span>
           <svg data-accordion-icon class="w-6 h-6 shrink-0 transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"></path>
@@ -104,7 +112,7 @@
     </div>
   </div>
   
-  <!-- Maplibre & Anwendungsscript (unverändert) -->
+  <!-- Maplibre & Anwendungsscript -->
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
   <script>
     // Anzeige-Namen und Mapping der Parteien
@@ -246,17 +254,18 @@
       return data;
     }
     
-    // Initialisiere die Maplibre Map mit der modifizierten Basemap
+    // Initialisiere die Maplibre Map (Attribution deaktiviert)
     var map = new maplibregl.Map({
       container: 'map',
       style: 'https://kxljxv.github.io/bm_web_gry_7.json',
       center: [13.40, 52.52],
-      zoom: 10
+      zoom: 10,
+      attributionControl: false
     });
     
     map.addControl(new maplibregl.NavigationControl());
     
-    // Lade die GeoJSON-Daten und füge den Polygon-Layer HINTER die Basemap ein
+    // Lade die GeoJSON-Daten und füge den Polygon-Layer hinter die Basemap ein
     function loadGeoJson() {
       fetch(currentDataset.url)
         .then(response => response.json())
@@ -265,11 +274,11 @@
           if (map.getSource('geojson-layer')) {
             map.getSource('geojson-layer').setData(geojsonData);
           } else {
-            // Füge den GeoJSON-Layer HINTER die Basemap ein
             map.addSource('geojson-layer', {
               type: 'geojson',
               data: geojsonData
             });
+            // Den GeoJSON-Layer unter den ersten Layer einfügen
             var firstLayerId = map.getStyle().layers[0].id;
             map.addLayer({
               id: 'geojson-fill',
@@ -291,64 +300,60 @@
         .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
     }
     
-    // Funktionen für die Parteien-Auswahl
-    function isPartyAvailable(party, dataset) {
-      return dataset.availableParties.includes(party);
-    }
-    
-    function findEquivalentParty(party, targetDataset) {
-      if (partyMapping[party] && isPartyAvailable(partyMapping[party], targetDataset)) {
-        return partyMapping[party];
-      }
-      if (isPartyAvailable(party, targetDataset)) {
-        return party;
-      }
-      return "WahlbeteiligunginkBW";
-    }
-    
-    function populatePartySelect() {
-      var partySelect = document.getElementById('partySelect');
-      var currentValue = partySelect.value;
-      partySelect.innerHTML = "";
+    // Funktion zur Erstellung der Partei-Radio-Gruppe (anstelle des alten Dropdowns)
+    function populatePartyRadioGroup() {
+      var container = document.getElementById('partyRadioGroup');
+      container.innerHTML = "";
       currentDataset.availableParties.forEach(function(key) {
-        var option = document.createElement('option');
-        option.value = key;
-        option.text = partyDisplayNames[key] || key;
-        partySelect.appendChild(option);
+        var radioId = 'party_' + key;
+        var radioDiv = document.createElement('div');
+        radioDiv.className = 'flex items-center';
+        
+        var radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'party';
+        radio.id = radioId;
+        radio.value = key;
+        radio.className = 'w-4 h-4 text-[#a3512b] bg-[#2d2d2b] border-gray-300 focus:ring-[#a3512b]';
+        if (key === currentParty) {
+          radio.checked = true;
+        }
+        radio.addEventListener('change', function(e) {
+          currentParty = e.target.value;
+          if (geojsonData) {
+            geojsonData = updateGeojsonData(geojsonData);
+            if (map.getSource('geojson-layer')) {
+              map.getSource('geojson-layer').setData(geojsonData);
+            }
+          }
+        });
+        
+        var label = document.createElement('label');
+        label.htmlFor = radioId;
+        label.textContent = partyDisplayNames[key] || key;
+        label.className = 'ml-2 text-sm font-medium';
+        
+        radioDiv.appendChild(radio);
+        radioDiv.appendChild(label);
+        container.appendChild(radioDiv);
       });
-      if (currentValue && isPartyAvailable(currentValue, currentDataset)) {
-        partySelect.value = currentValue;
-        currentParty = currentValue;
-      } else if (currentValue) {
-        var equivalentParty = findEquivalentParty(currentValue, currentDataset);
-        partySelect.value = equivalentParty;
-        currentParty = equivalentParty;
-      } else {
-        currentParty = partySelect.value;
-      }
     }
     
-    // Wechsel der Partei
-    document.getElementById('partySelect').addEventListener('change', function(e) {
-      currentParty = e.target.value;
-      if (geojsonData) {
-        geojsonData = updateGeojsonData(geojsonData);
-        if (map.getSource('geojson-layer')) {
-          map.getSource('geojson-layer').setData(geojsonData);
+    // Event-Listener für die Wahljahr-Radio-Gruppe
+    document.querySelectorAll('input[name="dataset"]').forEach(function(radio) {
+      radio.addEventListener('change', function(e) {
+        if (e.target.checked) {
+          var selectedYear = e.target.value;
+          if (selectedYear === "2025") {
+            currentDataset = dataset2025;
+          } else if (selectedYear === "2021") {
+            currentDataset = dataset2021;
+          }
+          // Beim Wechsel der Datensätze auch die Partei-Radio-Gruppe neu aufbauen
+          populatePartyRadioGroup();
+          loadGeoJson();
         }
-      }
-    });
-    
-    // Wechsel des Datensatzes (Wahljahr)
-    document.getElementById('datasetSelect').addEventListener('change', function(e) {
-      var selectedYear = e.target.value;
-      if (selectedYear === "2025") {
-        currentDataset = dataset2025;
-      } else if (selectedYear === "2021") {
-        currentDataset = dataset2021;
-      }
-      populatePartySelect();
-      loadGeoJson();
+      });
     });
     
     // Popup beim Klick auf ein Polygon
@@ -374,8 +379,8 @@
       map.getCanvas().style.cursor = '';
     });
     
-    // Initialer Aufbau
-    populatePartySelect();
+    // Initialer Aufbau: Partei-Radio-Gruppe erstellen und GeoJSON laden
+    populatePartyRadioGroup();
     map.on('load', loadGeoJson);
   </script>
   
