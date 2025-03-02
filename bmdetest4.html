@@ -4,135 +4,107 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wahlergebnisse in Berlin – Maplibre Version</title>
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Flowbite CSS (kostenlose Version) -->
+  <link href="https://unpkg.com/flowbite@1.6.5/dist/flowbite.min.css" rel="stylesheet" />
+  
+  <!-- Maplibre CSS -->
   <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+  
   <style>
-    /* Allgemeine Seitenstruktur */
+    /* Dunkles Grunddesign */
     body {
-      margin: 0;
-      padding: 0;
+      background-color: #232221;
+      color: #ececeb;
       font-family: Arial, sans-serif;
-      background-color: #232221; /* dunkler Hintergrund */
-      color: #ececeb; /* heller Schriftton */
-      display: flex;
-      flex-direction: column;
-      align-items: center;
     }
-    h1 {
-      font-size: 2.2em;
-      margin-top: 30px;
-      text-align: center;
-      color: #ececeb;
-    }
-    p.description {
-      font-size: 1.1em;
-      text-align: center;
-      max-width: 800px;
-      margin-top: 15px;
-      color: #a6a39a;
-    }
-    /* Container für die Steuerung */
-    .controls {
-      margin-top: 20px;
-      display: flex;
-      gap: 20px;
-      align-items: center;
-    }
-    .controls > div {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    label {
-      font-size: 1em;
-      color: #ececeb;
-    }
-    /* Styling für native Selects in einem Wrapper für einen modernen Look */
-    .select-wrapper {
-      position: relative;
-      display: inline-block;
-    }
-    .select-wrapper select {
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
-      background-color: #2d2d2b;
-      color: #ececeb;
-      padding: 10px 40px 10px 15px;
-      border: 1px solid #a6a39a;
-      border-radius: 5px;
-      font-size: 1em;
-      outline: none;
-      cursor: pointer;
-      transition: border-color 0.3s;
-    }
-    .select-wrapper select:hover,
-    .select-wrapper select:focus {
-      border-color: #a3512b;
-    }
-    .select-wrapper::after {
-      content: "\25BC"; /* nach unten zeigender Pfeil */
-      position: absolute;
-      top: 50%;
-      right: 15px;
-      transform: translateY(-50%);
-      color: #a6a39a;
-      pointer-events: none;
-      font-size: 0.8em;
-    }
-    /* Mapcontainer bleibt unverändert */
-    #map {
-      width: 80%;
-      height: 70vh;
-      margin: 20px 0;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-    }
-    /* Anpassung der Maplibre Navigation Controls auf dunklen Hintergrund */
-    .maplibregl-ctrl-top-right, .maplibregl-ctrl-bottom-right {
-      background-color: transparent;
-    }
+    /* Überschreibe Maplibre-Controls für dunkle Buttons */
     .maplibregl-ctrl button {
       background-color: #2d2d2b;
-      color: #ececeb;
       border: none;
-      border-radius: 3px;
-      padding: 8px;
-      margin: 5px;
-      transition: background-color 0.3s;
-    }
-    .maplibregl-ctrl button:hover {
-      background-color: #a3512b;
+      color: #ececeb;
     }
   </style>
 </head>
-<body>
-  <h1>Wahlergebnisse in Berlin</h1>
-  <p class="description">
-    In diesen Karten sind die Urnen- und Briefwahlergebnisse auf Urnenwahlbezirksebene visualisiert.
-  </p>
-
-  <!-- Steuerung: Wahljahr und Partei-Auswahl -->
-  <div class="controls">
-    <div>
-      <label for="datasetSelect">Wahljahr:</label>
-      <div class="select-wrapper">
-        <select id="datasetSelect">
-          <option value="2025" selected>2025</option>
-          <option value="2021">2021</option>
-        </select>
-      </div>
+<body class="min-h-screen flex flex-col items-center">
+  <header class="mt-8 text-center">
+    <h1 class="text-3xl font-bold mb-4">Wahlergebnisse in Berlin</h1>
+    <p class="text-lg text-[#a6a39a] max-w-2xl mx-auto">
+      In diesen Karten sind die Urnen- und Briefwahlergebnisse auf Urnenwahlbezirksebene visualisiert.
+    </p>
+  </header>
+  
+  <!-- Steuerungsbereich: Wahljahr- und Parteiauswahl (Flowbite-Style) -->
+  <div class="w-full max-w-2xl mt-6 flex flex-wrap gap-4 justify-center">
+    <div class="w-48">
+      <label for="datasetSelect" class="block mb-2 text-sm font-medium text-[#ececeb]">Wahljahr:</label>
+      <select id="datasetSelect" class="bg-[#2d2d2b] border border-[#a6a39a] text-[#ececeb] text-sm rounded-lg focus:ring-[#a3512b] focus:border-[#a3512b] block w-full p-2.5">
+        <option value="2025" selected>2025</option>
+        <option value="2021">2021</option>
+      </select>
     </div>
-    <div>
-      <label for="partySelect">Partei:</label>
-      <div class="select-wrapper">
-        <select id="partySelect"></select>
+    <div class="w-48">
+      <label for="partySelect" class="block mb-2 text-sm font-medium text-[#ececeb]">Partei:</label>
+      <select id="partySelect" class="bg-[#2d2d2b] border border-[#a6a39a] text-[#ececeb] text-sm rounded-lg focus:ring-[#a3512b] focus:border-[#a3512b] block w-full p-2.5">
+      </select>
+    </div>
+  </div>
+  
+  <!-- Kartencontainer (unverändert) -->
+  <div id="map" class="w-4/5 h-[70vh] my-6 rounded-xl shadow-lg"></div>
+  
+  <!-- Accordion unter der Karte (Flowbite) -->
+  <div class="w-full max-w-2xl mb-8">
+    <div id="accordion-collapse" data-accordion="collapse">
+      <!-- Accordion Item 1 -->
+      <h2 id="accordion-collapse-heading-1">
+        <button type="button" class="flex items-center justify-between w-full p-5 font-medium text-left text-[#ececeb] bg-[#2d2d2b] border border-b-0 border-[#a6a39a] rounded-t-xl focus:ring-4 focus:ring-[#a3512b]" data-accordion-target="#accordion-collapse-body-1" aria-expanded="true" aria-controls="accordion-collapse-body-1">
+          <span>Accordion Item 1</span>
+          <svg data-accordion-icon class="w-6 h-6 shrink-0 transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"></path>
+          </svg>
+        </button>
+      </h2>
+      <div id="accordion-collapse-body-1" class="hidden" aria-labelledby="accordion-collapse-heading-1">
+        <div class="p-5 border border-t-0 border-[#a6a39a] bg-[#2d2d2b]">
+          <p class="text-[#a6a39a]">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent euismod, justo a efficitur facilisis, lorem nulla dapibus magna.</p>
+        </div>
+      </div>
+      <!-- Accordion Item 2 -->
+      <h2 id="accordion-collapse-heading-2">
+        <button type="button" class="flex items-center justify-between w-full p-5 font-medium text-left text-[#ececeb] bg-[#2d2d2b] border border-b-0 border-[#a6a39a] focus:ring-4 focus:ring-[#a3512b]" data-accordion-target="#accordion-collapse-body-2" aria-expanded="false" aria-controls="accordion-collapse-body-2">
+          <span>Accordion Item 2</span>
+          <svg data-accordion-icon class="w-6 h-6 shrink-0 transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"></path>
+          </svg>
+        </button>
+      </h2>
+      <div id="accordion-collapse-body-2" class="hidden" aria-labelledby="accordion-collapse-heading-2">
+        <div class="p-5 border border-t-0 border-[#a6a39a] bg-[#2d2d2b]">
+          <p class="text-[#a6a39a]">Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+        </div>
+      </div>
+      <!-- Accordion Item 3 -->
+      <h2 id="accordion-collapse-heading-3">
+        <button type="button" class="flex items-center justify-between w-full p-5 font-medium text-left text-[#ececeb] bg-[#2d2d2b] border border-t-0 border-[#a6a39a] rounded-b-xl focus:ring-4 focus:ring-[#a3512b]" data-accordion-target="#accordion-collapse-body-3" aria-expanded="false" aria-controls="accordion-collapse-body-3">
+          <span>Accordion Item 3</span>
+          <svg data-accordion-icon class="w-6 h-6 shrink-0 transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"></path>
+          </svg>
+        </button>
+      </h2>
+      <div id="accordion-collapse-body-3" class="hidden" aria-labelledby="accordion-collapse-heading-3">
+        <div class="p-5 border border-t-0 border-[#a6a39a] bg-[#2d2d2b]">
+          <p class="text-[#a6a39a]">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- Mapcontainer -->
-  <div id="map"></div>
-
+  
+  <!-- Maplibre & Anwendungsscript (unverändert) -->
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
   <script>
     // Anzeige-Namen und Mapping der Parteien
@@ -293,6 +265,7 @@
           if (map.getSource('geojson-layer')) {
             map.getSource('geojson-layer').setData(geojsonData);
           } else {
+            // Füge den GeoJSON-Layer HINTER die Basemap ein
             map.addSource('geojson-layer', {
               type: 'geojson',
               data: geojsonData
@@ -405,5 +378,8 @@
     populatePartySelect();
     map.on('load', loadGeoJson);
   </script>
+  
+  <!-- Flowbite JS für interaktive Komponenten (Accordion etc.) -->
+  <script src="https://unpkg.com/flowbite@1.6.5/dist/flowbite.js"></script>
 </body>
 </html>
