@@ -22,6 +22,8 @@
       --text-primary: #ececeb;
       --text-secondary: #a6a39a;
       --border-color: #a6a39a;
+      /* Popup soll nicht rein schwarz, sondern ähnlich wie der Body sein */
+      --popup-bg: var(--bg-color);
     }
     /* Globales Layout */
     body {
@@ -55,13 +57,20 @@
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
       z-index: 10;
     }
-    /* Popup-Styling: schwarzer Hintergrund, weiße Tip */
+    /* Popup-Styling: dunkler Hintergrund, aber nicht reines Schwarz, mit ausreichend Padding */
     .maplibregl-popup-content {
-      background-color: #000 !important;
+      background-color: var(--popup-bg) !important;
       color: var(--text-primary);
+      padding: 0.75rem 1rem !important;
+      border-radius: 0.5rem !important;
     }
+    /* Den Popup-Tip in ein echtes Dreieck verwandeln */
     .maplibregl-popup-tip {
-      border-color: #000 !important;
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent !important;
+      border-right: 10px solid transparent !important;
+      border-top: 10px solid var(--popup-bg) !important;
     }
     /* Custom Map Controls: Container für Zoom & Location */
     #customMapControls {
@@ -89,7 +98,7 @@
     #customMapControls button:hover {
       background-color: var(--accent-color);
     }
-    /* Verhindere, dass die Buttons nach Klick "fest" bleiben */
+    /* Verhindere, dass die Buttons nach dem Drücken "fest" bleiben */
     #customMapControls button:active,
     #customMapControls button:focus {
       background-color: var(--control-bg-color);
@@ -132,23 +141,18 @@
       color: var(--text-primary);
       font-weight: 500;
     }
-    /* Flush Accordion (minimalistisch, alle Items standardmäßig geschlossen) */
+    /* Flush Accordion: keine abgesetzten Hintergründe, alles in var(--bg-color) */
     .accordion-flush .accordion-item {
-      border-bottom: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--bg-color);
     }
-    .accordion-flush .accordion-header {
-      background-color: var(--control-bg-color);
-      padding: 1rem;
-    }
-    .accordion-flush .accordion-button {
-      width: 100%;
-      text-align: left;
+    .accordion-flush .accordion-header,
+    .accordion-flush .accordion-button,
+    .accordion-flush .accordion-content {
+      background-color: var(--bg-color);
       color: var(--text-primary);
-      font-weight: 500;
+      padding: 1rem;
     }
     .accordion-flush .accordion-content {
-      background-color: var(--control-bg-color);
-      padding: 1rem;
       display: none;
     }
   </style>
@@ -257,7 +261,7 @@
     </div>
   </div>
   
-  <!-- Flush Accordion (alle Items standardmäßig geschlossen) -->
+  <!-- Flush Accordion (alle Items standardmäßig geschlossen, Hintergrund passt sich an) -->
   <div class="w-full max-w-2xl mb-8 accordion-flush">
     <div class="accordion-item">
       <div class="accordion-header">
@@ -439,16 +443,12 @@
           const coords = [position.coords.longitude, position.coords.latitude];
           map.flyTo({ center: coords });
           // Zeige einen Marker an der Position des Nutzers
-          if (window.userLocationMarker) {
-            window.userLocationMarker.remove();
-          }
+          if (window.userLocationMarker) { window.userLocationMarker.remove(); }
           window.userLocationMarker = new maplibregl.Marker({ color: COLORS.accent })
             .setLngLat(coords)
             .addTo(map);
         });
-      } else {
-        alert('Geolocation wird in diesem Browser nicht unterstützt.');
-      }
+      } else { alert('Geolocation wird in diesem Browser nicht unterstützt.'); }
     });
     function populatePartyDropdown() {
       var partyContainer = document.getElementById('dropdownPartyContent');
@@ -536,7 +536,7 @@
       const fsSwitch = document.getElementById('fullscreenYearSwitch');
       fsSwitch.style.display = document.fullscreenElement ? 'flex' : 'none';
     });
-    // Flush Accordion – einfache Toggle-Logik (alle Items standardmäßig geschlossen)
+    // Flush Accordion – einfache Toggle-Logik
     document.querySelectorAll('.accordion-button').forEach(button => {
       button.addEventListener('click', function() {
         const target = document.querySelector(this.getAttribute('data-accordion-target'));
