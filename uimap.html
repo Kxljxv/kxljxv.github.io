@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wahlergebnisse in Berlin</title>
+  <title>Wahlergebnisse in Berlin – Maplibre Version</title>
 
   <!-- Tailwind CSS (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -55,28 +55,6 @@
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
       z-index: 10;
     }
-    /* Maplibre-Controls: Runder Look für Zoom-Buttons und farbige SVGs */
-    .maplibregl-ctrl button {
-      background-color: var(--control-bg-color);
-      border: none;
-      color: var(--text-primary);
-      border-radius: 9999px;
-      width: 2.5rem;
-      height: 2.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .maplibregl-ctrl button svg {
-      width: 1.5rem;
-      height: 1.5rem;
-      stroke: var(--text-primary);
-    }
-    /* Attribution und Logo ausblenden */
-    .maplibregl-ctrl-attrib,
-    .maplibregl-ctrl-logo {
-      display: none;
-    }
     /* Vollbild-Button: links oben, rundes Icon */
     #fullscreenButton {
       position: absolute;
@@ -89,7 +67,7 @@
       border-radius: 9999px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     }
-    /* Horizontal Radio List Group im Vollbildmodus */
+    /* Horizontale Radio List Group im Vollbildmodus */
     #fullscreenYearSwitch {
       position: absolute;
       bottom: 1rem;
@@ -109,17 +87,6 @@
       cursor: pointer;
       color: var(--text-primary);
       font-weight: 500;
-    }
-    /* Optische Verbesserung für custom Geolocate-Button */
-    .geolocate-btn {
-      border-radius: 9999px;
-      width: 2.5rem;
-      height: 2.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: var(--control-bg-color);
-      color: var(--text-primary);
     }
   </style>
 
@@ -195,8 +162,8 @@
         <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4h4M20 16v4h-4M4 16v4h4M20 8V4h-4"></path>
       </svg>
     </button>
-    <!-- Horizontal Radio List Group im Vollbildmodus -->
-    <div id="fullscreenYearSwitch" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4 bg-[var(--control-bg-color)] p-2 rounded-full">
+    <!-- Horizontale Radio List Group im Vollbildmodus -->
+    <div id="fullscreenYearSwitch" class="flex gap-4">
       <label class="flex items-center gap-2">
         <input type="radio" name="fsYear" value="2021" class="form-radio" style="color: var(--accent-color);">
         <span>2021</span>
@@ -350,7 +317,6 @@
     var currentParty = "WahlbeteiligunginkBW";
     var geojsonData = null;
 
-    // Hilfsfunktionen zur Farbinterpolation
     function hexToRgb(hex) {
       hex = hex.replace(/^#/, '');
       if (hex.length === 3) { hex = hex.split('').map(c => c + c).join(''); }
@@ -384,19 +350,24 @@
       return data;
     }
     
-    // Maplibre Map initialisieren (nur in Berlin, minZoom 10)
+    // Maplibre Map initialisieren – Begrenzung auf Berlin, minZoom 10
     var map = new maplibregl.Map({
       container: 'map',
       style: 'https://kxljxv.github.io/bm_web_gry_7.json',
       center: [13.40, 52.52],
       zoom: 10,
       minZoom: 10,
-      maxBounds: [[12.5884, 51.8383], [14.2612, 53.1755]],
+      maxBounds: [[13.0884, 52.3383], [13.7612, 52.6755]],
       attributionControl: false
     });
+    
+    // NavigationControl (nur Zoom) und integrierte GeolocateControl
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
-    map.dragRotate.disable();
-    map.touchZoomRotate.disableRotation();
+    map.addControl(new maplibregl.GeolocateControl({
+      positionOptions: { enableHighAccuracy: true },
+      trackUserLocation: true,
+      showAccuracyCircle: false
+    }), 'top-right');
     
     // Vollbild-Button
     document.getElementById('fullscreenButton').addEventListener('click', function() {
@@ -409,36 +380,6 @@
         document.exitFullscreen();
       }
     });
-    
-    // Eigene Geolocate-Control (Standort-Button)
-    class GeolocateControl {
-      onAdd(map) {
-        this._map = map;
-        this._container = document.createElement('div');
-        this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.title = 'Standort anzeigen';
-        button.className = 'geolocate-btn';
-        button.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8a4 4 0 100 8 4 4 0 000-8z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.24 7.76a6 6 0 11-8.48 0 6 6 0 018.48 0z"/></svg>';
-        button.addEventListener('click', function() {
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-              map.flyTo({ center: [position.coords.longitude, position.coords.latitude] });
-            });
-          } else {
-            alert('Geolocation wird in diesem Browser nicht unterstützt.');
-          }
-        });
-        this._container.appendChild(button);
-        return this._container;
-      }
-      onRemove() {
-        this._container.parentNode.removeChild(this._container);
-        this._map = undefined;
-      }
-    }
-    map.addControl(new GeolocateControl(), 'top-right');
     
     // Partei-Dropdown befüllen
     function populatePartyDropdown() {
@@ -454,7 +395,6 @@
       document.getElementById('selectedParty').innerText = partyDisplayNames[currentParty] || currentParty;
     }
     
-    // Event-Listener für Partei- und Jahrsauswahl (Dropdowns)
     document.addEventListener('change', function(e) {
       if (e.target.name === 'party') {
         currentParty = e.target.value;
@@ -482,7 +422,7 @@
       }
     });
     
-    // Lädt die GeoJSON-Daten und fügt den Polygon-Layer hinter die Basemap ein
+    // Lädt GeoJSON-Daten und fügt den Polygon-Layer hinter die Basemap ein
     function loadGeoJson() {
       fetch(currentDataset.url)
         .then(response => response.json())
@@ -513,7 +453,6 @@
         .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
     }
     
-    // Popup beim Klick auf ein Polygon
     map.on('click', 'geojson-fill', function(e) {
       if (!e.features.length) return;
       var feature = e.features[0];
@@ -527,13 +466,18 @@
         .setHTML(popupContent)
         .addTo(map);
     });
-    map.on('mouseenter', 'geojson-fill', function() { map.getCanvas().style.cursor = 'pointer'; });
-    map.on('mouseleave', 'geojson-fill', function() { map.getCanvas().style.cursor = ''; });
+    
+    map.on('mouseenter', 'geojson-fill', function() {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', 'geojson-fill', function() {
+      map.getCanvas().style.cursor = '';
+    });
     
     populatePartyDropdown();
     map.on('load', loadGeoJson);
     
-    // Horizontal Radio Group im Vollbildmodus
+    // Horizontale Radio Group im Vollbildmodus (für Jahreswechsel)
     document.querySelectorAll('input[name="fsYear"]').forEach(input => {
       input.addEventListener('change', function(e) {
         const selectedYear = e.target.value;
@@ -550,11 +494,7 @@
     // Zeige/Verrberge die horizontale Radio Group, je nach Vollbildstatus
     document.addEventListener('fullscreenchange', function() {
       const fsSwitch = document.getElementById('fullscreenYearSwitch');
-      if (document.fullscreenElement) {
-        fsSwitch.style.display = 'flex';
-      } else {
-        fsSwitch.style.display = 'none';
-      }
+      fsSwitch.style.display = document.fullscreenElement ? 'flex' : 'none';
     });
   </script>
   
