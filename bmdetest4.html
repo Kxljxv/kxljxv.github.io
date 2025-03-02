@@ -6,21 +6,21 @@
   <title>Wahlergebnisse in Berlin – Maplibre Version</title>
   <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
   <style>
-    /* Globaler Dark Mode */
+    /* Allgemeine Seitenstruktur */
     body {
       margin: 0;
       padding: 0;
       font-family: Arial, sans-serif;
-      background-color: #232221; /* tiefer Hintergrund */
-      color: #ececeb; /* heller Weißton für Texte */
+      background-color: #232221; /* dunkler Hintergrund */
+      color: #ececeb; /* heller Schriftton */
       display: flex;
       flex-direction: column;
       align-items: center;
     }
     h1 {
+      font-size: 2.2em;
       margin-top: 30px;
       text-align: center;
-      font-size: 2em;
       color: #ececeb;
     }
     p.description {
@@ -28,51 +28,80 @@
       text-align: center;
       max-width: 800px;
       margin-top: 15px;
-      color: #a6a39a; /* grauer Farbton */
+      color: #a6a39a;
     }
+    /* Container für die Steuerung */
     .controls {
       margin-top: 20px;
       display: flex;
       gap: 20px;
       align-items: center;
     }
-    .controls div {
-      background-color: #2d2d2b; /* leichte Abhebung */
-      padding: 10px 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    .controls > div {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
     }
     label {
       font-size: 1em;
       color: #ececeb;
-      margin-right: 5px;
     }
-    /* Modern gestylte Select-Elemente */
-    select {
-      padding: 10px 15px;
-      font-size: 1em;
-      border: none;
-      border-radius: 5px;
+    /* Styling für native Selects in einem Wrapper für einen modernen Look */
+    .select-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    .select-wrapper select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
       background-color: #2d2d2b;
       color: #ececeb;
-      appearance: none;
-      background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%20xmlns%3D%22http://www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200l5%206%205-6z%22%20fill%3D%22%23ececeb%22/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 10px center;
-      cursor: pointer;
-    }
-    select:focus {
+      padding: 10px 40px 10px 15px;
+      border: 1px solid #a6a39a;
+      border-radius: 5px;
+      font-size: 1em;
       outline: none;
-      box-shadow: 0 0 0 2px #a3512b; /* Akzentfarbe als Fokus */
+      cursor: pointer;
+      transition: border-color 0.3s;
     }
-    /* Karte unverändert, aber mit angepasster Umrandung */
+    .select-wrapper select:hover,
+    .select-wrapper select:focus {
+      border-color: #a3512b;
+    }
+    .select-wrapper::after {
+      content: "\25BC"; /* nach unten zeigender Pfeil */
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      color: #a6a39a;
+      pointer-events: none;
+      font-size: 0.8em;
+    }
+    /* Mapcontainer bleibt unverändert */
     #map {
       width: 80%;
       height: 70vh;
       margin: 20px 0;
       border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.5);
-      border: 2px solid #2d2d2b;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    }
+    /* Anpassung der Maplibre Navigation Controls auf dunklen Hintergrund */
+    .maplibregl-ctrl-top-right, .maplibregl-ctrl-bottom-right {
+      background-color: transparent;
+    }
+    .maplibregl-ctrl button {
+      background-color: #2d2d2b;
+      color: #ececeb;
+      border: none;
+      border-radius: 3px;
+      padding: 8px;
+      margin: 5px;
+      transition: background-color 0.3s;
+    }
+    .maplibregl-ctrl button:hover {
+      background-color: #a3512b;
     }
   </style>
 </head>
@@ -86,14 +115,18 @@
   <div class="controls">
     <div>
       <label for="datasetSelect">Wahljahr:</label>
-      <select id="datasetSelect">
-        <option value="2025" selected>2025</option>
-        <option value="2021">2021</option>
-      </select>
+      <div class="select-wrapper">
+        <select id="datasetSelect">
+          <option value="2025" selected>2025</option>
+          <option value="2021">2021</option>
+        </select>
+      </div>
     </div>
     <div>
       <label for="partySelect">Partei:</label>
-      <select id="partySelect"></select>
+      <div class="select-wrapper">
+        <select id="partySelect"></select>
+      </div>
     </div>
   </div>
 
@@ -232,7 +265,7 @@
       return interpolateColors(gradient.min, gradient.max, normalized);
     }
     
-    // Aktualisiere GeoJSON-Daten mit berechneter fillColor
+    // Aktualisiere die GeoJSON-Daten, sodass für jedes Feature die berechnete fillColor gesetzt wird
     function updateGeojsonData(data) {
       data.features.forEach(function(feature) {
         var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
@@ -241,7 +274,7 @@
       return data;
     }
     
-    // Initialisiere Maplibre (Karte bleibt unverändert)
+    // Initialisiere die Maplibre Map mit der modifizierten Basemap
     var map = new maplibregl.Map({
       container: 'map',
       style: 'https://kxljxv.github.io/bm_web_gry_7.json',
@@ -251,7 +284,7 @@
     
     map.addControl(new maplibregl.NavigationControl());
     
-    // GeoJSON laden und Layer einfügen
+    // Lade die GeoJSON-Daten und füge den Polygon-Layer HINTER die Basemap ein
     function loadGeoJson() {
       fetch(currentDataset.url)
         .then(response => response.json())
@@ -322,6 +355,7 @@
       }
     }
     
+    // Wechsel der Partei
     document.getElementById('partySelect').addEventListener('change', function(e) {
       currentParty = e.target.value;
       if (geojsonData) {
@@ -332,6 +366,7 @@
       }
     });
     
+    // Wechsel des Datensatzes (Wahljahr)
     document.getElementById('datasetSelect').addEventListener('change', function(e) {
       var selectedYear = e.target.value;
       if (selectedYear === "2025") {
@@ -343,6 +378,7 @@
       loadGeoJson();
     });
     
+    // Popup beim Klick auf ein Polygon
     map.on('click', 'geojson-fill', function(e) {
       if (!e.features.length) return;
       var feature = e.features[0];
@@ -357,6 +393,7 @@
         .addTo(map);
     });
     
+    // Cursor-Wechsel beim Hover über Polygone
     map.on('mouseenter', 'geojson-fill', function() {
       map.getCanvas().style.cursor = 'pointer';
     });
@@ -364,6 +401,7 @@
       map.getCanvas().style.cursor = '';
     });
     
+    // Initialer Aufbau
     populatePartySelect();
     map.on('load', loadGeoJson);
   </script>
