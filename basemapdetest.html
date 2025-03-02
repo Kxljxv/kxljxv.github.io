@@ -3,25 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wahlergebnisse Karte</title>
+  <title>Wahlergebnisse in Berlin</title>
   <script src='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js'></script>
   <link href='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css' rel='stylesheet' />
   <style>
-    body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-    .controls {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(255, 255, 255, 0.8);
-      padding: 10px;
-      border-radius: 5px;
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    select { padding: 5px; margin: 5px; }
+    header {
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 2em;
+      margin: 10px 0;
+      color: #333;
+    }
+    p.description {
+      font-size: 1.1em;
+      max-width: 800px;
+      margin: 10px auto;
+      color: #555;
+    }
+    .controls {
+      margin: 20px 0;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    .controls label {
+      font-size: 1em;
+      color: #333;
+    }
+    .controls select {
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    #map {
+      width: 80%;
+      height: 70vh;
+      margin: 20px 0;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    footer {
+      margin: 20px 0;
+      font-size: 0.9em;
+      color: #777;
+    }
   </style>
 </head>
 <body>
-  <div id="map"></div>
+  <header>
+    <h1>Wahlergebnisse in Berlin</h1>
+    <p class="description">
+      In diesen Karten sind die Urnen- und Briefwahlergebnisse auf Urnenwahlbezirksebene visualisiert.
+    </p>
+  </header>
+
   <div class="controls">
     <label for="datasetSelect">Wahljahr:</label>
     <select id="datasetSelect">
@@ -32,10 +80,12 @@
     <select id="partySelect"></select>
   </div>
 
+  <div id="map"></div>
+
   <script>
     var map = new maplibregl.Map({
       container: 'map',
-      style: 'https://kxljxv.github.io/bm_web_gry_6.json',
+      style: 'https://kxljxv.github.io/bm_web_gry_5.json',
       center: [13.4, 52.52],
       zoom: 10
     });
