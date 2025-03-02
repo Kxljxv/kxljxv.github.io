@@ -55,6 +55,31 @@
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
       z-index: 10;
     }
+    /* Wir entfernen hier die eigenen Anpassungen für .maplibregl-ctrl button,
+       sodass die von MapLibre vorgegebenen dunklen Controls genutzt werden. */
+    /*
+    .maplibregl-ctrl button {
+      background-color: var(--control-bg-color);
+      border: none;
+      color: var(--text-primary);
+      border-radius: 9999px;
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .maplibregl-ctrl button svg {
+      width: 1.5rem;
+      height: 1.5rem;
+      stroke: var(--text-primary);
+    }
+    */
+    /* Attribution und Logo ausblenden */
+    .maplibregl-ctrl-attrib,
+    .maplibregl-ctrl-logo {
+      display: none;
+    }
     /* Vollbild-Button: links oben, rundes Icon */
     #fullscreenButton {
       position: absolute;
@@ -67,7 +92,7 @@
       border-radius: 9999px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     }
-    /* Horizontale Radio List Group im Vollbildmodus */
+    /* Horizontal Radio List Group im Vollbildmodus */
     #fullscreenYearSwitch {
       position: absolute;
       bottom: 1rem;
@@ -162,8 +187,8 @@
         <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4h4M20 16v4h-4M4 16v4h4M20 8V4h-4"></path>
       </svg>
     </button>
-    <!-- Horizontale Radio List Group im Vollbildmodus -->
-    <div id="fullscreenYearSwitch" class="flex gap-4">
+    <!-- Horizontal Radio List Group im Vollbildmodus -->
+    <div id="fullscreenYearSwitch" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4 bg-[var(--control-bg-color)] p-2 rounded-full">
       <label class="flex items-center gap-2">
         <input type="radio" name="fsYear" value="2021" class="form-radio" style="color: var(--accent-color);">
         <span>2021</span>
@@ -350,7 +375,7 @@
       return data;
     }
     
-    // Maplibre Map initialisieren – Begrenzung auf Berlin, minZoom 10
+    // Maplibre Map initialisieren (nur Berlin, minZoom 10, Begrenzung auf Berliner Gebiet)
     var map = new maplibregl.Map({
       container: 'map',
       style: 'https://kxljxv.github.io/bm_web_gry_7.json',
@@ -360,14 +385,16 @@
       maxBounds: [[13.0884, 52.3383], [13.7612, 52.6755]],
       attributionControl: false
     });
-    
-    // NavigationControl (nur Zoom) und integrierte GeolocateControl
+    // Verwende die eingebauten Controls von MapLibre (dunkle Zoom Buttons etc.)
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    // Verwende die eingebaute GeolocateControl von MapLibre
     map.addControl(new maplibregl.GeolocateControl({
-      positionOptions: { enableHighAccuracy: true },
-      trackUserLocation: true,
-      showAccuracyCircle: false
+         positionOptions: { enableHighAccuracy: true },
+         trackUserLocation: true,
+         showUserHeading: true
     }), 'top-right');
+    map.dragRotate.disable();
+    map.touchZoomRotate.disableRotation();
     
     // Vollbild-Button
     document.getElementById('fullscreenButton').addEventListener('click', function() {
@@ -422,7 +449,7 @@
       }
     });
     
-    // Lädt GeoJSON-Daten und fügt den Polygon-Layer hinter die Basemap ein
+    // Lädt die GeoJSON-Daten und fügt den Polygon-Layer hinter die Basemap ein
     function loadGeoJson() {
       fetch(currentDataset.url)
         .then(response => response.json())
@@ -453,6 +480,7 @@
         .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
     }
     
+    // Popup beim Klick auf ein Polygon
     map.on('click', 'geojson-fill', function(e) {
       if (!e.features.length) return;
       var feature = e.features[0];
@@ -466,18 +494,13 @@
         .setHTML(popupContent)
         .addTo(map);
     });
-    
-    map.on('mouseenter', 'geojson-fill', function() {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', 'geojson-fill', function() {
-      map.getCanvas().style.cursor = '';
-    });
+    map.on('mouseenter', 'geojson-fill', function() { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', 'geojson-fill', function() { map.getCanvas().style.cursor = ''; });
     
     populatePartyDropdown();
     map.on('load', loadGeoJson);
     
-    // Horizontale Radio Group im Vollbildmodus (für Jahreswechsel)
+    // Horizontal Radio Group im Vollbildmodus
     document.querySelectorAll('input[name="fsYear"]').forEach(input => {
       input.addEventListener('change', function(e) {
         const selectedYear = e.target.value;
@@ -494,7 +517,11 @@
     // Zeige/Verrberge die horizontale Radio Group, je nach Vollbildstatus
     document.addEventListener('fullscreenchange', function() {
       const fsSwitch = document.getElementById('fullscreenYearSwitch');
-      fsSwitch.style.display = document.fullscreenElement ? 'flex' : 'none';
+      if (document.fullscreenElement) {
+        fsSwitch.style.display = 'flex';
+      } else {
+        fsSwitch.style.display = 'none';
+      }
     });
   </script>
   
