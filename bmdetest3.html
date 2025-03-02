@@ -3,15 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wahlergebnisse Karte</title>
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-  <!-- MapLibre GL CSS -->
+  <title>Wahlergebnisse in Berlin – Maplibre Version</title>
   <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
-  <!-- Leaflet Control Geocoder CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-  <!-- Leaflet Locate CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.79.0/L.Control.Locate.min.css" />
   <style>
     body {
       margin: 0;
@@ -21,13 +14,6 @@
       flex-direction: column;
       align-items: center;
       background-color: #f4f4f4;
-    }
-    #map {
-      width: 80%;
-      height: 70vh;
-      margin: 20px 0;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
     h1 {
       font-size: 2em;
@@ -58,6 +44,13 @@
       font-size: 1em;
       color: #333;
     }
+    #map {
+      width: 80%;
+      height: 70vh;
+      margin: 20px 0;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
   </style>
 </head>
 <body>
@@ -81,24 +74,12 @@
     </div>
   </div>
 
-  <!-- Karte -->
+  <!-- Mapcontainer -->
   <div id="map"></div>
 
-  <!-- Leaflet JS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-  <!-- MapLibre GL JS -->
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
-  <!-- MapLibre GL Leaflet Plugin -->
-  <script src="https://unpkg.com/maplibre-gl-leaflet@1.0.0/dist/maplibre-gl-leaflet.js"></script>
-  <!-- Leaflet Control Geocoder JS -->
-  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-  <!-- Leaflet Locate JS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.79.0/L.Control.Locate.min.js"></script>
   <script>
-    // Maximale Genauigkeit für Linien
-    L.Polyline.prototype.options.smoothFactor = 0;
-
-    // Mapping für Anzeige-Namen der Parteien
+    // Anzeige-Namen und Mapping der Parteien
     var partyDisplayNames = {
       "WahlbeteiligunginkBW": "Wahlbeteiligung",
       "SPDinkBW": "SPD",
@@ -116,7 +97,7 @@
       "MLPDinkBW": "MLPD"
     };
 
-    // Mapping zwischen ähnlichen Parteibezeichnungen für 2021 und 2025
+    // Mapping zwischen ähnlichen Parteibezeichnungen
     var partyMapping = {
       "LINKEinkBW": "LinkeinkBW",
       "VoltDeutschlandinkBW": "VoltinkBW",
@@ -124,7 +105,7 @@
       "VoltinkBW": "VoltDeutschlandinkBW"
     };
 
-    // Farbpaletten für jede Partei
+    // Farbpaletten (Mindest- und Maximalfarben)
     var partyColorGradients = {
       "WahlbeteiligunginkBW": { min: "#FFF7F5", max: "#002617" },
       "SPDinkBW": { min: "#FFF7F5", max: "#570000" },
@@ -142,7 +123,7 @@
       "MLPDinkBW": { min: "#FFF7F5", max: "#8C142A" }
     };
 
-    // Datensatz 2025
+    // Datensätze für 2025 und 2021
     var dataset2025 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
       partyRanges: {
@@ -153,11 +134,11 @@
         "LINKEinkBW": { min: 0.011583012, max: 0.5 },
         "AfDinkBW": { min: 0.005931198, max: 0.5 },
         "FDPinkBW": { min: 0.004, max: 0.268841395 },
-        "BSWinkBWB": { min: 0.012, max: 0.16 },    
-        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.085704944 },  
-        "VoltDeutschlandinkBW": { min: 0.0, max: 0.029 },  
-        "FWinkBW": { min: 0.0, max: 0.034937014 },  
-        "MLPDinkBW": { min: 0.0, max: 0.012658228 }  
+        "BSWinkBWB": { min: 0.012, max: 0.16 },
+        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.085704944 },
+        "VoltDeutschlandinkBW": { min: 0.0, max: 0.029 },
+        "FWinkBW": { min: 0.0, max: 0.034937014 },
+        "MLPDinkBW": { min: 0.0, max: 0.012658228 }
       },
       availableParties: [
         "WahlbeteiligunginkBW", "SPDinkBW", "GrueninkBW", "CDUinkBW", "LINKEinkBW",
@@ -166,7 +147,6 @@
       ]
     };
 
-    // Datensatz 2021
     var dataset2021 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2021.json',
       partyRanges: {
@@ -177,10 +157,10 @@
         "LinkeinkBW": { min: 0.011583012, max: 0.5 },
         "AfDinkBW": { min: 0.005931198, max: 0.5 },
         "FDPinkBW": { min: 0.004, max: 0.268841395 },
-        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.085704944 },  
-        "VoltinkBW": { min: 0.0, max: 0.029 },  
-        "FWinkBW": { min: 0.0, max: 0.034937014 },  
-        "MLPDinkBW": { min: 0.0, max: 0.012658228 }  
+        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.085704944 },
+        "VoltinkBW": { min: 0.0, max: 0.029 },
+        "FWinkBW": { min: 0.0, max: 0.034937014 },
+        "MLPDinkBW": { min: 0.0, max: 0.012658228 }
       },
       availableParties: [
         "WahlbeteiligunginkBW", "SPDinkBW", "GrueninkBW", "CDUinkBW", "LinkeinkBW",
@@ -189,10 +169,10 @@
       ]
     };
 
-    // Aktueller Datensatz und Partei
+    // Aktueller Datensatz und Standardpartei
     var currentDataset = dataset2025;
-    var currentParty = "WahlbeteiligunginkBW"; 
-    var geojsonLayer; 
+    var currentParty = "WahlbeteiligunginkBW";
+    var geojsonData = null;
 
     // Hilfsfunktionen zur Farbinterpolation
     function hexToRgb(hex) {
@@ -228,113 +208,64 @@
       }
       return interpolateColors(gradient.min, gradient.max, normalized);
     }
-  
-    // Polygon-Style-Funktion
-    function style(feature) {
-      var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-      var zoom = map.getZoom();
-      var opacity = 0.7 + (zoom - 12) * 0.05;
-      return {
-        fillColor: getColor(rawValue, currentParty),
-        weight: 0,
-        opacity: 1,
-        color: 'transparent',
-        fillOpacity: opacity
-      };
-    }
-  
-    // Popup und Ereignisse für Polygone
-    function onEachFeature(feature, layer) {
-      layer.on({
-        click: function(e) {
-          var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-          var percent = (rawValue * 100).toFixed(2) + '%';
-          var popupContent = '<b>' + feature.properties.UWB + '</b><br>' +
-            'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
-            'Ergebnis: ' + percent + ' (' + partyDisplayNames[currentParty] + ')';
-          layer.bindPopup(popupContent).openPopup();
-        }
+    
+    // Aktualisiere die GeoJSON-Daten um für jedes Feature die berechnete fillColor zu setzen
+    function updateGeojsonData(data) {
+      data.features.forEach(function(feature) {
+        var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
+        feature.properties.fillColor = getColor(rawValue, currentParty);
       });
+      return data;
     }
     
-    // Kartenbegrenzungen und Basiskarte
-    var bounds = L.latLngBounds([[52.3, 13.0], [52.7, 13.8]]);
-    var map = L.map('map', {
-      center: [52.52, 13.40],
-      zoom: 10,
-      minZoom: 9,
-      maxBounds: bounds,
-      inertia: false
+    // Initialisiere Maplibre Map mit dem modifizierten Basemap-Stil
+    var map = new maplibregl.Map({
+      container: 'map',
+      style: 'https://kxljxv.github.io/bm_web_gry_6.json',
+      center: [13.40, 52.52],
+      zoom: 10
     });
     
-    // Hinzufügen der modifizierten Basemap (MapLibre GL Layer)
-    L.maplibreGL({
-      style: 'https://kxljxv.github.io/bm_web_gry_6.json'
-    }).addTo(map);
+    map.addControl(new maplibregl.NavigationControl());
     
-    // Maßstab, Geocoder und Standortsuche
-    L.control.scale({position: 'bottomright'}).addTo(map);
-    
-    L.Control.geocoder({
-      defaultMarkGeocode: false
-    })
-    .on('markgeocode', function(e) {
-      var bbox = e.geocode.bbox;
-      var poly = L.polygon([
-        bbox.getSouthEast(),
-        bbox.getNorthEast(),
-        bbox.getNorthWest(),
-        bbox.getSouthWest()
-      ]).addTo(map);
-      map.fitBounds(poly.getBounds());
-    })
-    .addTo(map);
-    
-    var lc = L.control.locate({
-      position: 'topleft',
-      strings: {
-        title: "Meinen Standort anzeigen",
-        popup: "Sie befinden sich innerhalb von {distance} {unit} von diesem Punkt entfernt",
-        outsideMapBoundsMsg: "Sie scheinen sich außerhalb der Kartengrenzen zu befinden"
-      },
-      locateOptions: {
-        maxZoom: 16,
-        enableHighAccuracy: true
-      },
-      icon: 'fa fa-map-marker',
-      showPopup: true,
-      onLocationError: function(err) {
-        alert("Standorterfassung fehlgeschlagen: " + err.message);
-      },
-      onLocationOutsideMapBounds: function(context) {
-        alert("Sie befinden sich außerhalb des kartierten Bereichs von Berlin!");
-      }
-    }).addTo(map);
-  
-    // Funktion zum Laden des aktuellen GeoJSON-Datensatzes
+    // Lade die GeoJSON-Daten und füge die Polygon-Layer hinzu bzw. aktualisiere sie
     function loadGeoJson() {
       fetch(currentDataset.url)
         .then(response => response.json())
         .then(data => {
-          if (geojsonLayer) {
-            map.removeLayer(geojsonLayer);
+          geojsonData = updateGeojsonData(data);
+          if (map.getSource('geojson-layer')) {
+            map.getSource('geojson-layer').setData(geojsonData);
+          } else {
+            map.addSource('geojson-layer', {
+              type: 'geojson',
+              data: geojsonData
+            });
+            map.addLayer({
+              id: 'geojson-fill',
+              type: 'fill',
+              source: 'geojson-layer',
+              paint: {
+                'fill-color': ['get', 'fillColor'],
+                'fill-opacity': [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  10, 0.6,
+                  16, 0.9
+                ]
+              }
+            });
           }
-          geojsonLayer = L.geoJSON(data, {
-            style: style,
-            onEachFeature: onEachFeature,
-            smoothFactor: 0,
-            noClip: true
-          }).addTo(map);
         })
         .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
     }
-  
-    // Prüft, ob eine Partei im aktuellen Datensatz verfügbar ist
+    
+    // Hilfsfunktionen für die Parteien-Auswahl
     function isPartyAvailable(party, dataset) {
       return dataset.availableParties.includes(party);
     }
-  
-    // Sucht nach einer entsprechenden Partei im anderen Datensatz
+    
     function findEquivalentParty(party, targetDataset) {
       if (partyMapping[party] && isPartyAvailable(partyMapping[party], targetDataset)) {
         return partyMapping[party];
@@ -345,7 +276,6 @@
       return "WahlbeteiligunginkBW";
     }
     
-    // Aufbau des Partei-Dropdowns anhand des aktuellen Datensatzes
     function populatePartySelect() {
       var partySelect = document.getElementById('partySelect');
       var currentValue = partySelect.value;
@@ -371,12 +301,15 @@
     // Event-Listener für den Wechsel der Partei
     document.getElementById('partySelect').addEventListener('change', function(e) {
       currentParty = e.target.value;
-      if (geojsonLayer) {
-        geojsonLayer.setStyle(style);
+      if (geojsonData) {
+        geojsonData = updateGeojsonData(geojsonData);
+        if (map.getSource('geojson-layer')) {
+          map.getSource('geojson-layer').setData(geojsonData);
+        }
       }
     });
     
-    // Event-Listener für den Wechsel des Datensatzes
+    // Event-Listener für den Wechsel des Datensatzes (Wahljahr)
     document.getElementById('datasetSelect').addEventListener('change', function(e) {
       var selectedYear = e.target.value;
       if (selectedYear === "2025") {
@@ -388,9 +321,32 @@
       loadGeoJson();
     });
     
+    // Popup bei Klick auf ein Polygon
+    map.on('click', 'geojson-fill', function(e) {
+      if (!e.features.length) return;
+      var feature = e.features[0];
+      var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
+      var percent = (rawValue * 100).toFixed(2) + '%';
+      var popupContent = '<b>' + feature.properties.UWB + '</b><br>' +
+                         'Wahlbeteiligung: ' + (parseFloat(feature.properties.WahlbeteiligunginkBW.replace(',', '.')) * 100).toFixed(2) + '%<br>' +
+                         'Ergebnis: ' + percent + ' (' + partyDisplayNames[currentParty] + ')';
+      new maplibregl.Popup()
+        .setLngLat(e.lngLat)
+        .setHTML(popupContent)
+        .addTo(map);
+    });
+    
+    // Cursor-Wechsel beim Hover über Polygone
+    map.on('mouseenter', 'geojson-fill', function() {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', 'geojson-fill', function() {
+      map.getCanvas().style.cursor = '';
+    });
+    
     // Initialer Aufbau
     populatePartySelect();
-    loadGeoJson();
+    map.on('load', loadGeoJson);
   </script>
 </body>
 </html>
