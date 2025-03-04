@@ -1,75 +1,54 @@
-/* Zentrale Farbvariablen – bitte Platzhalterfarben durch Ihre Wunschfarben ersetzen */
+/* Zentrale Farbvariablen – bitte hier die Platzhalterfarben anpassen */
 :root {
-  --body-bg: #1c1c1c;            /* Dunkler, aber nicht reiner Schwarz */
-  --primary-text: #e0e0e0;         /* Helles Grau */
+  --body-bg: #1c1c1c;            /* Dunkler Hintergrund, nicht reines Schwarz */
+  --primary-text: #e0e0e0;         /* Helles Grau statt reinem Weiß */
   --secondary-text: #b0b0b0;
   --control-bg: #2a2a2a;          /* Dunkles Grau für Controls */
   --border-color: #444444;        /* Dezenter Rahmen */
   --accent: #a3512b;             /* Allgemeine Akzentfarbe */
   
-  /* Parteifarben – vier separate Farbvariablen pro Partei */
-  /* SPD */
-  --spd-regular: #8a0000;
-  --spd-winner: #aa0000;
-  --spd-selection: #b30000;
-  --spd-chart: #cc0000;
-  /* Grüne */
-  --gruen-regular: #007f00;
-  --gruen-winner: #009900;
-  --gruen-selection: #00b300;
-  --gruen-chart: #00cc00;
-  /* CDU */
-  --cdu-regular: #222222;
-  --cdu-winner: #333333;
-  --cdu-selection: #444444;
-  --cdu-chart: #555555;
-  /* Linke */
-  --linke-regular: #a02080;
-  --linke-winner: #b03090;
-  --linke-selection: #c040a0;
-  --linke-chart: #d050b0;
-  /* AfD */
-  --afd-regular: #001f3f;
-  --afd-winner: #002f4f;
-  --afd-selection: #003f5f;
-  --afd-chart: #004f6f;
-  /* FDP */
-  --fdp-regular: #805500;
-  --fdp-winner: #996600;
-  --fdp-selection: #b37700;
-  --fdp-chart: #cc8800;
-  /* BSW */
-  --bsw-regular: #5a0099;
-  --bsw-winner: #6a00aa;
-  --bsw-selection: #7a00bb;
-  --bsw-chart: #8a00cc;
-  /* Tierschutz */
-  --tierschutz-regular: #005757;
-  --tierschutz-winner: #006868;
-  --tierschutz-selection: #007979;
-  --tierschutz-chart: #008a8a;
-  /* Volt */
-  --volt-regular: #4b2e83;
-  --volt-winner: #5b3e93;
-  --volt-selection: #6b4ea3;
-  --volt-chart: #7b5eb3;
-  /* FW */
-  --fw-regular: #8a5a00;
-  --fw-winner: #9a6a10;
-  --fw-selection: #aa7a20;
-  --fw-chart: #bb8a30;
-  /* MLPD */
-  --mlpd-regular: #7a112f;
-  --mlpd-winner: #8a223f;
-  --mlpd-selection: #9a334f;
-  --mlpd-chart: #aa445f;
+  /* Platzhalter-Parteifarben – für verschiedene UI-Bereiche */
+  /* Reguläre Karte */
+  --party-spd-reg: #680000;
+  --party-gruen-reg: #006400;
+  --party-cdu-reg: #1a1a1a;
+  --party-linke-reg: #9f1d64;
+  --party-afd-reg: #003399;
+  --party-fdp-reg: #6b4c00;
+  --party-bsw-reg: #6a0dad;
+  --party-tierschutz-reg: #005c5c;
+  --party-volt-reg: #4b2e83;
+  --party-fw-reg: #8a5a00;
+  --party-mlpd-reg: #7a112f;
   
-  /* Für den Gewinner-Modus und Statistik */
-  --winner-fill: var(--winner-fill, #ffb84d); /* Einheitliche Farbe für Gewinner, Platzhalter */
-  --chart-bar-bg: var(--chart-bar-bg, #80c080);
+  /* Gewinnerkarte – einheitliche Farben */
+  --party-spd-win: #ff9999;
+  --party-gruen-win: #aaffaa;
+  --party-cdu-win: #cccccc;
+  --party-linke-win: #ffccff;
+  --party-afd-win: #99ccff;
+  --party-fdp-win: #ffdd99;
+  --party-bsw-win: #dd99ff;
+  --party-tierschutz-win: #99ffff;
+  --party-volt-win: #ffe599;
+  --party-fw-win: #ffcc99;
+  --party-mlpd-win: #ff99cc;
+  
+  /* Auswahlbuttons (Radio Group) */
+  --party-spd-btn: #ffcccc;
+  --party-gruen-btn: #ccffcc;
+  --party-cdu-btn: #e6e6e6;
+  --party-linke-btn: #ffccf2;
+  --party-afd-btn: #cce5ff;
+  --party-fdp-btn: #ffe6cc;
+  --party-bsw-btn: #e6ccff;
+  --party-tierschutz-btn: #ccffff;
+  --party-volt-btn: #fff0cc;
+  --party-fw-btn: #ffe6b3;
+  --party-mlpd-btn: #ffcce6;
 }
 
-/* Grundlegendes Layout */
+/* Grundlegende Styles */
 body {
   background-color: var(--body-bg);
   color: var(--primary-text);
@@ -84,25 +63,19 @@ header {
   max-width: 1200px;
 }
 
-/* Mapcontainer: Abstand zum unteren Rand, keine weißen Rahmen */
+/* Mapcontainer: Abstand nach unten (nicht bis ganz am Bildschirmrand) */
 #mapContainer {
   margin-bottom: 1rem;
-  border: none;
 }
 
-/* Jahresauswahl in der Karte */
-#mapYearControl {
-  background-color: var(--control-bg);
-  padding: 0.5rem;
-  border-radius: 9999px;
-  border: none;
+/* Jahreswahl – Buttongroup */
+#yearSelection {
+  margin: 1rem auto;
 }
-
-/* Jahresauswahl-Buttons */
 .year-btn {
   background-color: var(--control-bg);
   color: var(--primary-text);
-  border: none;
+  border: 1px solid var(--border-color);
   transition: background-color 0.2s;
 }
 .year-btn:hover,
@@ -113,19 +86,17 @@ header {
 /* Sidebar */
 #sidebar {
   background-color: var(--control-bg);
-  border: none;
 }
 
 /* Suchfeld */
 #searchField {
   background-color: var(--body-bg);
   color: var(--primary-text);
-  border: none;
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
-  padding: 0.5rem;
 }
 
-/* Parteiauswahl: Radio-Button-Gruppe */
+/* Parteiauswahl – Radio-Button-Gruppe */
 #partyRadioGroup label {
   display: flex;
   align-items: center;
@@ -148,7 +119,6 @@ header {
 /* Ergebnisbereich (Chart) */
 #resultPanel {
   background-color: var(--control-bg);
-  border: none;
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
-  padding: 1rem;
 }
