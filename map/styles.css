@@ -1,80 +1,79 @@
-/* Zentrale Farbvariablen – alle Farben sind als Platzhalter definiert */
+/* Zentrale Farbvariablen – bitte Platzhalterfarben durch Ihre Wunschfarben ersetzen */
 :root {
-  /* Generelle Farben (kein reines Schwarz/Weiß) */
-  --body-bg: #1c1c1c;
-  --primary-text: #e0e0e0;
+  --body-bg: #1c1c1c;            /* Dunkler, aber nicht reiner Schwarz */
+  --primary-text: #e0e0e0;         /* Helles Grau */
   --secondary-text: #b0b0b0;
-  --control-bg: #2a2a2a;
-  --border-color: #444444;
-  --accent: #a3512b;
+  --control-bg: #2a2a2a;          /* Dunkles Grau für Controls */
+  --border-color: #444444;        /* Dezenter Rahmen */
+  --accent: #a3512b;             /* Allgemeine Akzentfarbe */
   
-  /* Partei-Farben – jeweils vier Varianten: regulär, Gewinner, Selektion und Chart */
-  --spd-regular: #aa0000;
-  --spd-winner:  #bb0000;
-  --spd-select:   #cc0000;
-  --spd-chart:    #dd0000;
-
+  /* Parteifarben – vier separate Farbvariablen pro Partei */
+  /* SPD */
+  --spd-regular: #8a0000;
+  --spd-winner: #aa0000;
+  --spd-selection: #b30000;
+  --spd-chart: #cc0000;
+  /* Grüne */
   --gruen-regular: #007f00;
-  --gruen-winner:  #008f00;
-  --gruen-select:   #009f00;
-  --gruen-chart:    #00af00;
-
-  --cdu-regular:   #222222;
-  --cdu-winner:    #333333;
-  --cdu-select:    #444444;
-  --cdu-chart:     #555555;
-
-  --linke-regular: #8f0354;
-  --linke-winner:  #9f1354;
-  --linke-select:   #af2354;
-  --linke-chart:    #bf3354;
-
-  --afd-regular:   #002b9c;
-  --afd-winner:    #003b9c;
-  --afd-select:    #004b9c;
-  --afd-chart:     #005b9c;
-
-  --fdp-regular:   #5e4a00;
-  --fdp-winner:    #6e5a00;
-  --fdp-select:    #7e6a00;
-  --fdp-chart:     #8e7a00;
-
-  --bsw-regular:   #571334;
-  --bsw-winner:    #681334;
-  --bsw-select:    #791334;
-  --bsw-chart:     #8a1334;
-
-  --tierschutz-regular: #00454d;
-  --tierschutz-winner:  #00554d;
-  --tierschutz-select:   #00654d;
-  --tierschutz-chart:    #00754d;
-
-  --volt-regular:  #462270;
-  --volt-winner:   #572270;
-  --volt-select:   #682270;
-  --volt-chart:    #792270;
-
-  --fw-regular:    #9c4900;
-  --fw-winner:     #ad4900;
-  --fw-select:     #be4900;
-  --fw-chart:      #cf4900;
-
-  --mlpd-regular:  #8c142a;
-  --mlpd-winner:   #9c142a;
-  --mlpd-select:   #ac142a;
-  --mlpd-chart:    #bc142a;
+  --gruen-winner: #009900;
+  --gruen-selection: #00b300;
+  --gruen-chart: #00cc00;
+  /* CDU */
+  --cdu-regular: #222222;
+  --cdu-winner: #333333;
+  --cdu-selection: #444444;
+  --cdu-chart: #555555;
+  /* Linke */
+  --linke-regular: #a02080;
+  --linke-winner: #b03090;
+  --linke-selection: #c040a0;
+  --linke-chart: #d050b0;
+  /* AfD */
+  --afd-regular: #001f3f;
+  --afd-winner: #002f4f;
+  --afd-selection: #003f5f;
+  --afd-chart: #004f6f;
+  /* FDP */
+  --fdp-regular: #805500;
+  --fdp-winner: #996600;
+  --fdp-selection: #b37700;
+  --fdp-chart: #cc8800;
+  /* BSW */
+  --bsw-regular: #5a0099;
+  --bsw-winner: #6a00aa;
+  --bsw-selection: #7a00bb;
+  --bsw-chart: #8a00cc;
+  /* Tierschutz */
+  --tierschutz-regular: #005757;
+  --tierschutz-winner: #006868;
+  --tierschutz-selection: #007979;
+  --tierschutz-chart: #008a8a;
+  /* Volt */
+  --volt-regular: #4b2e83;
+  --volt-winner: #5b3e93;
+  --volt-selection: #6b4ea3;
+  --volt-chart: #7b5eb3;
+  /* FW */
+  --fw-regular: #8a5a00;
+  --fw-winner: #9a6a10;
+  --fw-selection: #aa7a20;
+  --fw-chart: #bb8a30;
+  /* MLPD */
+  --mlpd-regular: #7a112f;
+  --mlpd-winner: #8a223f;
+  --mlpd-selection: #9a334f;
+  --mlpd-chart: #aa445f;
   
-  /* Für den Gewinner-Modus (einheitlich) und für die Diagramme */
-  --winner-fill: #ffb84d;
+  /* Für den Gewinner-Modus und Statistik */
+  --winner-fill: var(--winner-fill, #ffb84d); /* Einheitliche Farbe für Gewinner, Platzhalter */
+  --chart-bar-bg: var(--chart-bar-bg, #80c080);
 }
 
-/* Allgemeines Layout */
+/* Grundlegendes Layout */
 body {
   background-color: var(--body-bg);
   color: var(--primary-text);
   font-family: 'Arial', sans-serif;
-  margin: 0;
-  padding: 0;
 }
 
 header {
@@ -85,34 +84,48 @@ header {
   max-width: 1200px;
 }
 
-/* Karte */
+/* Mapcontainer: Abstand zum unteren Rand, keine weißen Rahmen */
 #mapContainer {
-  position: relative;
   margin-bottom: 1rem;
+  border: none;
 }
 
-/* Steuerelemente unter der Karte */
-#controls {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+/* Jahresauswahl in der Karte */
+#mapYearControl {
+  background-color: var(--control-bg);
+  padding: 0.5rem;
+  border-radius: 9999px;
+  border: none;
+}
+
+/* Jahresauswahl-Buttons */
+.year-btn {
+  background-color: var(--control-bg);
+  color: var(--primary-text);
+  border: none;
+  transition: background-color 0.2s;
+}
+.year-btn:hover,
+.year-btn.active {
+  background-color: var(--accent);
+}
+
+/* Sidebar */
+#sidebar {
+  background-color: var(--control-bg);
+  border: none;
 }
 
 /* Suchfeld */
 #searchField {
   background-color: var(--body-bg);
   color: var(--primary-text);
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: 0.5rem;
-  padding: 0.75rem;
+  padding: 0.5rem;
 }
 
 /* Parteiauswahl: Radio-Button-Gruppe */
-#partyRadioGroup {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
 #partyRadioGroup label {
   display: flex;
   align-items: center;
@@ -132,33 +145,10 @@ header {
   font-weight: bold;
 }
 
-/* Jahresauswahl als Buttongroup */
-#yearSelection {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-}
-.year-btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 9999px;
-  border: 1px solid var(--border-color);
-  background-color: var(--control-bg);
-  color: var(--primary-text);
-  font-weight: 500;
-  transition: background-color 0.2s;
-}
-.year-btn:hover,
-.year-btn.active {
-  background-color: var(--accent);
-}
-
-/* Ergebnisbereich (Diagramm) */
+/* Ergebnisbereich (Chart) */
 #resultPanel {
   background-color: var(--control-bg);
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: 0.5rem;
   padding: 1rem;
-}
-#resultPanel h2 {
-  margin-bottom: 0.5rem;
 }
