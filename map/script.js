@@ -97,8 +97,7 @@ function loadGeoJson() {
           source: 'geojson-layer',
           paint: {
             'fill-color': ['get', 'fillColor'],
-            'fill-opacity': 1,
-            'fill-outline-color': '#000'
+            'fill-opacity': 1
           }
         }, firstLayerId);
       } else {
