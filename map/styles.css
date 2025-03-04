@@ -1,99 +1,95 @@
+/* Zentrale Farbvariablen – einfach anpassen */
 :root {
-    --body-bg: #181818;
-    --text-primary: #f0f0f0;
-    --text-secondary: #bfbfbf;
-    --control-bg: #242424;
-    --border-color: #333;
-    --accent: #a3512b;
+  --body-bg: #181818;           /* Seitenhintergrund Darkmode */
+  --primary-text: #f0f0f0;        /* Haupttextfarbe */
+  --secondary-text: #bfbfbf;      /* Sekundärtext */
+  --control-bg: #242424;          /* Hintergrund für Sidebar, Controls */
+  --border-color: #333333;        /* Rahmenfarbe */
+  --accent: #a3512b;             /* Akzentfarbe (Marker u.a.) */
+  /* Parteifarben */
+  --spd-color: #570000;
+  --gruen-color: #004F00;
+  --cdu-color: #09090A;
+  --linke-color: #8F0354;
+  --afd-color: #002B9C;
+  --fdp-color: #5E4A00;
+  --bsw-color: #571334;
+  --tierschutz-color: #00454D;
+  --volt-color: #462270;
+  --fw-color: #9C4900;
+  --mlpd-color: #8C142A;
 }
 
+/* Global */
 body {
-    background-color: var(--body-bg);
-    color: var(--text-primary);
-    font-family: Arial, sans-serif;
+  background-color: var(--body-bg);
+  color: var(--primary-text);
+  font-family: 'Arial', sans-serif;
 }
 
-.container {
-    max-width: 1200px;
-    margin: auto;
-    padding: 20px;
+.bg-body {
+  background-color: var(--body-bg);
+}
+.text-primary {
+  color: var(--primary-text);
+}
+.bg-control {
+  background-color: var(--control-bg);
+}
+.border-border {
+  border-color: var(--border-color);
 }
 
-header {
-    text-align: center;
-    margin-bottom: 20px;
+/* Hauptlayout */
+.main-container {
+  max-width: 1200px;
 }
 
-.main-layout {
-    display: flex;
-    gap: 15px;
-}
-
-/* Karte */
+/* Mapcontainer */
 #mapContainer {
-    position: relative;
-    width: 65%;
-    height: 70vh;
-    border-radius: 10px;
-    overflow: hidden;
+  position: relative;
 }
 
-/* Jahresauswahl in der Karte */
-#yearSelection {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: var(--control-bg);
-    padding: 10px;
-    border-radius: 5px;
-}
-
-#yearSelect {
-    background-color: var(--body-bg);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    padding: 5px;
+/* Steuerung in der Karte: Jahresauswahl */
+#mapYearControl select {
+  background-color: var(--body-bg);
+  color: var(--primary-text);
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  font-weight: 500;
 }
 
 /* Sidebar */
 #sidebar {
-    width: 35%;
-    background-color: var(--control-bg);
-    padding: 15px;
-    border-radius: 10px;
+  /* Padding, Rundungen, etc. */
 }
 
 /* Suchfeld */
 #searchField {
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    background-color: var(--body-bg);
-    color: var(--text-primary);
+  font-size: 1rem;
 }
 
-/* Parteienauswahl */
-#partyRadioGroup {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-}
-
+/* Parteiauswahl: Radio-Button-Gruppe */
 #partyRadioGroup label {
-    padding: 10px;
-    border-radius: 10px;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  font-weight: 500;
+  background-color: var(--control-bg);
+  color: var(--primary-text);
 }
 
-/* Ergebnis-Panel */
+/* Wenn ausgewählt, leicht hervorgehoben */
+#partyRadioGroup input:checked + span {
+  font-weight: bold;
+}
+
+/* Ergebnisbereich (Chart) */
 #resultPanel {
-    background-color: var(--control-bg);
-    padding: 15px;
-    border-radius: 10px;
-    margin-top: 10px;
-}
-
-canvas {
-    max-height: 250px;
+  /* Hier können weitere Anpassungen erfolgen */
 }
