@@ -1,19 +1,22 @@
-// Funktion zum Auslesen von URL-Parametern
+// Hilfsfunktion: URL-Parameter auslesen
 function getURLParam(param) {
   return new URLSearchParams(window.location.search).get(param);
 }
 
-// Lese URL-Parameter (z. B. "partei", "jahr", "mode")
-// Diese Parameter können intern genutzt werden – sie beeinflussen hier die Kartenkonfiguration,
-// ändern aber nicht die sichtbare UI, da diese hier komplett entfernt ist.
-const partyParam = getURLParam('partei') || 'Gewinner';
-const yearParam = getURLParam('jahr') || '2025';
-const modeParam = getURLParam('mode') || 'dark';
+// Lese Parameter: Partei, Jahr, Mode (dark/light) – weitere Parameter können ergänzt werden
+const partyParam = getURLParam('partei') || "Gewinner";
+const yearParam = getURLParam('jahr') || "2025";
+const modeParam = getURLParam('mode') || "dark";
 
-// Für diesen Embed nutzen wir einen bekannten Demo-Stil von Maplibre, der nicht komplett schwarz ist.
-const darkStyle = "https://demotiles.maplibre.org/style.json";
-const lightStyle = "https://demotiles.maplibre.org/style.json"; // Sie können hier einen anderen Lightmode-Stil angeben
-const styleURL = (modeParam === "light") ? lightStyle : darkStyle;
+// Für dieses Embed verwenden wir einen offenen Standard-Stil (demotiles) – passen Sie nach Bedarf an.
+const styleURL = "https://demotiles.maplibre.org/style.json";
+
+// Wenn im URL-Parameter mode=dark, fügen wir eine CSS-Klasse hinzu, die den Stil etwas abdunkelt (aber nicht rein schwarz darstellt)
+if (modeParam === "dark") {
+  document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById('map').classList.add('dark-mode');
+  });
+}
 
 // Initialisiere die Karte
 var map = new maplibregl.Map({
@@ -22,20 +25,44 @@ var map = new maplibregl.Map({
   center: [13.40, 52.52],
   zoom: 8,
   minZoom: 6,
-  maxBounds: [[12.5, 51.5], [14.5, 53]], // Grenzen, die sicherstellen, dass man sich innerhalb Berlins bewegt
+  // Erweitern Sie die Bounds, damit der Nutzer sich nicht ungewollt außerhalb Berlins bewegen kann
+  maxBounds: [[12.5, 51.5], [14.5, 53]],
   attributionControl: false
 });
 
-// Deaktiviere Kamera-Rotation und Neigung
+// Deaktivieren Sie Rotation, Neigung und andere unerwünschte Kamerabewegungen
 map.dragRotate.disable();
 map.touchZoomRotate.disableRotation();
+map.setPitch(0);
+map.setBearing(0);
 
-// Falls weitere UI-Controls standardmäßig hinzugefügt werden, entfernen wir diese:
-var navControl = new maplibregl.NavigationControl({
+// Optionale: Falls weitere UI-Controls (z. B. Zoom-Buttons) standardmäßig erscheinen, entfernen wir diese.
+map.addControl(new maplibregl.NavigationControl({
   showCompass: false,
   showZoom: false
-});
-map.addControl(navControl, 'top-right');
+}));
 
-// Optional: Hier könnten Sie noch den Einfluss der URL-Parameter (partyParam, yearParam)
-// auf die interne Datenverarbeitung implementieren – in diesem Minimalbeispiel wird nur der Kartenstil angezeigt.
+// Laden der GeoJSON-Daten (hier können Sie ggf. anhand von "jahr" und "partei" weitere Anpassungen vornehmen)
+const dataURL = (yearParam === "2025")
+  ? 'https://kxljxv.github.io/wahlergebnisse2025.json'
+  : 'https://kxljxv.github.io/wahlergebnisse2021.json';
+
+fetch(dataURL)
+  .then(response => response.json())
+  .then(data => {
+    // Hier können Sie noch Logik einbauen, um z.B. den "partei"-Parameter zu verarbeiten.
+    // In diesem Minimalbeispiel gehen wir davon aus, dass die GeoJSON-Daten bereits die erforderlichen Eigenschaften besitzen.
+    map.addSource('geojson-layer', { type: 'geojson', data: data });
+    map.addLayer({
+      id: 'geojson-fill',
+      type: 'fill',
+      source: 'geojson-layer',
+      paint: {
+        // Nehmen Sie an, dass in den Daten eine Eigenschaft "fillColor" hinterlegt ist.
+        'fill-color': ['get', 'fillColor'],
+        'fill-opacity': 1,
+        'fill-outline-color': 'transparent'
+      }
+    });
+  })
+  .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
