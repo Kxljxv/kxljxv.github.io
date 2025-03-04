@@ -1,5 +1,5 @@
 /***********************
- * Konfiguration und Daten
+ * Konfiguration und Datensätze
  ***********************/
 var dataset2025 = {
   url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
@@ -45,7 +45,7 @@ var dataset2021 = {
 };
 
 var currentDataset = dataset2025;
-var currentParty = "Gewinner";  // Standard: Gewinner-Modus
+var currentParty = "Gewinner"; // Standard: Gewinner-Modus
 var geojsonData = null;
 
 /***********************
@@ -57,14 +57,13 @@ var map = new maplibregl.Map({
   center: [13.40, 52.52],
   zoom: 8,
   minZoom: 6,
-  // Erweitere Bounds, damit man weiter rauszoomen und pannen kann:
   maxBounds: [[12.5, 51.5], [14.5, 53]]
 });
 map.dragRotate.disable();
 map.touchZoomRotate.disableRotation();
 
 /***********************
- * Jahresauswahl in der Karte (Buttongroup)
+ * Jahresauswahl: Buttongroup in der Karte
  ***********************/
 document.querySelectorAll('.year-btn').forEach(btn => {
   btn.addEventListener('click', function() {
@@ -76,11 +75,10 @@ document.querySelectorAll('.year-btn').forEach(btn => {
     loadGeoJson();
   });
 });
-/* Setze standardmäßig den Button 2025 als aktiv */
 document.querySelector('.year-btn[data-year="2025"]').classList.add('active');
 
 /***********************
- * GeoJSON laden und Karte aktualisieren
+ * GeoJSON-Daten laden
  ***********************/
 function loadGeoJson() {
   fetch(currentDataset.url)
@@ -97,7 +95,8 @@ function loadGeoJson() {
           source: 'geojson-layer',
           paint: {
             'fill-color': ['get', 'fillColor'],
-            'fill-opacity': 1
+            'fill-opacity': 1,
+            'fill-outline-color': 'transparent'
           }
         }, firstLayerId);
       } else {
@@ -109,14 +108,14 @@ function loadGeoJson() {
 loadGeoJson();
 
 /***********************
- * Farben der Karte aktualisieren
+ * Farben für die Karte aktualisieren
  ***********************/
 function updateMapColors() {
   if (!geojsonData) return;
   geojsonData.features.forEach(function(feature) {
     var fillColor;
     if (currentParty === "Gewinner") {
-      // Gewinner-Modus: Ermittle die höchste Partei, verwende eine einheitliche Farbe (ohne Interpolation)
+      // Gewinner-Modus: Ermittle die höchste Partei und verwende eine einheitliche Farbe
       var winningParty = null, winningValue = 0;
       currentDataset.availableParties.forEach(function(key) {
         var val = parseFloat(feature.properties[key].replace(',', '.'));
@@ -127,12 +126,11 @@ function updateMapColors() {
       });
       fillColor = getPartyColor(winningParty);
     } else {
-      // Spezifische Partei: Verwende die alten min/max Werte
       var val = parseFloat(feature.properties[currentParty].replace(',', '.'));
       var range = currentDataset.partyRanges[currentParty];
       var norm = (val - range.min) / (range.max - range.min);
       norm = Math.max(0, Math.min(norm, 1));
-      fillColor = interpolateColor("#FFF7F5", getPartyColor(currentParty), norm);
+      fillColor = interpolateColor("#f0f0f0", getPartyColor(currentParty), norm);
     }
     feature.properties.fillColor = fillColor;
   });
@@ -142,7 +140,6 @@ function updateMapColors() {
   if (lastClickedFeature) updateResultChart(lastClickedFeature);
 }
 
-// Interpolationsfunktion
 function interpolateColor(color1, color2, factor) {
   var c1 = hexToRgb(color1);
   var c2 = hexToRgb(color2);
@@ -153,6 +150,7 @@ function interpolateColor(color1, color2, factor) {
   };
   return "rgb(" + result.r + ", " + result.g + ", " + result.b + ")";
 }
+
 function hexToRgb(hex) {
   hex = hex.replace(/^#/, '');
   if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
@@ -160,7 +158,6 @@ function hexToRgb(hex) {
   return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
 }
 
-// Gibt Parteifarbe zurück
 function getPartyColor(key) {
   switch(key) {
     case "SPDinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--spd-color').trim();
@@ -180,14 +177,14 @@ function getPartyColor(key) {
 }
 
 /***********************
- * Chart.js – Flowbite-inspiriertes Column Chart (interaktiv)
+ * Chart.js – Interaktives Column Chart
  ***********************/
 var lastClickedFeature = null;
 var ctx = document.getElementById('resultChart').getContext('2d');
 var resultChart = new Chart(ctx, {
   type: 'bar',
   data: {
-    labels: [],  // Parteien werden dynamisch befüllt
+    labels: [], // Dynamisch befüllt
     datasets: [{
       label: 'Ergebnis (%)',
       data: [],
@@ -207,7 +204,6 @@ var resultChart = new Chart(ctx, {
         ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--primary-text').trim() },
         grid: { color: 'rgba(255,255,255,0.1)' },
         beginAtZero: true,
-        // Dynamische Skalierung: Setze max auf den höchsten Prozentwert plus einen kleinen Puffer
         max: 100
       }
     },
@@ -238,14 +234,13 @@ function updateResultChart(feature) {
   resultChart.data.labels = labels;
   resultChart.data.datasets[0].data = dataValues;
   resultChart.data.datasets[0].backgroundColor = backgroundColors;
-  // Dynamische Anpassung der y-Achse: Höchster Wert soll fast das Diagramm füllen
   var maxVal = Math.max(...dataValues.map(Number));
   resultChart.options.scales.y.max = Math.ceil(maxVal / 10) * 10 || 100;
   resultChart.update();
 }
 
 /***********************
- * Interaktive Karte: Klick-Event, Marker und Chart
+ * Interaktive Karte: Marker und Klick-Event
  ***********************/
 var marker;
 map.on('click', 'geojson-fill', function(e) {
@@ -257,19 +252,14 @@ map.on('click', 'geojson-fill', function(e) {
     .setLngLat(e.lngLat)
     .addTo(map);
 });
-map.on('mouseenter', 'geojson-fill', function() {
-  map.getCanvas().style.cursor = 'pointer';
-});
-map.on('mouseleave', 'geojson-fill', function() {
-  map.getCanvas().style.cursor = '';
-});
+map.on('mouseenter', 'geojson-fill', function() { map.getCanvas().style.cursor = 'pointer'; });
+map.on('mouseleave', 'geojson-fill', function() { map.getCanvas().style.cursor = ''; });
 
 /***********************
- * Suchfeld: Suche nach Bezirken und Adressen (nur innerhalb Berlins)
+ * Suchfeld: Filterung nach Bezirk und Adresse (nur in Berlin)
  ***********************/
 document.getElementById('searchField').addEventListener('input', function(e) {
   var query = e.target.value.toLowerCase();
-  // Beispielhafte Adresssuche:
   if (query.includes("alexanderplatz")) {
     map.flyTo({ center: [13.411, 52.521], zoom: 13 });
   } else if (query.includes("potsdamer platz")) {
@@ -278,7 +268,6 @@ document.getElementById('searchField').addEventListener('input', function(e) {
     if (!geojsonData) return;
     var filtered = JSON.parse(JSON.stringify(geojsonData));
     filtered.features = filtered.features.filter(function(feature) {
-      // Suche sowohl in der Eigenschaft "UWB" (Bezirk) als auch in "adresse" (sofern vorhanden)
       return feature.properties.UWB.toLowerCase().includes(query) ||
              (feature.properties.adresse && feature.properties.adresse.toLowerCase().includes(query));
     });
@@ -289,7 +278,7 @@ document.getElementById('searchField').addEventListener('input', function(e) {
 });
 
 /***********************
- * Parteiauswahl als farbige Radio-Button-Gruppe
+ * Parteiauswahl: Radio-Button-Gruppe (farblich codiert)
  ***********************/
 var partyDisplayNames = {
   "SPDinkBW": "SPD",
