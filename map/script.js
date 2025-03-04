@@ -44,8 +44,12 @@ var dataset2021 = {
   ]
 };
 
+/* 
+   Wichtig: Beim Wechsel der Jahresauswahl soll die aktuell gewählte Partei (z.B. Volt) beibehalten werden.
+   Daher wird currentParty NICHT automatisch auf "Gewinner" zurückgesetzt, wenn die Partei in beiden Datensätzen vorhanden ist.
+*/
 var currentDataset = dataset2025;
-var currentParty = "Gewinner"; // Standardmäßig Gewinner-Modus
+var currentParty = "Gewinner"; // Standard: Gewinner-Modus
 var geojsonData = null;
 
 /***********************
@@ -63,22 +67,23 @@ map.dragRotate.disable();
 map.touchZoomRotate.disableRotation();
 
 /***********************
- * Jahresauswahl (Buttongroup unter der Karte)
+ * Jahresauswahl (Buttongroup) – unter der Karte
  ***********************/
 document.querySelectorAll('.year-btn').forEach(btn => {
   btn.addEventListener('click', function() {
     document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
     this.classList.add('active');
     var selectedYear = this.getAttribute('data-year');
-    // Erhalte aktuelle Partei, falls vorhanden, sonst beibehalten
-    if (currentDataset.availableParties.indexOf(currentParty) === -1) {
+    currentDataset = (selectedYear === "2025") ? dataset2025 : dataset2021;
+    // Falls die aktuell gewählte Partei in dem neuen Dataset nicht existiert, setze auf "Gewinner"
+    if (currentDataset.availableParties.indexOf(currentParty) === -1 && currentParty !== "Gewinner") {
       currentParty = "Gewinner";
     }
-    currentDataset = (selectedYear === "2025") ? dataset2025 : dataset2021;
     populatePartyRadioGroup();
     loadGeoJson();
   });
 });
+/* Setze initial den 2025-Button als aktiv */
 document.querySelector('.year-btn[data-year="2025"]').classList.add('active');
 
 /***********************
@@ -119,6 +124,7 @@ function updateMapColors() {
   geojsonData.features.forEach(function(feature) {
     var fillColor;
     if (currentParty === "Gewinner") {
+      // Gewinner-Modus: Ermittle die höchste Partei und verwende eine einheitliche Farbe (Platzhalter)
       var winningParty = null, winningValue = 0;
       currentDataset.availableParties.forEach(function(key) {
         var val = parseFloat(feature.properties[key].replace(',', '.'));
@@ -143,6 +149,7 @@ function updateMapColors() {
   if (lastClickedFeature) updateResultChart(lastClickedFeature);
 }
 
+/* Interpolationsfunktion */
 function interpolateColor(color1, color2, factor) {
   var c1 = hexToRgb(color1);
   var c2 = hexToRgb(color2);
@@ -160,33 +167,86 @@ function hexToRgb(hex) {
   return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
 }
 
-/***********************
- * Farbkonfiguration für Parteien (Platzhalterfarben)
- * type: "regular", "winner", "button", "chart"
- ***********************/
-function getPartyColor(key, type) {
-  // Platzhalterwerte – ersetzen Sie diese mit Ihren Wunschfarben
-  var colors = {
-    "SPDinkBW": { regular: "#680000", winner: "#ff0000", button: "#7a0000", chart: "#a30000" },
-    "GrueninkBW": { regular: "#006400", winner: "#00cc00", button: "#008000", chart: "#009900" },
-    "CDUinkBW": { regular: "#1a1a1a", winner: "#4d4d4d", button: "#333333", chart: "#666666" },
-    "LINKEinkBW": { regular: "#9f1d64", winner: "#ff66cc", button: "#c2185b", chart: "#e91e63" },
-    "AfDinkBW": { regular: "#003399", winner: "#3366ff", button: "#002266", chart: "#0044cc" },
-    "FDPinkBW": { regular: "#6b4c00", winner: "#b38f00", button: "#8c6600", chart: "#a17c00" },
-    "BSWinkBWB": { regular: "#5a2d82", winner: "#8a4fcf", button: "#6e3ab5", chart: "#7f4dbd" },
-    "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { regular: "#005c5c", winner: "#00cccc", button: "#006666", chart: "#007a7a" },
-    "VoltDeutschlandinkBW": { regular: "#4b2e83", winner: "#7f57b3", button: "#56307a", chart: "#6c4490" },
-    "FWinkBW": { regular: "#8a5a00", winner: "#e6b800", button: "#a27c00", chart: "#bf9000" },
-    "MLPDinkBW": { regular: "#7a112f", winner: "#d6294f", button: "#931442", chart: "#b2233c" }
-  };
-  var party = colors[key] || { regular: "#a3512b", winner: "#a3512b", button: "#a3512b", chart: "#a3512b" };
-  return party[type] || party.regular;
+/* Gibt für einen Partei-Schlüssel je nach Modus (regular, winner, select, chart) die entsprechende Farbe zurück.
+   Platzhalterwerte – passen Sie diese an Ihre Wunschfarben an.
+*/
+function getPartyColor(key, mode) {
+  switch(key) {
+    case "SPDinkBW":
+      if (mode === "regular") return "var(--spd-regular)";
+      if (mode === "winner") return "var(--spd-winner)";
+      if (mode === "select") return "var(--spd-select)";
+      if (mode === "chart") return "var(--spd-chart)";
+      break;
+    case "GrueninkBW":
+      if (mode === "regular") return "var(--gruen-regular)";
+      if (mode === "winner") return "var(--gruen-winner)";
+      if (mode === "select") return "var(--gruen-select)";
+      if (mode === "chart") return "var(--gruen-chart)";
+      break;
+    case "CDUinkBW":
+      if (mode === "regular") return "var(--cdu-regular)";
+      if (mode === "winner") return "var(--cdu-winner)";
+      if (mode === "select") return "var(--cdu-select)";
+      if (mode === "chart") return "var(--cdu-chart)";
+      break;
+    case "LINKEinkBW":
+    case "LinkeinkBW":
+      if (mode === "regular") return "var(--linke-regular)";
+      if (mode === "winner") return "var(--linke-winner)";
+      if (mode === "select") return "var(--linke-select)";
+      if (mode === "chart") return "var(--linke-chart)";
+      break;
+    case "AfDinkBW":
+      if (mode === "regular") return "var(--afd-regular)";
+      if (mode === "winner") return "var(--afd-winner)";
+      if (mode === "select") return "var(--afd-select)";
+      if (mode === "chart") return "var(--afd-chart)";
+      break;
+    case "FDPinkBW":
+      if (mode === "regular") return "var(--fdp-regular)";
+      if (mode === "winner") return "var(--fdp-winner)";
+      if (mode === "select") return "var(--fdp-select)";
+      if (mode === "chart") return "var(--fdp-chart)";
+      break;
+    case "BSWinkBWB":
+      if (mode === "regular") return "var(--bsw-regular)";
+      if (mode === "winner") return "var(--bsw-winner)";
+      if (mode === "select") return "var(--bsw-select)";
+      if (mode === "chart") return "var(--bsw-chart)";
+      break;
+    case "PARTEIMENSCHUMWELTTIERSCHUTZinkBW":
+      if (mode === "regular") return "var(--tierschutz-regular)";
+      if (mode === "winner") return "var(--tierschutz-winner)";
+      if (mode === "select") return "var(--tierschutz-select)";
+      if (mode === "chart") return "var(--tierschutz-chart)";
+      break;
+    case "VoltDeutschlandinkBW":
+      if (mode === "regular") return "var(--volt-regular)";
+      if (mode === "winner") return "var(--volt-winner)";
+      if (mode === "select") return "var(--volt-select)";
+      if (mode === "chart") return "var(--volt-chart)";
+      break;
+    case "FWinkBW":
+      if (mode === "regular") return "var(--fw-regular)";
+      if (mode === "winner") return "var(--fw-winner)";
+      if (mode === "select") return "var(--fw-select)";
+      if (mode === "chart") return "var(--fw-chart)";
+      break;
+    case "MLPDinkBW":
+      if (mode === "regular") return "var(--mlpd-regular)";
+      if (mode === "winner") return "var(--mlpd-winner)";
+      if (mode === "select") return "var(--mlpd-select)";
+      if (mode === "chart") return "var(--mlpd-chart)";
+      break;
+    default:
+      return "var(--accent)";
+  }
 }
 
 /***********************
- * Chart.js – Interaktives Column Chart
+ * Chart.js – Interaktives Column Chart (Flowbite inspiriert)
  ***********************/
-var lastClickedFeature = null;
 var ctx = document.getElementById('resultChart').getContext('2d');
 var resultChart = new Chart(ctx, {
   type: 'bar',
@@ -228,7 +288,10 @@ var resultChart = new Chart(ctx, {
 });
 
 function updateResultChart(feature) {
-  lastClickedFeature = feature;
+  // Setze im Ergebnis-Kasten den Wahlbezirk mit ein (z.B. "Ergebnisse – 03323")
+  var resultTitle = document.getElementById('resultTitle');
+  resultTitle.innerText = "Ergebnisse - " + feature.properties.UWB;
+  
   var labels = [];
   var dataValues = [];
   var backgroundColors = [];
@@ -244,13 +307,10 @@ function updateResultChart(feature) {
   var maxVal = Math.max(...dataValues.map(Number));
   resultChart.options.scales.y.max = Math.ceil(maxVal / 10) * 10 || 100;
   resultChart.update();
-  // Aktualisiere den Header im Ergebnisbereich mit dem Wahlbezirk (z.B. UWB)
-  var wb = feature.properties.UWB || "Unbekannt";
-  document.getElementById('resultHeader').innerText = "Ergebnisse - " + wb;
 }
 
 /***********************
- * Interaktive Karte: Klick-Event, Marker und Chart
+ * Interaktive Karte: Marker und Klick-Event
  ***********************/
 var marker;
 map.on('click', 'geojson-fill', function(e) {
@@ -262,12 +322,8 @@ map.on('click', 'geojson-fill', function(e) {
     .setLngLat(e.lngLat)
     .addTo(map);
 });
-map.on('mouseenter', 'geojson-fill', function() {
-  map.getCanvas().style.cursor = 'pointer';
-});
-map.on('mouseleave', 'geojson-fill', function() {
-  map.getCanvas().style.cursor = '';
-});
+map.on('mouseenter', 'geojson-fill', function() { map.getCanvas().style.cursor = 'pointer'; });
+map.on('mouseleave', 'geojson-fill', function() { map.getCanvas().style.cursor = ''; });
 
 /***********************
  * Suchfeld: Filterung nach Bezirk und Adresse (nur innerhalb Berlins)
@@ -292,7 +348,7 @@ document.getElementById('searchField').addEventListener('input', function(e) {
 });
 
 /***********************
- * Parteiauswahl als farbige Radio-Button-Gruppe (unter der Karte)
+ * Parteiauswahl: Radio-Button-Gruppe (farblich codiert)
  ***********************/
 var partyDisplayNames = {
   "SPDinkBW": "SPD",
@@ -314,13 +370,14 @@ function populatePartyRadioGroup() {
   container.innerHTML = "";
   // Option "Gewinner" als erste Option
   var label = document.createElement('label');
-  label.innerHTML = `<input type="radio" name="party" value="Gewinner" checked> <span>Gewinner</span>`;
+  label.innerHTML = `<input type="radio" name="party" value="Gewinner" ${currentParty==="Gewinner" ? "checked" : ""}> <span>Gewinner</span>`;
   container.appendChild(label);
   // Für jede Partei:
   currentDataset.availableParties.forEach(function(key) {
     var lbl = document.createElement('label');
-    lbl.style.backgroundColor = hexToRGBA(getPartyColor(key, "button"), 0.15);
-    lbl.innerHTML = `<input type="radio" name="party" value="${key}"> <span>${partyDisplayNames[key] || key}</span>`;
+    lbl.style.backgroundColor = hexToRGBA(getPartyColor(key, "select"), 0.15);
+    var checked = (currentParty === key) ? "checked" : "";
+    lbl.innerHTML = `<input type="radio" name="party" value="${key}" ${checked}> <span>${partyDisplayNames[key] || key}</span>`;
     container.appendChild(lbl);
   });
 }
@@ -333,7 +390,6 @@ function hexToRGBA(hex, alpha) {
 populatePartyRadioGroup();
 document.getElementById('partyRadioGroup').addEventListener('change', function(e) {
   currentParty = e.target.value;
-  // Erhalte den aktuell ausgewählten Radiobutton und setze den Hightlight
   updateMapColors();
   if (!lastClickedFeature) {
     resultChart.data.labels = [];
