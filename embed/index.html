@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wahlergebnisse in Berlin</title>
+  
+  <!-- Tailwind CSS und Flowbite -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/flowbite@1.6.5/dist/flowbite.min.css" rel="stylesheet">
+  
+  <!-- Maplibre CSS -->
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
+  
+  <!-- Eigene CSS -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Chart.js (für das interaktive Diagramm) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header class="py-4 border-b border-border text-center">
+    <h1 class="text-3xl font-bold text-primary">Wahlergebnisse in Berlin</h1>
+  </header>
+
+  <!-- Hauptlayout: Auf Desktop zweispaltig, auf Mobile untereinander -->
+  <div class="main-container mx-auto p-4 flex flex-col md:flex-row gap-4">
+    <!-- Kartenbereich -->
+    <div id="mapContainer" class="relative w-full md:w-2/3 h-[22rem] md:h-96 rounded-lg overflow-hidden">
+      <div id="map" class="w-full h-full"></div>
+      <!-- Jahresauswahl als Buttongroup in der Karte (direkt unter dem Mittelpunkt) -->
+      <div id="mapYearControl" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        <button class="year-btn px-4 py-2 rounded-full border border-border bg-control text-primary font-medium" data-year="2021">2021</button>
+        <button class="year-btn px-4 py-2 rounded-full border border-border bg-control text-primary font-medium" data-year="2025">2025</button>
+      </div>
+    </div>
+    <!-- Sidebar: Auf Desktop rechts, auf Mobile unter der Karte -->
+    <aside id="sidebar" class="w-full md:w-1/3 rounded-lg p-4 bg-control flex flex-col gap-4">
+      <!-- Suchfeld -->
+      <input type="text" id="searchField" placeholder="Suche nach Bezirk oder Adresse (z.B. Alexanderplatz)" class="w-full p-2 rounded bg-body text-primary" />
+      
+      <!-- Parteiauswahl als farblich codierte Radio-Button-Gruppe -->
+      <div id="partySelection">
+        <h2 class="text-lg font-semibold mb-2 text-primary">Partei wählen</h2>
+        <div id="partyRadioGroup" class="flex flex-wrap gap-2"></div>
+      </div>
+      
+      <!-- Ergebnisbereich: Interaktives Column Chart -->
+      <div id="resultPanel" class="bg-control p-4 rounded">
+        <h2 class="text-lg font-semibold mb-2 text-primary">Ergebnisse</h2>
+        <canvas id="resultChart" class="w-full" style="max-height: 250px;"></canvas>
+      </div>
+    </aside>
+  </div>
+  
+  <!-- Skript-Einbindung -->
+  <script src="https://unpkg.com/flowbite@1.6.5/dist/flowbite.min.js"></script>
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
