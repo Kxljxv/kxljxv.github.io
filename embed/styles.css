@@ -1,8 +1,18 @@
+/* HTML und Body füllen den gesamten Viewport */
 html, body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
+}
+
+/* Verwenden Sie keine reinen Weiß- oder Schwarzwerte, sondern abgestimmte Grautöne */
+:root {
+  --body-bg: #1c1c1c;            /* Dunkles Grau als Seitenhintergrund */
+  --primary-text: #e0e0e0;         /* Helles Grau statt reinem Weiß */
+  --control-bg: #2a2a2a;          /* Für UI-Elemente – hier aber nicht sichtbar */
+  --border-color: #444444;        /* Dezente Rahmenfarbe */
+  --accent: #a3512b;             /* Akzentfarbe */
 }
 
 /* Die Karte soll den gesamten Viewport füllen */
@@ -11,5 +21,4 @@ html, body {
   height: 100vh;
 }
 
-/* Optional: Falls Sie später eigene Anpassungen für verschiedene Geräte vornehmen möchten, 
-   können Sie hier Media Queries ergänzen. */
+/* Keine zusätzlichen UI-Elemente, daher keine weiteren Styles */
