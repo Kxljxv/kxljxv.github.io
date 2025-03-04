@@ -1,17 +1,21 @@
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
+/* Standard-Stile für die Karte */
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
 }
 
-/* Die Karte soll den gesamten Viewport füllen */
+/* Die Karte nimmt die volle Seite ein */
 #map {
-  width: 100%;
-  height: 100vh;
+    width: 100%;
+    height: 100vh;
 }
 
-/* Für Darkmode können Sie hier leichte Filter einsetzen, sodass nicht rein schwarz dargestellt wird */
-.dark-mode {
-  filter: brightness(0.8) contrast(1.1);
+/* Darkmode / Whitemode Stile */
+.darkmode {
+    background-color: #1a1a1a;
+}
+.whitemode {
+    background-color: #f4f4f4;
 }
