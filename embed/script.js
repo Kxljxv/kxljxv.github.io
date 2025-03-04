@@ -1,29 +1,23 @@
-/***********************
- * URL-Parameter verarbeiten
- ***********************/
-const urlParams = new URLSearchParams(window.location.search);
-const partyParam = urlParams.get('partei') || "Gewinner";
-const yearParam = urlParams.get('jahr') || "2025";
-const modeParam = urlParams.get('mode') || "dark";  // "dark" oder "light"
-const controlsParam = urlParams.get('controls') || "true"; // "true" oder "false"
-
-// Setze Darstellungsmodus: Füge Klasse an <body> hinzu
-if (modeParam === "light") {
-  document.body.classList.add("light-mode");
-} else {
-  document.body.classList.add("dark-mode");
+// Hilfsfunktion: URL-Parameter auslesen
+function getURLParam(param) {
+  return new URLSearchParams(window.location.search).get(param);
 }
 
-// Falls Steuerelemente deaktiviert werden sollen, verstecke ggf. Elemente (hier: Jahr-Auswahl, Zoom-/Sonstiges)
-if (controlsParam === "false") {
-  // Beispielsweise: Jahrsauswahl in der Karte ausblenden
-  document.getElementById('mapYearControl').style.display = "none";
-}
+// Lese Parameter: Partei, Jahr, Modus, und ob Steuerelemente angezeigt werden sollen
+// Bei diesem Embed möchten wir keine zusätzlichen UI-Elemente (wie Zoom-Buttons) anzeigen.
+const partyParam = getURLParam('partei') || "Gewinner";
+const yearParam = getURLParam('jahr') || "2025";
+const modeParam = getURLParam('mode') || "dark";
+// In diesem Embed werden Steuerelemente standardmäßig nicht angezeigt.
+const controlsParam = getURLParam('controls') || "false";
 
-/***********************
- * Datensätze
- ***********************/
-var dataset2025 = {
+// Optional: Modus (Dark / Light) steuern – wir wählen dazu unterschiedliche Kartenstile
+const darkStyle = 'https://kxljxv.github.io/bm_web_gry_7.json';  // Beispiel Darkmode-Stil
+const lightStyle = 'https://your-light-style-url.example.com/style.json'; // Passen Sie an
+
+// Setze Standardwerte für die internen Variablen
+var currentParty = partyParam;
+var currentDataset = (yearParam === "2025") ? {
   url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
   partyRanges: {
     "SPDinkBW": { min: 0.06, max: 0.39984263 },
@@ -43,9 +37,7 @@ var dataset2025 = {
     "AfDinkBW", "FDPinkBW", "BSWinkBWB", "PARTEIMENSCHUMWELTTIERSCHUTZinkBW",
     "VoltDeutschlandinkBW", "FWinkBW", "MLPDinkBW"
   ]
-};
-
-var dataset2021 = {
+} : {
   url: 'https://kxljxv.github.io/wahlergebnisse2021.json',
   partyRanges: {
     "SPDinkBW": { min: 0.06, max: 0.39984263 },
@@ -66,51 +58,29 @@ var dataset2021 = {
   ]
 };
 
-currentDataset = (yearParam === "2025") ? dataset2025 : dataset2021;
-currentParty = partyParam;
+var geojsonData = null;
 
 /***********************
  * Karte initialisieren
  ***********************/
 var map = new maplibregl.Map({
   container: 'map',
-  style: 'https://kxljxv.github.io/bm_web_gry_7.json',
+  style: (modeParam === "light") ? lightStyle : darkStyle,
   center: [13.40, 52.52],
   zoom: 8,
   minZoom: 6,
-  maxBounds: [[12.5, 51.5], [14.5, 53]]
+  maxBounds: [[12.5, 51.5], [14.5, 53]],
+  attributionControl: false
 });
-map.dragRotate.disable();
-map.touchZoomRotate.disableRotation();
 
-// Optional: Steuerelemente nur anzeigen, wenn controlsParam true ist
-if (controlsParam === "false") {
-  // Hier könnten Sie beispielsweise den Standard-Zoomcontrol ausblenden
-  // (Wenn Sie Ihre eigenen Steuerelemente verwenden, können Sie diese nicht hinzufügen)
-}
-
-/***********************
- * Jahresauswahl in der Karte: Buttongroup
- ***********************/
-document.querySelectorAll('.year-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-    var selectedYear = this.getAttribute('data-year');
-    currentDataset = (selectedYear === "2025") ? dataset2025 : dataset2021;
-    populatePartyRadioGroup();
-    loadGeoJson();
-  });
-});
-// Setze per URL-Parameter den Jahr-Button
-document.querySelectorAll('.year-btn').forEach(btn => {
-  if (btn.getAttribute('data-year') === yearParam) {
-    btn.classList.add('active');
-  }
-});
+// Entferne alle UI-Controls (Zoom, Navigation, etc.)
+map.addControl(new maplibregl.NavigationControl({
+  showZoom: false,
+  showCompass: false
+}), 'top-right'); // Falls nötig, können Sie diese Zeile weglassen
 
 /***********************
- * GeoJSON laden
+ * GeoJSON-Daten laden
  ***********************/
 function loadGeoJson() {
   fetch(currentDataset.url)
@@ -147,6 +117,7 @@ function updateMapColors() {
   geojsonData.features.forEach(function(feature) {
     var fillColor;
     if (currentParty === "Gewinner") {
+      // Gewinner-Modus: Ermittle die höchste Partei und verwende eine einheitliche Farbe
       var winningParty = null, winningValue = 0;
       currentDataset.availableParties.forEach(function(key) {
         var val = parseFloat(feature.properties[key].replace(',', '.'));
@@ -155,7 +126,7 @@ function updateMapColors() {
           winningParty = key;
         }
       });
-      fillColor = getPartyColor(winningParty);
+      fillColor = getPartyColor(winningParty) || getComputedStyle(document.documentElement).getPropertyValue('--winner-fill').trim();
     } else {
       var val = parseFloat(feature.properties[currentParty].replace(',', '.'));
       var range = currentDataset.partyRanges[currentParty];
@@ -168,9 +139,11 @@ function updateMapColors() {
   if (map.getSource('geojson-layer')) {
     map.getSource('geojson-layer').setData(geojsonData);
   }
-  if (lastClickedFeature) updateResultChart(lastClickedFeature);
 }
 
+/***********************
+ * Hilfsfunktionen für Farben
+ ***********************/
 function interpolateColor(color1, color2, factor) {
   var c1 = hexToRgb(color1);
   var c2 = hexToRgb(color2);
@@ -181,14 +154,12 @@ function interpolateColor(color1, color2, factor) {
   };
   return "rgb(" + result.r + ", " + result.g + ", " + result.b + ")";
 }
-
 function hexToRgb(hex) {
   hex = hex.replace(/^#/, '');
   if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
   var bigint = parseInt(hex, 16);
   return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
 }
-
 function getPartyColor(key) {
   switch(key) {
     case "SPDinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--spd-color').trim();
@@ -208,156 +179,17 @@ function getPartyColor(key) {
 }
 
 /***********************
- * Chart.js – Interaktives Column Chart (Flowbite-inspiriert)
+ * Hinweis: Da diese Einbettung ausschließlich die Karte anzeigen soll,
+ * sind keine UI-Elemente (wie Suchfelder, Charts, etc.) sichtbar.
  ***********************/
-var lastClickedFeature = null;
-var ctx = document.getElementById('resultChart').getContext('2d');
-var resultChart = new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: [], 
-    datasets: [{
-      label: 'Ergebnis (%)',
-      data: [],
-      backgroundColor: [],
-      borderWidth: 0
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--primary-text').trim() },
-        grid: { color: 'rgba(255,255,255,0.1)' }
-      },
-      y: {
-        ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--primary-text').trim() },
-        grid: { color: 'rgba(255,255,255,0.1)' },
-        beginAtZero: true,
-        max: 100
-      }
-    },
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            return context.parsed.y + "%";
-          }
-        }
-      }
-    }
-  }
-});
-
-function updateResultChart(feature) {
-  lastClickedFeature = feature;
-  var labels = [];
-  var dataValues = [];
-  var backgroundColors = [];
-  currentDataset.availableParties.forEach(function(key) {
-    var val = parseFloat(feature.properties[key].replace(',', '.'));
-    labels.push(partyDisplayNames[key] || key);
-    dataValues.push((val * 100).toFixed(2));
-    backgroundColors.push(getPartyColor(key));
-  });
-  resultChart.data.labels = labels;
-  resultChart.data.datasets[0].data = dataValues;
-  resultChart.data.datasets[0].backgroundColor = backgroundColors;
-  var maxVal = Math.max(...dataValues.map(Number));
-  resultChart.options.scales.y.max = Math.ceil(maxVal / 10) * 10 || 100;
-  resultChart.update();
-}
 
 /***********************
- * Interaktive Karte: Klick-Event, Marker, Chart aktualisieren
+ * Damit externe Websites die Karte einbetten können, verarbeiten wir URL-Parameter,
+ * die z. B. die anzuzeigende Partei, das Jahr, den Darstellungsmodus und ob Steuerelemente angezeigt werden sollen,
+ * festlegen. Diese Parameter beeinflussen ausschließlich die interne Konfiguration, nicht aber die sichtbare UI.
  ***********************/
-var marker;
-map.on('click', 'geojson-fill', function(e) {
-  if (!e.features.length) return;
-  var feature = e.features[0];
-  updateResultChart(feature);
-  if (marker) marker.remove();
-  marker = new maplibregl.Marker({ color: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() })
-    .setLngLat(e.lngLat)
-    .addTo(map);
-});
-map.on('mouseenter', 'geojson-fill', function() {
-  map.getCanvas().style.cursor = 'pointer';
-});
-map.on('mouseleave', 'geojson-fill', function() {
-  map.getCanvas().style.cursor = '';
-});
+  
+// Optional: Sie können hier weitere Konfigurationen vornehmen, z.B. zusätzliche Filter für GeoJSON-Daten,
+// falls die URL-Parameter dafür genutzt werden sollen.
 
-/***********************
- * Suchfeld: Filterung nach Bezirk und Adresse (nur innerhalb Berlins)
- ***********************/
-document.getElementById('searchField').addEventListener('input', function(e) {
-  var query = e.target.value.toLowerCase();
-  if (query.includes("alexanderplatz")) {
-    map.flyTo({ center: [13.411, 52.521], zoom: 13 });
-  } else if (query.includes("potsdamer platz")) {
-    map.flyTo({ center: [13.376, 52.509], zoom: 13 });
-  } else {
-    if (!geojsonData) return;
-    var filtered = JSON.parse(JSON.stringify(geojsonData));
-    filtered.features = filtered.features.filter(function(feature) {
-      return feature.properties.UWB.toLowerCase().includes(query) ||
-             (feature.properties.adresse && feature.properties.adresse.toLowerCase().includes(query));
-    });
-    if (map.getSource('geojson-layer')) {
-      map.getSource('geojson-layer').setData(filtered);
-    }
-  }
-});
-
-/***********************
- * Parteiauswahl: Radio-Button-Gruppe (farblich codiert)
- ***********************/
-var partyDisplayNames = {
-  "SPDinkBW": "SPD",
-  "GrueninkBW": "Grüne",
-  "CDUinkBW": "CDU",
-  "LINKEinkBW": "Die Linke",
-  "LinkeinkBW": "Die Linke",
-  "AfDinkBW": "AfD",
-  "FDPinkBW": "FDP",
-  "BSWinkBWB": "BSW",
-  "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "Tierschutz",
-  "VoltDeutschlandinkBW": "Volt",
-  "FWinkBW": "FW",
-  "MLPDinkBW": "MLPD"
-};
-
-function populatePartyRadioGroup() {
-  var container = document.getElementById('partyRadioGroup');
-  container.innerHTML = "";
-  // Option "Gewinner" als erste Option
-  var label = document.createElement('label');
-  label.innerHTML = `<input type="radio" name="party" value="Gewinner" checked> <span>Gewinner</span>`;
-  container.appendChild(label);
-  // Für jede Partei:
-  currentDataset.availableParties.forEach(function(key) {
-    var lbl = document.createElement('label');
-    lbl.style.backgroundColor = hexToRGBA(getPartyColor(key), 0.15);
-    lbl.innerHTML = `<input type="radio" name="party" value="${key}"> <span>${partyDisplayNames[key] || key}</span>`;
-    container.appendChild(lbl);
-  });
-}
-function hexToRGBA(hex, alpha) {
-  var r = parseInt(hex.substring(1, 3), 16),
-      g = parseInt(hex.substring(3, 5), 16),
-      b = parseInt(hex.substring(5, 7), 16);
-  return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
-}
-populatePartyRadioGroup();
-document.getElementById('partyRadioGroup').addEventListener('change', function(e) {
-  currentParty = e.target.value;
-  updateMapColors();
-  if (!lastClickedFeature) {
-    resultChart.data.labels = [];
-    resultChart.data.datasets[0].data = [];
-    resultChart.update();
-  }
-});
+</script>
