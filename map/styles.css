@@ -1,28 +1,28 @@
-/* Zentrale Farbvariablen – an einer Stelle änderbar */
+/* Zentrale Farbvariablen – keine reinen Schwarz/Weiß-Töne, sondern abgestimmte Grautöne */
 :root {
-  --body-bg: #181818;            /* Gesamter Seitenhintergrund (Darkmode) */
-  --primary-text: #f0f0f0;         /* Haupttextfarbe */
-  --secondary-text: #bfbfbf;       /* Sekundärtext */
-  --control-bg: #242424;           /* Hintergrundfarbe der Controls (Sidebar, Buttons) */
-  --border-color: #333333;         /* Rahmenfarbe */
-  --accent: #a3512b;              /* Allgemeine Akzentfarbe */
-
-  /* Parteifarben – reguläre Darstellung */
-  --spd-color: #570000;
-  --gruen-color: #004F00;
-  --cdu-color: #09090A;
-  --linke-color: #8F0354;
-  --afd-color: #002B9C;
-  --fdp-color: #5E4A00;
-  --bsw-color: #571334;
-  --tierschutz-color: #00454D;
-  --volt-color: #462270;
-  --fw-color: #9C4900;
-  --mlpd-color: #8C142A;
-
-  /* Spezielle Farben für Gewinner-Modus und Statistik – separat festlegbar */
-  --winner-fill: #ff9900;        /* Einheitliche Farbe für Gewinner, z.B. ein leuchtendes Orange */
-  --chart-bar-bg: #4caf50;        /* Basisfarbe für Statistikbalken (hellere Variante) */
+  --body-bg: #1c1c1c;            /* Dunkler, nicht reiner Schwarz */
+  --primary-text: #e0e0e0;         /* Helles Grau, nicht reines Weiß */
+  --secondary-text: #b0b0b0;
+  --control-bg: #2a2a2a;          /* Etwas helleres Dunkelgrau */
+  --border-color: #444444;        /* Dezent, nicht zu stark */
+  --accent: #a3512b;             /* Akzentfarbe */
+  
+  /* Parteifarben – separat festlegbar */
+  --spd-color: #680000;
+  --gruen-color: #006400;
+  --cdu-color: #1a1a1a;
+  --linke-color: #9f1d64;
+  --afd-color: #003399;
+  --fdp-color: #6b4c00;
+  --bsw-color: #6a0dad;
+  --tierschutz-color: #005c5c;
+  --volt-color: #4b2e83;
+  --fw-color: #8a5a00;
+  --mlpd-color: #7a112f;
+  
+  /* Für Gewinner-Modus und Statistik (einheitliche Farbe) */
+  --winner-fill: #ffb84d;
+  --chart-bar-bg: #80c080;
 }
 
 body {
@@ -41,24 +41,28 @@ header {
   max-width: 1200px;
 }
 
-/* Mapcontainer */
+/* Mapcontainer: Abstand zum unteren Bildschirmrand */
 #mapContainer {
-  position: relative;
+  margin-bottom: 1rem;
 }
 
-/* Jahresauswahl-Buttongroup in der Karte */
+/* Jahresauswahl in der Karte */
 #mapYearControl {
   background-color: var(--control-bg);
   padding: 0.5rem;
   border-radius: 9999px;
   border: 1px solid var(--border-color);
 }
+
+/* Jahresauswahl-Buttons */
 .year-btn {
   background-color: var(--control-bg);
   color: var(--primary-text);
+  border: 1px solid var(--border-color);
   transition: background-color 0.2s;
 }
-.year-btn:hover, .year-btn.active {
+.year-btn:hover,
+.year-btn.active {
   background-color: var(--accent);
 }
 
@@ -88,13 +92,14 @@ header {
   background-color: var(--control-bg);
   color: var(--primary-text);
 }
-
-/* Wenn ausgewählt */
+#partyRadioGroup input {
+  accent-color: var(--accent);
+}
 #partyRadioGroup input:checked + span {
   font-weight: bold;
 }
 
-/* Ergebnispanel (Chart) */
+/* Ergebnisbereich (Chart) */
 #resultPanel {
   background-color: var(--control-bg);
   border: 1px solid var(--border-color);
