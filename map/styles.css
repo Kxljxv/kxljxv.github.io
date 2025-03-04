@@ -1,127 +1,101 @@
-/* Zentrale Farbvariablen – keine reinen Schwarz/Weiß-Töne, sondern abgestimmte Grautöne.
-   Zusätzlich definieren wir Platzhalterfarben für jede Partei:
-   Format: --<partei>-regular, --<partei>-winner, --<partei>-button, --<partei>-chart  */
+/* Zentrale Farbvariablen – alle Farben sind als Platzhalter definiert */
 :root {
+  /* Generelle Farben (kein reines Schwarz/Weiß) */
   --body-bg: #1c1c1c;
   --primary-text: #e0e0e0;
   --secondary-text: #b0b0b0;
   --control-bg: #2a2a2a;
   --border-color: #444444;
   --accent: #a3512b;
+  
+  /* Partei-Farben – jeweils vier Varianten: regulär, Gewinner, Selektion und Chart */
+  --spd-regular: #aa0000;
+  --spd-winner:  #bb0000;
+  --spd-select:   #cc0000;
+  --spd-chart:    #dd0000;
 
-  /* Beispiel-Parteifarben (Platzhalter) */
-  --spd-regular: #680000;
-  --spd-winner: #ff0000;
-  --spd-button: #7a0000;
-  --spd-chart: #a30000;
+  --gruen-regular: #007f00;
+  --gruen-winner:  #008f00;
+  --gruen-select:   #009f00;
+  --gruen-chart:    #00af00;
 
-  --gruen-regular: #006400;
-  --gruen-winner: #00cc00;
-  --gruen-button: #008000;
-  --gruen-chart: #009900;
+  --cdu-regular:   #222222;
+  --cdu-winner:    #333333;
+  --cdu-select:    #444444;
+  --cdu-chart:     #555555;
 
-  --cdu-regular: #1a1a1a;
-  --cdu-winner: #4d4d4d;
-  --cdu-button: #333333;
-  --cdu-chart: #666666;
+  --linke-regular: #8f0354;
+  --linke-winner:  #9f1354;
+  --linke-select:   #af2354;
+  --linke-chart:    #bf3354;
 
-  --linke-regular: #9f1d64;
-  --linke-winner: #ff66cc;
-  --linke-button: #c2185b;
-  --linke-chart: #e91e63;
+  --afd-regular:   #002b9c;
+  --afd-winner:    #003b9c;
+  --afd-select:    #004b9c;
+  --afd-chart:     #005b9c;
 
-  --afd-regular: #003399;
-  --afd-winner: #3366ff;
-  --afd-button: #002266;
-  --afd-chart: #0044cc;
+  --fdp-regular:   #5e4a00;
+  --fdp-winner:    #6e5a00;
+  --fdp-select:    #7e6a00;
+  --fdp-chart:     #8e7a00;
 
-  --fdp-regular: #6b4c00;
-  --fdp-winner: #b38f00;
-  --fdp-button: #8c6600;
-  --fdp-chart: #a17c00;
+  --bsw-regular:   #571334;
+  --bsw-winner:    #681334;
+  --bsw-select:    #791334;
+  --bsw-chart:     #8a1334;
 
-  /* Weitere Parteien: BSW, Tierschutz, Volt, FW, MLPD – Platzhalterwerte */
-  --bsw-regular: #5a2d82;
-  --bsw-winner: #8a4fcf;
-  --bsw-button: #6e3ab5;
-  --bsw-chart: #7f4dbd;
+  --tierschutz-regular: #00454d;
+  --tierschutz-winner:  #00554d;
+  --tierschutz-select:   #00654d;
+  --tierschutz-chart:    #00754d;
 
-  --tierschutz-regular: #005c5c;
-  --tierschutz-winner: #00cccc;
-  --tierschutz-button: #006666;
-  --tierschutz-chart: #007a7a;
+  --volt-regular:  #462270;
+  --volt-winner:   #572270;
+  --volt-select:   #682270;
+  --volt-chart:    #792270;
 
-  --volt-regular: #4b2e83;
-  --volt-winner: #7f57b3;
-  --volt-button: #56307a;
-  --volt-chart: #6c4490;
+  --fw-regular:    #9c4900;
+  --fw-winner:     #ad4900;
+  --fw-select:     #be4900;
+  --fw-chart:      #cf4900;
 
-  --fw-regular: #8a5a00;
-  --fw-winner: #e6b800;
-  --fw-button: #a27c00;
-  --fw-chart: #bf9000;
-
-  --mlpd-regular: #7a112f;
-  --mlpd-winner: #d6294f;
-  --mlpd-button: #931442;
-  --mlpd-chart: #b2233c;
+  --mlpd-regular:  #8c142a;
+  --mlpd-winner:   #9c142a;
+  --mlpd-select:   #ac142a;
+  --mlpd-chart:    #bc142a;
+  
+  /* Für den Gewinner-Modus (einheitlich) und für die Diagramme */
+  --winner-fill: #ffb84d;
 }
 
-/* Globales Layout */
+/* Allgemeines Layout */
 body {
   background-color: var(--body-bg);
   color: var(--primary-text);
   font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
-.bg-body { background-color: var(--body-bg); }
-.text-primary { color: var(--primary-text); }
-.bg-control { background-color: var(--control-bg); }
-.border-border { border-color: var(--border-color); }
-
-/* Header */
 header {
   background-color: var(--control-bg);
 }
 
-/* Hauptcontainer */
 .main-container {
   max-width: 1200px;
 }
 
-/* Mapcontainer */
+/* Karte */
 #mapContainer {
   position: relative;
   margin-bottom: 1rem;
 }
 
-/* Jahresauswahl-Buttongroup in der Karte */
-#mapYearControl {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: var(--control-bg);
-  padding: 0.5rem;
-  border-radius: 9999px;
-  border: 1px solid var(--border-color);
-}
-.year-btn {
-  background-color: var(--control-bg);
-  color: var(--primary-text);
-  border: 1px solid var(--border-color);
-  transition: background-color 0.2s;
-}
-.year-btn:hover,
-.year-btn.active {
-  background-color: var(--accent);
-}
-
-/* Sidebar */
-#sidebar {
-  background-color: var(--control-bg);
-  border-radius: 0.5rem;
-  padding: 1rem;
+/* Steuerelemente unter der Karte */
+#controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 /* Suchfeld */
@@ -130,15 +104,14 @@ header {
   color: var(--primary-text);
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
-  padding: 0.5rem;
+  padding: 0.75rem;
 }
 
-/* Parteiauswahl: Radio-Button-Gruppe (horizontal, mit Abstand zum Ergebnisbereich) */
+/* Parteiauswahl: Radio-Button-Gruppe */
 #partyRadioGroup {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 1rem;
 }
 #partyRadioGroup label {
   display: flex;
@@ -152,11 +125,40 @@ header {
   background-color: var(--control-bg);
   color: var(--primary-text);
 }
+#partyRadioGroup input {
+  accent-color: var(--accent);
+}
+#partyRadioGroup input:checked + span {
+  font-weight: bold;
+}
 
-/* Ergebnis-Panel */
+/* Jahresauswahl als Buttongroup */
+#yearSelection {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.year-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+  background-color: var(--control-bg);
+  color: var(--primary-text);
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+.year-btn:hover,
+.year-btn.active {
+  background-color: var(--accent);
+}
+
+/* Ergebnisbereich (Diagramm) */
 #resultPanel {
   background-color: var(--control-bg);
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
   padding: 1rem;
-  border: 1px solid var(--border-color);
+}
+#resultPanel h2 {
+  margin-bottom: 0.5rem;
 }
