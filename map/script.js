@@ -45,7 +45,7 @@ var dataset2021 = {
 };
 
 var currentDataset = dataset2025;
-var currentParty = "Gewinner"; // Standard: Gewinner-Modus
+var currentParty = "Gewinner"; // Standardmäßig Gewinner-Modus
 var geojsonData = null;
 
 /***********************
@@ -63,13 +63,17 @@ map.dragRotate.disable();
 map.touchZoomRotate.disableRotation();
 
 /***********************
- * Jahresauswahl (Buttongroup in der Karte)
+ * Jahresauswahl (Buttongroup unter der Karte)
  ***********************/
 document.querySelectorAll('.year-btn').forEach(btn => {
   btn.addEventListener('click', function() {
     document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
     this.classList.add('active');
     var selectedYear = this.getAttribute('data-year');
+    // Erhalte aktuelle Partei, falls vorhanden, sonst beibehalten
+    if (currentDataset.availableParties.indexOf(currentParty) === -1) {
+      currentParty = "Gewinner";
+    }
     currentDataset = (selectedYear === "2025") ? dataset2025 : dataset2021;
     populatePartyRadioGroup();
     loadGeoJson();
@@ -78,7 +82,7 @@ document.querySelectorAll('.year-btn').forEach(btn => {
 document.querySelector('.year-btn[data-year="2025"]').classList.add('active');
 
 /***********************
- * GeoJSON laden und Karte aktualisieren
+ * GeoJSON-Daten laden
  ***********************/
 function loadGeoJson() {
   fetch(currentDataset.url)
@@ -115,7 +119,6 @@ function updateMapColors() {
   geojsonData.features.forEach(function(feature) {
     var fillColor;
     if (currentParty === "Gewinner") {
-      // Gewinner-Modus: Ermittle für jeden Bezirk die Partei mit dem höchsten Wert und verwende eine einheitliche Farbe
       var winningParty = null, winningValue = 0;
       currentDataset.availableParties.forEach(function(key) {
         var val = parseFloat(feature.properties[key].replace(',', '.'));
@@ -124,13 +127,13 @@ function updateMapColors() {
           winningParty = key;
         }
       });
-      fillColor = getPartyColor(winningParty);
+      fillColor = getPartyColor(winningParty, "winner");
     } else {
       var val = parseFloat(feature.properties[currentParty].replace(',', '.'));
       var range = currentDataset.partyRanges[currentParty];
       var norm = (val - range.min) / (range.max - range.min);
       norm = Math.max(0, Math.min(norm, 1));
-      fillColor = interpolateColor("#f0f0f0", getPartyColor(currentParty), norm);
+      fillColor = interpolateColor("#f0f0f0", getPartyColor(currentParty, "regular"), norm);
     }
     feature.properties.fillColor = fillColor;
   });
@@ -150,7 +153,6 @@ function interpolateColor(color1, color2, factor) {
   };
   return "rgb(" + result.r + ", " + result.g + ", " + result.b + ")";
 }
-
 function hexToRgb(hex) {
   hex = hex.replace(/^#/, '');
   if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
@@ -158,33 +160,38 @@ function hexToRgb(hex) {
   return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
 }
 
-function getPartyColor(key) {
-  switch(key) {
-    case "SPDinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--spd-color').trim();
-    case "GrueninkBW": return getComputedStyle(document.documentElement).getPropertyValue('--gruen-color').trim();
-    case "CDUinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--cdu-color').trim();
-    case "LINKEinkBW":
-    case "LinkeinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--linke-color').trim();
-    case "AfDinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--afd-color').trim();
-    case "FDPinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--fdp-color').trim();
-    case "BSWinkBWB": return getComputedStyle(document.documentElement).getPropertyValue('--bsw-color').trim();
-    case "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--tierschutz-color').trim();
-    case "VoltDeutschlandinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--volt-color').trim();
-    case "FWinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--fw-color').trim();
-    case "MLPDinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--mlpd-color').trim();
-    default: return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-  }
+/***********************
+ * Farbkonfiguration für Parteien (Platzhalterfarben)
+ * type: "regular", "winner", "button", "chart"
+ ***********************/
+function getPartyColor(key, type) {
+  // Platzhalterwerte – ersetzen Sie diese mit Ihren Wunschfarben
+  var colors = {
+    "SPDinkBW": { regular: "#680000", winner: "#ff0000", button: "#7a0000", chart: "#a30000" },
+    "GrueninkBW": { regular: "#006400", winner: "#00cc00", button: "#008000", chart: "#009900" },
+    "CDUinkBW": { regular: "#1a1a1a", winner: "#4d4d4d", button: "#333333", chart: "#666666" },
+    "LINKEinkBW": { regular: "#9f1d64", winner: "#ff66cc", button: "#c2185b", chart: "#e91e63" },
+    "AfDinkBW": { regular: "#003399", winner: "#3366ff", button: "#002266", chart: "#0044cc" },
+    "FDPinkBW": { regular: "#6b4c00", winner: "#b38f00", button: "#8c6600", chart: "#a17c00" },
+    "BSWinkBWB": { regular: "#5a2d82", winner: "#8a4fcf", button: "#6e3ab5", chart: "#7f4dbd" },
+    "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { regular: "#005c5c", winner: "#00cccc", button: "#006666", chart: "#007a7a" },
+    "VoltDeutschlandinkBW": { regular: "#4b2e83", winner: "#7f57b3", button: "#56307a", chart: "#6c4490" },
+    "FWinkBW": { regular: "#8a5a00", winner: "#e6b800", button: "#a27c00", chart: "#bf9000" },
+    "MLPDinkBW": { regular: "#7a112f", winner: "#d6294f", button: "#931442", chart: "#b2233c" }
+  };
+  var party = colors[key] || { regular: "#a3512b", winner: "#a3512b", button: "#a3512b", chart: "#a3512b" };
+  return party[type] || party.regular;
 }
 
 /***********************
- * Chart.js – Interaktives Column Chart (Flowbite-inspiriert)
+ * Chart.js – Interaktives Column Chart
  ***********************/
 var lastClickedFeature = null;
 var ctx = document.getElementById('resultChart').getContext('2d');
 var resultChart = new Chart(ctx, {
   type: 'bar',
   data: {
-    labels: [],  // Dynamisch befüllt
+    labels: [],
     datasets: [{
       label: 'Ergebnis (%)',
       data: [],
@@ -229,7 +236,7 @@ function updateResultChart(feature) {
     var val = parseFloat(feature.properties[key].replace(',', '.'));
     labels.push(partyDisplayNames[key] || key);
     dataValues.push((val * 100).toFixed(2));
-    backgroundColors.push(getPartyColor(key));
+    backgroundColors.push(getPartyColor(key, "chart"));
   });
   resultChart.data.labels = labels;
   resultChart.data.datasets[0].data = dataValues;
@@ -237,14 +244,13 @@ function updateResultChart(feature) {
   var maxVal = Math.max(...dataValues.map(Number));
   resultChart.options.scales.y.max = Math.ceil(maxVal / 10) * 10 || 100;
   resultChart.update();
-  // Aktualisiere den Diagrammtitel mit dem Wahlbezirk (Eigenschaft "UWB")
-  if (feature.properties.UWB) {
-    document.getElementById('resultTitle').textContent = "Ergebnisse – " + feature.properties.UWB;
-  }
+  // Aktualisiere den Header im Ergebnisbereich mit dem Wahlbezirk (z.B. UWB)
+  var wb = feature.properties.UWB || "Unbekannt";
+  document.getElementById('resultHeader').innerText = "Ergebnisse - " + wb;
 }
 
 /***********************
- * Interaktive Karte: Marker und Klick-Event
+ * Interaktive Karte: Klick-Event, Marker und Chart
  ***********************/
 var marker;
 map.on('click', 'geojson-fill', function(e) {
@@ -256,11 +262,15 @@ map.on('click', 'geojson-fill', function(e) {
     .setLngLat(e.lngLat)
     .addTo(map);
 });
-map.on('mouseenter', 'geojson-fill', function() { map.getCanvas().style.cursor = 'pointer'; });
-map.on('mouseleave', 'geojson-fill', function() { map.getCanvas().style.cursor = ''; });
+map.on('mouseenter', 'geojson-fill', function() {
+  map.getCanvas().style.cursor = 'pointer';
+});
+map.on('mouseleave', 'geojson-fill', function() {
+  map.getCanvas().style.cursor = '';
+});
 
 /***********************
- * Suchfeld: Filterung nach Bezirk und Adresse (nur in Berlin)
+ * Suchfeld: Filterung nach Bezirk und Adresse (nur innerhalb Berlins)
  ***********************/
 document.getElementById('searchField').addEventListener('input', function(e) {
   var query = e.target.value.toLowerCase();
@@ -282,7 +292,7 @@ document.getElementById('searchField').addEventListener('input', function(e) {
 });
 
 /***********************
- * Parteiauswahl: Radio-Button-Gruppe (unter der Karte)
+ * Parteiauswahl als farbige Radio-Button-Gruppe (unter der Karte)
  ***********************/
 var partyDisplayNames = {
   "SPDinkBW": "SPD",
@@ -309,7 +319,7 @@ function populatePartyRadioGroup() {
   // Für jede Partei:
   currentDataset.availableParties.forEach(function(key) {
     var lbl = document.createElement('label');
-    lbl.style.backgroundColor = hexToRGBA(getPartyColor(key), 0.15);
+    lbl.style.backgroundColor = hexToRGBA(getPartyColor(key, "button"), 0.15);
     lbl.innerHTML = `<input type="radio" name="party" value="${key}"> <span>${partyDisplayNames[key] || key}</span>`;
     container.appendChild(lbl);
   });
@@ -323,6 +333,7 @@ function hexToRGBA(hex, alpha) {
 populatePartyRadioGroup();
 document.getElementById('partyRadioGroup').addEventListener('change', function(e) {
   currentParty = e.target.value;
+  // Erhalte den aktuell ausgewählten Radiobutton und setze den Hightlight
   updateMapColors();
   if (!lastClickedFeature) {
     resultChart.data.labels = [];
