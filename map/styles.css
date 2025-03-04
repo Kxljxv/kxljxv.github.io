@@ -1,0 +1,99 @@
+:root {
+    --body-bg: #181818;
+    --text-primary: #f0f0f0;
+    --text-secondary: #bfbfbf;
+    --control-bg: #242424;
+    --border-color: #333;
+    --accent: #a3512b;
+}
+
+body {
+    background-color: var(--body-bg);
+    color: var(--text-primary);
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.main-layout {
+    display: flex;
+    gap: 15px;
+}
+
+/* Karte */
+#mapContainer {
+    position: relative;
+    width: 65%;
+    height: 70vh;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Jahresauswahl in der Karte */
+#yearSelection {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--control-bg);
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#yearSelect {
+    background-color: var(--body-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 5px;
+}
+
+/* Sidebar */
+#sidebar {
+    width: 35%;
+    background-color: var(--control-bg);
+    padding: 15px;
+    border-radius: 10px;
+}
+
+/* Suchfeld */
+#searchField {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: var(--body-bg);
+    color: var(--text-primary);
+}
+
+/* Parteienauswahl */
+#partyRadioGroup {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+#partyRadioGroup label {
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* Ergebnis-Panel */
+#resultPanel {
+    background-color: var(--control-bg);
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+canvas {
+    max-height: 250px;
+}
