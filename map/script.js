@@ -63,7 +63,7 @@ map.dragRotate.disable();
 map.touchZoomRotate.disableRotation();
 
 /***********************
- * Jahresauswahl: Buttongroup in der Karte
+ * Jahresauswahl (Buttongroup in der Karte)
  ***********************/
 document.querySelectorAll('.year-btn').forEach(btn => {
   btn.addEventListener('click', function() {
@@ -78,7 +78,7 @@ document.querySelectorAll('.year-btn').forEach(btn => {
 document.querySelector('.year-btn[data-year="2025"]').classList.add('active');
 
 /***********************
- * GeoJSON-Daten laden
+ * GeoJSON laden und Karte aktualisieren
  ***********************/
 function loadGeoJson() {
   fetch(currentDataset.url)
@@ -108,14 +108,14 @@ function loadGeoJson() {
 loadGeoJson();
 
 /***********************
- * Farben für die Karte aktualisieren
+ * Farben der Karte aktualisieren
  ***********************/
 function updateMapColors() {
   if (!geojsonData) return;
   geojsonData.features.forEach(function(feature) {
     var fillColor;
     if (currentParty === "Gewinner") {
-      // Gewinner-Modus: Ermittle die höchste Partei und verwende eine einheitliche Farbe
+      // Gewinner-Modus: Ermittle für jeden Bezirk die Partei mit dem höchsten Wert und verwende eine einheitliche Farbe
       var winningParty = null, winningValue = 0;
       currentDataset.availableParties.forEach(function(key) {
         var val = parseFloat(feature.properties[key].replace(',', '.'));
@@ -163,7 +163,7 @@ function getPartyColor(key) {
     case "SPDinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--spd-color').trim();
     case "GrueninkBW": return getComputedStyle(document.documentElement).getPropertyValue('--gruen-color').trim();
     case "CDUinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--cdu-color').trim();
-    case "LINKEinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--linke-color').trim();
+    case "LINKEinkBW":
     case "LinkeinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--linke-color').trim();
     case "AfDinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--afd-color').trim();
     case "FDPinkBW": return getComputedStyle(document.documentElement).getPropertyValue('--fdp-color').trim();
@@ -177,14 +177,14 @@ function getPartyColor(key) {
 }
 
 /***********************
- * Chart.js – Interaktives Column Chart
+ * Chart.js – Interaktives Column Chart (Flowbite-inspiriert)
  ***********************/
 var lastClickedFeature = null;
 var ctx = document.getElementById('resultChart').getContext('2d');
 var resultChart = new Chart(ctx, {
   type: 'bar',
   data: {
-    labels: [], // Dynamisch befüllt
+    labels: [],  // Dynamisch befüllt
     datasets: [{
       label: 'Ergebnis (%)',
       data: [],
@@ -237,6 +237,10 @@ function updateResultChart(feature) {
   var maxVal = Math.max(...dataValues.map(Number));
   resultChart.options.scales.y.max = Math.ceil(maxVal / 10) * 10 || 100;
   resultChart.update();
+  // Aktualisiere den Diagrammtitel mit dem Wahlbezirk (Eigenschaft "UWB")
+  if (feature.properties.UWB) {
+    document.getElementById('resultTitle').textContent = "Ergebnisse – " + feature.properties.UWB;
+  }
 }
 
 /***********************
@@ -278,7 +282,7 @@ document.getElementById('searchField').addEventListener('input', function(e) {
 });
 
 /***********************
- * Parteiauswahl: Radio-Button-Gruppe (farblich codiert)
+ * Parteiauswahl: Radio-Button-Gruppe (unter der Karte)
  ***********************/
 var partyDisplayNames = {
   "SPDinkBW": "SPD",
