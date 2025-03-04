@@ -1,0 +1,33 @@
+<!-- Einbindung von ApexCharts -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<!-- Container für das Diagramm -->
+<div id="chart"></div>
+
+<script>
+    // Daten für das Diagramm
+    var options = {
+        chart: {
+            type: 'bar',
+            height: 350
+        },
+        series: [{
+            name: 'Prozent',
+            data: [30, 25, 15, 10, 20] // Beispielwerte für die Parteien
+        }],
+        xaxis: {
+            categories: ['Partei A', 'Partei B', 'Partei C', 'Partei D', 'Partei E']
+        },
+        colors: ['#1E3A8A', '#3B82F6', '#93C5FD', '#BFDBFE', '#DBEAFE'], // Hellere Farben
+        dataLabels: {
+            enabled: true,
+            formatter: function (val) {
+                return val + "%";
+            }
+        }
+    };
+
+    // Initialisierung des Diagramms
+    var chart = new ApexCharts(document.querySelector("#chart"), options);
+    chart.render();
+</script>
