@@ -1,35 +1,83 @@
-/* Zentrale Farbvariablen – keine reinen Schwarz/Weiß-Töne */
+/* Zentrale Farbvariablen – keine reinen Schwarz/Weiß-Töne, sondern abgestimmte Grautöne.
+   Zusätzlich definieren wir Platzhalterfarben für jede Partei:
+   Format: --<partei>-regular, --<partei>-winner, --<partei>-button, --<partei>-chart  */
 :root {
-  --body-bg: #1c1c1c;            /* Dunkles, nicht reines Schwarz */
-  --primary-text: #e0e0e0;         /* Helles Grau statt Weiß */
+  --body-bg: #1c1c1c;
+  --primary-text: #e0e0e0;
   --secondary-text: #b0b0b0;
-  --control-bg: #2a2a2a;          /* Dunkles Grau für Controls */
-  --border-color: #444444;        /* Dezente Rahmenfarbe */
-  --accent: #a3512b;             /* Akzentfarbe */
+  --control-bg: #2a2a2a;
+  --border-color: #444444;
+  --accent: #a3512b;
 
-  /* Parteifarben (regulär) */
-  --spd-color: #680000;
-  --gruen-color: #006400;
-  --cdu-color: #1a1a1a;
-  --linke-color: #9f1d64;
-  --afd-color: #003399;
-  --fdp-color: #6b4c00;
-  --bsw-color: #6a0dad;
-  --tierschutz-color: #005c5c;
-  --volt-color: #4b2e83;
-  --fw-color: #8a5a00;
-  --mlpd-color: #7a112f;
-  
-  /* Für Gewinner-Modus und Statistik */
-  --winner-fill: #ffb84d;
-  --chart-bar-bg: #80c080;
+  /* Beispiel-Parteifarben (Platzhalter) */
+  --spd-regular: #680000;
+  --spd-winner: #ff0000;
+  --spd-button: #7a0000;
+  --spd-chart: #a30000;
+
+  --gruen-regular: #006400;
+  --gruen-winner: #00cc00;
+  --gruen-button: #008000;
+  --gruen-chart: #009900;
+
+  --cdu-regular: #1a1a1a;
+  --cdu-winner: #4d4d4d;
+  --cdu-button: #333333;
+  --cdu-chart: #666666;
+
+  --linke-regular: #9f1d64;
+  --linke-winner: #ff66cc;
+  --linke-button: #c2185b;
+  --linke-chart: #e91e63;
+
+  --afd-regular: #003399;
+  --afd-winner: #3366ff;
+  --afd-button: #002266;
+  --afd-chart: #0044cc;
+
+  --fdp-regular: #6b4c00;
+  --fdp-winner: #b38f00;
+  --fdp-button: #8c6600;
+  --fdp-chart: #a17c00;
+
+  /* Weitere Parteien: BSW, Tierschutz, Volt, FW, MLPD – Platzhalterwerte */
+  --bsw-regular: #5a2d82;
+  --bsw-winner: #8a4fcf;
+  --bsw-button: #6e3ab5;
+  --bsw-chart: #7f4dbd;
+
+  --tierschutz-regular: #005c5c;
+  --tierschutz-winner: #00cccc;
+  --tierschutz-button: #006666;
+  --tierschutz-chart: #007a7a;
+
+  --volt-regular: #4b2e83;
+  --volt-winner: #7f57b3;
+  --volt-button: #56307a;
+  --volt-chart: #6c4490;
+
+  --fw-regular: #8a5a00;
+  --fw-winner: #e6b800;
+  --fw-button: #a27c00;
+  --fw-chart: #bf9000;
+
+  --mlpd-regular: #7a112f;
+  --mlpd-winner: #d6294f;
+  --mlpd-button: #931442;
+  --mlpd-chart: #b2233c;
 }
 
+/* Globales Layout */
 body {
   background-color: var(--body-bg);
   color: var(--primary-text);
   font-family: 'Arial', sans-serif;
 }
+
+.bg-body { background-color: var(--body-bg); }
+.text-primary { color: var(--primary-text); }
+.bg-control { background-color: var(--control-bg); }
+.border-border { border-color: var(--border-color); }
 
 /* Header */
 header {
@@ -43,11 +91,16 @@ header {
 
 /* Mapcontainer */
 #mapContainer {
+  position: relative;
   margin-bottom: 1rem;
 }
 
-/* Jahresauswahl in der Karte */
+/* Jahresauswahl-Buttongroup in der Karte */
 #mapYearControl {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   background-color: var(--control-bg);
   padding: 0.5rem;
   border-radius: 9999px;
@@ -67,6 +120,8 @@ header {
 /* Sidebar */
 #sidebar {
   background-color: var(--control-bg);
+  border-radius: 0.5rem;
+  padding: 1rem;
 }
 
 /* Suchfeld */
@@ -75,9 +130,16 @@ header {
   color: var(--primary-text);
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
+  padding: 0.5rem;
 }
 
-/* Parteiauswahl: Radio-Button-Gruppe */
+/* Parteiauswahl: Radio-Button-Gruppe (horizontal, mit Abstand zum Ergebnisbereich) */
+#partyRadioGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
 #partyRadioGroup label {
   display: flex;
   align-items: center;
@@ -90,11 +152,11 @@ header {
   background-color: var(--control-bg);
   color: var(--primary-text);
 }
-#partyRadioGroup input {
-  accent-color: var(--accent);
-}
-#partyRadioGroup input:checked + span {
-  font-weight: bold;
-}
 
-/* Ergebnisbereich (
+/* Ergebnis-Panel */
+#resultPanel {
+  background-color: var(--control-bg);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+}
