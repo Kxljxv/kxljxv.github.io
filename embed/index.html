@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Interaktive Karte – Embed</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Embedded Map</title>
   <!-- Maplibre CSS -->
   <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
   <!-- Eigene CSS -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Nur die Karte: keine sichtbaren UI-Elemente -->
-  <div id="mapContainer">
-    <div id="map"></div>
-  </div>
-  <!-- Skripte -->
+  <!-- Nur die Karte, die den gesamten Viewport füllt -->
+  <div id="map"></div>
+  <!-- Maplibre JS -->
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <!-- Eigene JS -->
   <script src="script.js"></script>
 </body>
 </html>
