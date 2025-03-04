@@ -1,0 +1,105 @@
+/* Zentrale Farbvariablen – keine reinen Schwarz/Weiß-Töne */
+:root {
+  --body-bg: #1c1c1c;            /* Dunkles Grau statt reinem Schwarz */
+  --primary-text: #e0e0e0;         /* Helles Grau, nicht reines Weiß */
+  --secondary-text: #b0b0b0;
+  --control-bg: #2a2a2a;          /* Dunkler, aber nicht rein schwarz */
+  --border-color: #444444;        /* Dezente Rahmenfarbe */
+  --accent: #a3512b;             /* Akzentfarbe */
+
+  /* Parteifarben */
+  --spd-color: #680000;
+  --gruen-color: #006400;
+  --cdu-color: #1a1a1a;
+  --linke-color: #9f1d64;
+  --afd-color: #003399;
+  --fdp-color: #6b4c00;
+  --bsw-color: #6a0dad;
+  --tierschutz-color: #005c5c;
+  --volt-color: #4b2e83;
+  --fw-color: #8a5a00;
+  --mlpd-color: #7a112f;
+
+  /* Farben für Gewinner-Modus und Statistik */
+  --winner-fill: #ffb84d;         /* Einheitliche Farbe für Gewinner */
+  --chart-bar-bg: #80c080;         /* Helle Farbe für Statistikbalken */
+}
+
+body {
+  background-color: var(--body-bg);
+  color: var(--primary-text);
+  font-family: 'Arial', sans-serif;
+}
+
+/* Header */
+header {
+  background-color: var(--control-bg);
+}
+
+/* Hauptcontainer */
+.main-container {
+  max-width: 1200px;
+}
+
+/* Mapcontainer */
+#mapContainer {
+  margin-bottom: 1rem;
+}
+
+/* Jahresauswahl in der Karte */
+#mapYearControl {
+  background-color: var(--control-bg);
+  padding: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+}
+.year-btn {
+  background-color: var(--control-bg);
+  color: var(--primary-text);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.2s;
+}
+.year-btn:hover,
+.year-btn.active {
+  background-color: var(--accent);
+}
+
+/* Sidebar */
+#sidebar {
+  background-color: var(--control-bg);
+}
+
+/* Suchfeld */
+#searchField {
+  background-color: var(--body-bg);
+  color: var(--primary-text);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+}
+
+/* Parteiauswahl: Radio-Button-Gruppe */
+#partyRadioGroup label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  font-weight: 500;
+  background-color: var(--control-bg);
+  color: var(--primary-text);
+}
+#partyRadioGroup input {
+  accent-color: var(--accent);
+}
+#partyRadioGroup input:checked + span {
+  font-weight: bold;
+}
+
+/* Ergebnisbereich (Chart) */
+#resultPanel {
+  background-color: var(--control-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+}
