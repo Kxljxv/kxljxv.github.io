@@ -22,11 +22,11 @@
   --party-mlpd-reg: #7a112f;
   
   /* Gewinnerkarte – einheitliche Farben */
-  --party-spd-win: #ff9999;
-  --party-gruen-win: #aaffaa;
-  --party-cdu-win: #cccccc;
-  --party-linke-win: #ffccff;
-  --party-afd-win: #99ccff;
+  --party-spd-win: #F06565;
+  --party-gruen-win: #BDFF87;
+  --party-cdu-win: #C9C9C9;
+  --party-linke-win: #E070AE;
+  --party-afd-win: #62B9F0;
   --party-fdp-win: #ffdd99;
   --party-bsw-win: #dd99ff;
   --party-tierschutz-win: #99ffff;
