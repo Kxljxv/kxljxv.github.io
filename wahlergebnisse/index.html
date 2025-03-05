@@ -1,1 +1,190 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Berlin Wahlergebnisse</title>
+    <script src="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #container {
+            display: flex;
+            flex-grow: 1;
+            max-height: 100%;
+        }
+        #map {
+            flex-grow: 1;
+        }
+        #chart-container {
+            width: 40%;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        #district-info {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .landscape-mode {
+            flex-direction: row !important;
+        }
+        .portrait-mode {
+            flex-direction: column !important;
+        }
+        #chart-container.portrait-mode {
+            width: 100%;
+        }
+        #controls {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        select, input {
+            margin: 0 10px;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <div>
+            <label>Wahljahr:</label>
+            <select id="year-select">
+                <option value="2021">2021</option>
+                <option value="2025">2025</option>
+            </select>
+            
+            <label>Ergebnisart:</label>
+            <select id="result-type-select">
+                <option value="gewinner">Gewinner</option>
+                <!-- Dynamisch zu füllen mit CSV-Spalten -->
+            </select>
+        </div>
+        <div>
+            <button id="location-btn">📍 Standort</button>
+            <button id="mode-toggle">Modus wechseln</button>
+        </div>
+    </div>
 
+    <div id="container" class="landscape-mode">
+        <div id="map"></div>
+        <div id="chart-container">
+            <div id="district-info">Gesamtergebnisse Berlin</div>
+            <canvas id="results-chart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Konfigurationen für Farben und Werte
+        const columnConfigurations = {
+            '21AFD': {
+                winnerColor: '#0066CC',
+                minColor: '#CCE5FF', 
+                maxColor: '#0033AA',
+                minValue: 0,
+                maxValue: 30,
+                displayColor: '#4477AA'
+            },
+            // Weitere Partei-Konfigurationen hier
+        };
+
+        // Globale Variablen
+        let map, geojsonSource, resultData, selectedYear = '2021';
+        let resultsChart, chartInstance = null;
+
+        // Initialisierung
+        async function initializeApp() {
+            // Basemap laden
+            const baseMapStyle = await fetch('https://kxljxv.github.io/bm_web_gry_7.json').then(response => response.json());
+            
+            // MapLibre Karte initialisieren
+            map = new maplibregl.Map({
+                container: 'map',
+                style: baseMapStyle,
+                center: [13.404954, 52.520007],
+                zoom: 9
+            });
+
+            // Geojson und Ergebnisse laden
+            const [geojsonData, csvData] = await Promise.all([
+                fetch('https://kxljxv.github.io/wahlergebnisse/map.json').then(r => r.json()),
+                new Promise(resolve => {
+                    Papa.parse('https://kxljxv.github.io/wahlergebnisse/ergebnisse.csv', {
+                        download: true,
+                        complete: (results) => resolve(results.data)
+                    });
+                })
+            ]);
+
+            // Datenverarbeitung
+            processData(geojsonData, csvData);
+
+            // Chart initialisieren
+            initializeChart();
+
+            // Event Listeners
+            setupEventListeners();
+        }
+
+        function processData(geojsonData, csvData) {
+            // Implementierung der Datenverarbeitung
+            // Mappt CSV-Daten zu GeoJSON
+            // Füllt Ergebnisse und Konfigurationen
+        }
+
+        function initializeChart() {
+            const ctx = document.getElementById('results-chart').getContext('2d');
+            resultsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [], // Parteinamen
+                    datasets: [{
+                        data: [], // Ergebnisse
+                        backgroundColor: [] // Dynamische Farben
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `${context.dataset.label}: ${context.formattedValue}%`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function setupEventListeners() {
+            // Implementierung von Interaktionen
+            // Jahr-Auswahl
+            // Ergebnisart-Auswahl
+            // Standort-Button
+            // Modus-Wechsel
+            // Polygon-Interaktionen
+        }
+
+        // App starten
+        initializeApp();
+    </script>
+</body>
+</html>
