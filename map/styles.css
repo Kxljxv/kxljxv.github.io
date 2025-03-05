@@ -9,11 +9,11 @@
   
   /* Platzhalter-Parteifarben – für verschiedene UI-Bereiche */
   /* Reguläre Karte */
-  --party-spd-reg: #680000;
-  --party-gruen-reg: #006400;
-  --party-cdu-reg: #1a1a1a;
-  --party-linke-reg: #9f1d64;
-  --party-afd-reg: #003399;
+  --party-spd-reg: #F06565;
+  --party-gruen-reg: #BDFF87;
+  --party-cdu-reg: #C9C9C9;
+  --party-linke-reg: #E070AE;
+  --party-afd-reg: #62B9F0;
   --party-fdp-reg: #6b4c00;
   --party-bsw-reg: #6a0dad;
   --party-tierschutz-reg: #005c5c;
