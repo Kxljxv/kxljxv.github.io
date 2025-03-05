@@ -3,39 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <title>Berlin Wahlergebnisse</title>
-    <link href='https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css' rel='stylesheet' />
+    <script src="https://unpkg.com/maplibre-gl@3.2.1/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.2.1/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body, html {
+        body {
             margin: 0;
-            padding: 0;
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #f4f4f4;
+            color: #333;
         }
-        #map-container {
+        #container {
             display: flex;
             height: 100vh;
-            transition: all 0.3s ease;
+            transition: flex-direction 0.3s ease;
         }
         #map {
             flex-grow: 1;
             position: relative;
         }
-        #chart-container {
-            width: 0;
-            transition: width 0.3s ease;
-            overflow: hidden;
+        #sidebar {
+            width: 400px;
             background-color: #ffffff;
+            padding: 20px;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
         }
-        #chart-info {
-            padding: 10px;
-            text-align: center;
-            background-color: #f8f8f8;
+        #district-info {
+            margin-bottom: 15px;
         }
-        #chart {
+        #chart-container {
             flex-grow: 1;
-            padding: 10px;
         }
         .landscape-mode {
             flex-direction: row;
@@ -43,124 +43,151 @@
         .portrait-mode {
             flex-direction: column;
         }
-        #chart-container.visible {
-            width: 400px;
-        }
-        .tooltip {
+        .chart-tooltip {
             position: absolute;
             background: rgba(0,0,0,0.7);
             color: white;
-            padding: 5px;
-            border-radius: 3px;
+            padding: 5px 10px;
+            border-radius: 4px;
             display: none;
         }
     </style>
 </head>
 <body>
-    <div id="map-container">
+    <div id="container" class="landscape-mode">
         <div id="map"></div>
-        <div id="chart-container">
-            <div id="chart-info"></div>
-            <div id="chart"></div>
+        <div id="sidebar">
+            <div id="district-info">
+                <h2 id="district-name">Gesamtergebnis Berlin</h2>
+            </div>
+            <div id="chart-container">
+                <canvas id="results-chart"></canvas>
+            </div>
         </div>
     </div>
 
-    <script src='https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js'></script>
-    <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
     <script>
-        // Configuration object
-        const CONFIG = {
-            // Colors and styling configurations will be added here
-            colorMappings: {
-                // Placeholder for party and result color configurations
+        // Konfiguration für Farben und Darstellung
+        const COLUMN_CONFIGS = {
+            '21AFD': {
+                winnerColor: '#0066CC',
+                minColor: '#B0C4DE',
+                maxColor: '#00008B',
+                minValue: 0,
+                maxValue: 30,
+                displayColor: '#4169E1'
             },
-            berlinAverages: {
-                // Placeholder for Berlin-wide average results
-            }
+            // Weitere Parteien hier analog konfigurieren
         };
 
-        // Main application class
-        class BerlinElectionMap {
-            constructor(options) {
-                this.options = options;
-                this.mapContainer = document.getElementById('map-container');
-                this.chartContainer = document.getElementById('chart-container');
-                this.chartInfo = document.getElementById('chart-info');
-                this.chartElement = document.getElementById('chart');
-                this.currentChart = null;
-                
-                this.initializeMap();
-                this.loadData();
-            }
+        let map, geojsonSource, csvData, berlinOverallResults;
+        let selectedYear = '25', selectedColumn = 'gewinner';
+        let resultsChart;
 
-            async loadData() {
-                try {
-                    const [mapData, resultsData] = await Promise.all([
-                        fetch('https://kxljxv.github.io/wahlergebnisse/map.json').then(r => r.json()),
-                        fetch('https://kxljxv.github.io/wahlergebnisse/ergebnisse.csv').then(r => r.text())
-                    ]);
-
-                    // Parse CSV (this would require a CSV parsing library)
-                    // For simplicity, I'm leaving this as a placeholder
-                    this.mapData = mapData;
-                    this.resultsData = resultsData;
-
-                    this.setupMap(mapData);
-                } catch (error) {
-                    console.error('Data loading error:', error);
-                }
-            }
-
-            initializeMap() {
-                this.map = new maplibregl.Map({
-                    container: 'map',
-                    style: 'https://kxljxv.github.io/bm_web_gry_7.json',
-                    center: [13.404954, 52.520008],
-                    zoom: 9
-                });
-
-                // Add navigation and location controls
-                this.map.addControl(new maplibregl.NavigationControl());
-                this.map.addControl(new maplibregl.GeolocateControl({
-                    positionOptions: {
-                        enableHighAccuracy: true
-                    },
-                    trackUserLocation: true
-                }));
-            }
-
-            setupMap(mapData) {
-                // Map setup logic for election results visualization
-                // This would involve adding layers, handling interactions, etc.
-            }
-
-            updateVisualization(year, resultType) {
-                // Logic to update map colors and chart based on selection
-            }
-
-            renderChart(districtData) {
-                // Render election results chart
-            }
-
-            toggleMode(mode) {
-                this.mapContainer.classList.remove('landscape-mode', 'portrait-mode');
-                this.mapContainer.classList.add(`${mode}-mode`);
-            }
-        }
-
-        // Initialization function
-        function initElectionMap(options) {
-            return new BerlinElectionMap(options);
-        }
-
-        // Example usage
-        document.addEventListener('DOMContentLoaded', () => {
-            const map = initElectionMap({
-                year: '2025',
-                resultType: 'gewinner',
-                mode: 'landscape'
+        // MapLibre Initialisierung
+        function initMap() {
+            map = new maplibregl.Map({
+                container: 'map',
+                style: 'https://kxljxv.github.io/bm_web_gry_7.json',
+                center: [13.404954, 52.520008],
+                zoom: 9,
+                maxZoom: 14,
+                minZoom: 8
             });
-        });
+
+            map.addControl(new maplibregl.NavigationControl());
+            map.addControl(new maplibregl.GeolocateControl());
+
+            map.on('load', () => {
+                Promise.all([
+                    fetch('https://kxljxv.github.io/wahlergebnisse/map.json').then(r => r.json()),
+                    fetch('https://kxljxv.github.io/wahlergebnisse/ergebnisse.csv').then(r => r.text())
+                ]).then(([geojsonData, csvText]) => {
+                    csvData = Papa.parse(csvText, { header: true }).data;
+                    setupMap(geojsonData);
+                });
+            });
+        }
+
+        function setupMap(geojsonData) {
+            map.addSource('berlin-districts', {
+                type: 'geojson',
+                data: geojsonData
+            });
+
+            map.addLayer({
+                id: 'districts-layer',
+                type: 'fill',
+                source: 'berlin-districts',
+                paint: {
+                    'fill-color': getPolygonColor,
+                    'fill-opacity': 0.7
+                }
+            });
+
+            map.addLayer({
+                id: 'districts-outline',
+                type: 'line',
+                source: 'berlin-districts',
+                paint: {
+                    'line-color': 'black',
+                    'line-width': [
+                        'case',
+                        ['boolean', ['feature-state', 'selected'], false],
+                        2,
+                        0
+                    ]
+                }
+            });
+
+            map.on('click', 'districts-layer', handleDistrictClick);
+        }
+
+        function getPolygonColor(feature) {
+            // Implementierung der Farblogik basierend auf Wahlergebnissen
+            // Detaillierte Logik würde hier stehen
+        }
+
+        function handleDistrictClick(e) {
+            const feature = e.features[0];
+            const districtId = feature.properties.ID;
+            const districtData = csvData.find(row => row.ID === districtId);
+
+            if (districtData) {
+                updateDistrictInfo(districtData);
+                updateChart(districtData);
+                
+                // Alle Features deselektieren
+                map.getSource('berlin-districts').setFeatureState(
+                    { source: 'berlin-districts', sourceLayer: 'districts-layer' },
+                    { selected: false }
+                );
+
+                // Aktuelles Feature selektieren
+                map.getSource('berlin-districts').setFeatureState(
+                    { id: feature.id, source: 'berlin-districts', sourceLayer: 'districts-layer' },
+                    { selected: true }
+                );
+            }
+        }
+
+        function updateDistrictInfo(districtData) {
+            document.getElementById('district-name').textContent = 
+                `${districtData.BEZIRK} (${selectedYear}UWB: ${districtData[selectedYear + 'UWB']})`;
+        }
+
+        function updateChart(districtData) {
+            // Chart Update-Logik
+        }
+
+        function toggleDisplayMode() {
+            const container = document.getElementById('container');
+            container.classList.toggle('landscape-mode');
+            container.classList.toggle('portrait-mode');
+        }
+
+        // Initialisierung
+        initMap();
     </script>
 </body>
 </html>
