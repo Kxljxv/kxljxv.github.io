@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>basemap.de Web Vektor - MapLibre GL JS Demo</title>
+   <script src='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js'></script>
+   <link href='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css' rel='stylesheet' />
+   <style>
+      body {
+         margin: 0;
+         padding: 0;
+      }
+      #map {
+         position: absolute;
+         top: 0;
+         bottom: 0;
+         width: 100%;
+      }
+   </style>
+</head>
+<body>
+   <div id="map" class="map"></div>
+   <script>
+      var map = new maplibregl.Map({
+         container: 'map',
+         style: 'https://kxljxv.github.io/style.json',
+         center: [10, 51],
+         zoom: 6,
+      });
+      map.on('load', function () {
+         map.addSource('geojson-layer', {
+            type: 'geojson',
+            data: 'https://kxljxv.github.io/2025.json'
+         });
+         map.addLayer({
+            id: 'geojson-fill',
+            type: 'fill',
+            source: 'geojson-layer',
+            layout: {},
+            paint: {
+               'fill-color': '#ff0000', // Rote Farbe für die Polygone
+               'fill-opacity': 0.5     // Halbdurchsichtig
+            }
+         }, map.getStyle().layers[0].id); // Fügt die GeoJSON-Ebene unter der ersten Basemap-Ebene ein
+      });
+   </script>
+</body>
+</html>
