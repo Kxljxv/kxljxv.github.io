@@ -2,23 +2,12 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Wahlergebnisse Karte Berlin (ohne Diagramm)</title>
+  <title>Wahlergebnisse Karte Berlin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- MapLibre GL CSS -->
   <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #ffffff;
-      color: #333;
-    }
-    /* Die Karte füllt den gesamten Viewport */
-    #map {
-      width: 100%;
-      height: 100vh;
-    }
-    /* Ausgabefeld für die ausgewählte ID – immer sichtbar in der Karte */
+    body { margin: 0; font-family: Arial, sans-serif; }
+    #map { width: 100%; height: 100vh; }
     #selected-id {
       position: absolute;
       bottom: 10px;
@@ -34,56 +23,29 @@
 <body>
   <div id="map"></div>
   <div id="selected-id">Keine Auswahl</div>
-  
-  <!-- MapLibre GL JS -->
+
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
   <script>
-    /***********************************************************************
-     * Konfiguration
-     *
-     * - wahljahr: "2021" oder "2025"
-     * - ergebnissart: "gewinner" oder eine konkrete Spalte wie "25VOLT"
-     * - columns: Definiert pro Spalte (wie in der CSV) die Farbinformationen.
-     ***********************************************************************/
-    const config = {
-      wahljahr: "2025", // "2021" oder "2025"
-      ergebnissart: "gewinner", // "gewinner" oder z. B. "25VOLT"
-      columns: {
-        "21WAHLBETEILIGUNG": { winnerColor: "#A8DADC", minColor: "#F1FAEE", maxColor: "#457B9D", minValue: 30, maxValue: 90 },
-        "21AFD":            { winnerColor: "#FFADAD", minColor: "#FFE5E5", maxColor: "#FF0000", minValue: 0,  maxValue: 40 },
-        "21GRUENE":         { winnerColor: "#B8F2E6", minColor: "#E0FFF4", maxColor: "#2A9D8F", minValue: 0,  maxValue: 50 },
-        "21LINKE":          { winnerColor: "#FFC6FF", minColor: "#FFE6FF", maxColor: "#D291BC", minValue: 0,  maxValue: 50 },
-        "21VOLT":           { winnerColor: "#FFD6A5", minColor: "#FFF1E6", maxColor: "#FF8C42", minValue: 0,  maxValue: 20 },
-        "21SPD":            { winnerColor: "#CFFFE5", minColor: "#E0FFF4", maxColor: "#4CAF50", minValue: 0,  maxValue: 60 },
-        "21PMUT":           { winnerColor: "#D0E1FF", minColor: "#E8F0FF", maxColor: "#1E88E5", minValue: 0,  maxValue: 10 },
-        "21MLPD":           { winnerColor: "#E0BBE4", minColor: "#F3E5F5", maxColor: "#9C27B0", minValue: 0,  maxValue: 10 },
-        "21FW":             { winnerColor: "#D4A5A5", minColor: "#FDECEC", maxColor: "#D32F2F", minValue: 0,  maxValue: 15 },
-        "21FDP":            { winnerColor: "#C8E6C9", minColor: "#E8F5E9", maxColor: "#388E3C", minValue: 0,  maxValue: 20 },
-        "21CDU":            { winnerColor: "#BBDEFB", minColor: "#E3F2FD", maxColor: "#1976D2", minValue: 0,  maxValue: 50 },
-        "25WAHLBETEILIGUNG": { winnerColor: "#A8DADC", minColor: "#F1FAEE", maxColor: "#457B9D", minValue: 30, maxValue: 90 },
-        "25AFD":            { winnerColor: "#FFADAD", minColor: "#FFE5E5", maxColor: "#FF0000", minValue: 0,  maxValue: 40 },
-        "25GRUENE":         { winnerColor: "#B8F2E6", minColor: "#E0FFF4", maxColor: "#2A9D8F", minValue: 0,  maxValue: 50 },
-        "25LINKE":          { winnerColor: "#FFC6FF", minColor: "#FFE6FF", maxColor: "#D291BC", minValue: 0,  maxValue: 50 },
-        "25VOLT":           { winnerColor: "#FFD6A5", minColor: "#FFF1E6", maxColor: "#FF8C42", minValue: 0,  maxValue: 20 },
-        "25SPD":            { winnerColor: "#CFFFE5", minColor: "#E0FFF4", maxColor: "#4CAF50", minValue: 0,  maxValue: 60 },
-        "25PMUT":           { winnerColor: "#D0E1FF", minColor: "#E8F0FF", maxColor: "#1E88E5", minValue: 0,  maxValue: 10 },
-        "25MLPD":           { winnerColor: "#E0BBE4", minColor: "#F3E5F5", maxColor: "#9C27B0", minValue: 0,  maxValue: 10 },
-        "25FW":             { winnerColor: "#D4A5A5", minColor: "#FDECEC", maxColor: "#D32F2F", minValue: 0,  maxValue: 15 },
-        "25FDP":            { winnerColor: "#C8E6C9", minColor: "#E8F5E9", maxColor: "#388E3C", minValue: 0,  maxValue: 20 },
-        "25CDU":            { winnerColor: "#BBDEFB", minColor: "#E3F2FD", maxColor: "#1976D2", minValue: 0,  maxValue: 50 },
-        "25BSW":            { winnerColor: "#E6EE9C", minColor: "#F9FBE7", maxColor: "#9E9D24", minValue: 0,  maxValue: 10 }
-      }
-    };
-
-    /***********************************************************************
-     * Globale Variablen und Hilfsfunktionen
-     ***********************************************************************/
     let geojsonData;
     let csvData = [];
     let map;
     let selectedFeatureId = null;
+    let selectedYear = "2025"; 
+    let selectedParty = "gewinner"; 
 
-    // Interpoliert zwischen zwei Hex-Farben anhand eines Faktors (0 bis 1)
+    const columns = {
+      "21AFD": { minColor: "#FFE5E5", maxColor: "#FF0000", minValue: 0, maxValue: 40 },
+      "21GRUENE": { minColor: "#E0FFF4", maxColor: "#2A9D8F", minValue: 0, maxValue: 50 },
+      "21LINKE": { minColor: "#FFE6FF", maxColor: "#D291BC", minValue: 0, maxValue: 50 },
+      "21SPD": { minColor: "#E0FFF4", maxColor: "#4CAF50", minValue: 0, maxValue: 60 },
+      "21CDU": { minColor: "#E3F2FD", maxColor: "#1976D2", minValue: 0, maxValue: 50 },
+      "25AFD": { minColor: "#FFE5E5", maxColor: "#FF0000", minValue: 0, maxValue: 40 },
+      "25GRUENE": { minColor: "#E0FFF4", maxColor: "#2A9D8F", minValue: 0, maxValue: 50 },
+      "25LINKE": { minColor: "#FFE6FF", maxColor: "#D291BC", minValue: 0, maxValue: 50 },
+      "25SPD": { minColor: "#E0FFF4", maxColor: "#4CAF50", minValue: 0, maxValue: 60 },
+      "25CDU": { minColor: "#E3F2FD", maxColor: "#1976D2", minValue: 0, maxValue: 50 }
+    };
+
     function interpolateColor(color1, color2, factor) {
       const c1 = parseInt(color1.slice(1), 16);
       const c2 = parseInt(color2.slice(1), 16);
@@ -92,198 +54,83 @@
       const r = Math.round(r1 + factor * (r2 - r1));
       const g = Math.round(g1 + factor * (g2 - g1));
       const b = Math.round(b1 + factor * (b2 - b1));
-      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+      return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
     }
 
-    // Berechnet die Füllfarbe anhand eines Wertes und der Spalten-Konfiguration
-    function getFillColor(value, columnConfig) {
-      const { minValue, maxValue, minColor, maxColor } = columnConfig;
-      let factor = (value - minValue) / (maxValue - minValue);
-      factor = Math.max(0, Math.min(1, factor));
-      return interpolateColor(minColor, maxColor, factor);
+    function getFillColor(value, colConfig) {
+      const factor = Math.max(0, Math.min(1, (value - colConfig.minValue) / (colConfig.maxValue - colConfig.minValue)));
+      return interpolateColor(colConfig.minColor, colConfig.maxColor, factor);
     }
 
-    // Bestimmt im "gewinner"-Modus die Farbe der Partei mit dem höchsten Wert
-    function getWinnerColor(feature) {
-      const jahr = config.wahljahr;
-      const parties = jahr === "2021" 
-        ? ["AFD", "GRUENE", "LINKE", "VOLT", "SPD", "PMUT", "MLPD", "FW", "FDP", "CDU"]
-        : ["AFD", "GRUENE", "LINKE", "VOLT", "SPD", "PMUT", "MLPD", "FW", "FDP", "CDU", "BSW"];
-      let maxVal = -Infinity, winningParty = null;
-      parties.forEach(party => {
-        const key = jahr + party;
-        const value = parseFloat(feature.properties[key]);
-        if (!isNaN(value) && value > maxVal) {
-          maxVal = value;
-          winningParty = key;
-        }
-      });
-      if (winningParty && config.columns[winningParty]) {
-        return config.columns[winningParty].winnerColor;
-      }
-      return "#cccccc";
-    }
-
-    // Einfaches CSV-Parsing (Header in der ersten Zeile)
-    function parseCSV(text) {
-      const lines = text.trim().split("\n");
-      const headers = lines[0].split(",");
-      const result = [];
-      for (let i = 1; i < lines.length; i++) {
-        const obj = {};
-        const currentline = lines[i].split(",");
-        headers.forEach((header, index) => {
-          obj[header.trim()] = currentline[index] ? currentline[index].trim() : "";
-        });
-        result.push(obj);
-      }
-      return result;
-    }
-
-    /***********************************************************************
-     * Daten laden und verbinden (GeoJSON + CSV)
-     ***********************************************************************/
     async function loadData() {
-      try {
-        const geojsonResponse = await fetch("https://kxljxv.github.io/wahlergebnisse/map.json");
-        if (!geojsonResponse.ok) throw new Error("GeoJSON konnte nicht geladen werden.");
-        geojsonData = await geojsonResponse.json();
-        console.log("GeoJSON erfolgreich geladen.");
-      } catch (error) {
-        console.error("Fehler beim Laden der GeoJSON:", error);
-      }
+      const geojsonResponse = await fetch("https://kxljxv.github.io/wahlergebnisse/map.json");
+      geojsonData = await geojsonResponse.json();
+      const csvResponse = await fetch("https://kxljxv.github.io/wahlergebnisse/ergebnisse.csv");
+      csvData = (await csvResponse.text()).trim().split("\n").slice(1).map(line => {
+        const [id, ...values] = line.split(",");
+        return { ID: id.trim(), values: values.map(v => parseFloat(v) || 0) };
+      });
 
-      try {
-        const csvResponse = await fetch("https://kxljxv.github.io/wahlergebnisse/ergebnisse.csv");
-        if (!csvResponse.ok) throw new Error("CSV konnte nicht geladen werden.");
-        const csvText = await csvResponse.text();
-        csvData = parseCSV(csvText);
-        console.log("CSV erfolgreich geladen.");
-      } catch (error) {
-        console.error("Fehler beim Laden der CSV:", error);
-      }
-
-      // Verknüpfe CSV-Daten mit den GeoJSON-Features anhand der Eigenschaft "ID"
-      if (geojsonData && csvData.length > 0) {
-        geojsonData.features.forEach(feature => {
-          const id = feature.properties.ID;
-          const csvRow = csvData.find(row => row.ID === id);
-          if (csvRow) {
-            feature.properties = { ...feature.properties, ...csvRow };
-          }
-          // Setze die Füllfarbe je nach gewählter Ergebnissart
-          if (config.ergebnissart === "gewinner") {
-            feature.properties.fillColor = getWinnerColor(feature);
-          } else {
-            const col = config.ergebnissart;
-            const value = parseFloat(feature.properties[col]);
-            if (!isNaN(value) && config.columns[col]) {
-              feature.properties.fillColor = getFillColor(value, config.columns[col]);
-            } else {
-              feature.properties.fillColor = "#cccccc";
-            }
-          }
-        });
-      }
+      updateMapColors();
       initMap();
     }
 
-    /***********************************************************************
-     * Initialisierung der Karte (MapLibre mit Basemap und GeoJSON-Layer)
-     ***********************************************************************/
+    function updateMapColors() {
+      geojsonData.features.forEach(feature => {
+        const id = feature.properties.ID;
+        const csvRow = csvData.find(row => row.ID === id);
+        if (csvRow) {
+          feature.properties = { ...feature.properties, ...csvRow };
+        }
+        const key = selectedYear + selectedParty;
+        if (columns[key]) {
+          const value = feature.properties.values[Object.keys(columns).indexOf(key)];
+          feature.properties.fillColor = getFillColor(value, columns[key]);
+        } else {
+          feature.properties.fillColor = "#cccccc";
+        }
+      });
+      if (map) {
+        map.getSource('wahlergebnisse').setData(geojsonData);
+      }
+    }
+
     function initMap() {
       map = new maplibregl.Map({
         container: 'map',
         style: 'https://kxljxv.github.io/bm_web_gry_7.json',
         center: [13.4050, 52.5200],
-        zoom: 10,
-        pitchWithRotate: false,
-        dragRotate: false
+        zoom: 10
       });
-      map.touchZoomRotate.disableRotation();
-      map.addControl(new maplibregl.NavigationControl());
-      map.addControl(new maplibregl.GeolocateControl({
-         positionOptions: { enableHighAccuracy: true },
-         trackUserLocation: true,
-         showUserLocation: true
-      }));
-      
-      map.on('load', function() {
-        map.addSource('wahlergebnisse', {
-          type: 'geojson',
-          data: geojsonData
-        });
 
+      map.on('load', () => {
+        map.addSource('wahlergebnisse', { type: 'geojson', data: geojsonData });
         map.addLayer({
           id: 'wahlergebnisse-fill',
           type: 'fill',
           source: 'wahlergebnisse',
-          layout: {},
-          paint: {
-            'fill-color': ['get', 'fillColor'],
-            'fill-opacity': 1
-          }
-        }, map.getStyle().layers[0].id);
+          paint: { 'fill-color': ['get', 'fillColor'], 'fill-opacity': 1 }
+        });
 
-        // Klick auf ein Polygon: Aktualisiere die Auswahl und gebe die ID aus
-        map.on('click', 'wahlergebnisse-fill', function(e) {
+        map.on('click', 'wahlergebnisse-fill', e => {
           if (e.features.length > 0) {
             const feature = e.features[0];
             selectedFeatureId = feature.properties.ID;
-            updateSelection();
-            updateOutput(selectedFeatureId, feature.properties);
+            document.getElementById('selected-id').textContent = "Ausgewählte ID: " + selectedFeatureId;
+            window.parent.postMessage({ selectedId: selectedFeatureId }, "*");
           }
         });
-
-        // Klick außerhalb eines Polygons: Rücksetzen
-        map.on('click', function(e) {
-          const features = map.queryRenderedFeatures(e.point, { layers: ['wahlergebnisse-fill'] });
-          if (!features.length) {
-            selectedFeatureId = null;
-            removeSelectionLayer();
-            updateOutput(null, null);
-          }
-        });
-        console.log("Karte und Layer erfolgreich initialisiert.");
       });
     }
 
-    // Hebt den ausgewählten Wahlbezirk mit einem schwarzen Rand hervor
-    function updateSelection() {
-      removeSelectionLayer();
-      map.addLayer({
-        id: 'selected-outline',
-        type: 'line',
-        source: 'wahlergebnisse',
-        filter: ['==', ['get', 'ID'], selectedFeatureId],
-        layout: {},
-        paint: {
-          'line-color': '#000000',
-          'line-width': 2
-        }
-      });
-    }
-    function removeSelectionLayer() {
-      if (map.getLayer('selected-outline')) {
-        map.removeLayer('selected-outline');
+    window.addEventListener("message", event => {
+      if (event.data && event.data.selectedParty && event.data.selectedYear) {
+        selectedParty = event.data.selectedParty;
+        selectedYear = event.data.selectedYear;
+        updateMapColors();
       }
-    }
+    });
 
-    // Aktualisiert die Ausgabe: Zeigt die ausgewählte ID an und sendet diese per postMessage
-    function updateOutput(selectedId, properties) {
-      const outputDiv = document.getElementById('selected-id');
-      if (selectedId) {
-        outputDiv.textContent = "Ausgewählter Wahlbezirk ID: " + selectedId;
-      } else {
-        outputDiv.textContent = "Keine Auswahl";
-      }
-      // Sende die ausgewählte ID an das Parent-Fenster (nützlich bei IFrame-Einbettung)
-      if (window.parent && window.parent !== window) {
-        window.parent.postMessage({ selectedId: selectedId, properties: properties }, "*");
-      }
-    }
-
-    // Starte den Ladevorgang der Daten
     loadData();
   </script>
 </body>
