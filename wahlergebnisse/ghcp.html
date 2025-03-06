@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+   <meta charset="UTF-8">
+   <title>Wahlergebnisse in Berlin</title>
+   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+   <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+   <style>
+      body {
+         margin: 0;
+         padding: 0;
+         font-family: Arial, sans-serif;
+         background-color: #f8f9fa;
+         color: #333;
+      }
+
+      #map {
+         position: absolute;
+         top: 0;
+         bottom: 0;
+         width: 100%;
+      }
+
+      .chart-container {
+         position: absolute;
+         background-color: white;
+         padding: 10px;
+         border: 1px solid #ccc;
+         border-radius: 5px;
+         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Landscape mode */
+      .landscape .chart-container {
+         top: 10px;
+         right: 10px;
+         width: 40%;
+         height: 80%;
+         display: flex;
+         flex-direction: column;
+      }
+
+      /* Hochformat mode */
+      .portrait .chart-container {
+         bottom: 10px;
+         left: 10px;
+         width: 80%;
+         height: 40%;
+         display: flex;
+         flex-direction: column;
+      }
+
+      #chart {
+         flex: 1;
+      }
+
+      .chart-header {
+         text-align: center;
+         margin-bottom: 10px;
+      }
+   </style>
+</head>
+
+<body>
+   <div id="map" class="map"></div>
+   <div id="chart-container" class="chart-container">
+      <div class="chart-header">
+         <h3 id="bezirk-name">Berlin</h3>
+         <p id="wahlbezirk-id">Gesamtergebnisse</p>
+      </div>
+      <canvas id="chart"></canvas>
+   </div>
+
+   <script>
+      var map = new maplibregl.Map({
+         container: 'map',
+         style: 'https://kxljxv.github.io/bm_web_gry_7.json',
+         center: [13.4050, 52.5200],
+         zoom: 10,
+      });
+
+      map.addControl(new maplibregl.NavigationControl());
+
+      map.on('load', function () {
+         console.log("Karte geladen");
+
+         fetch('https://kxljxv.github.io/wahlergebnisse/map.json')
+            .then(response => response.json())
+            .then(geojson => {
+               map.addSource('geojson-layer', {
+                  type: 'geojson',
+                  data: geojson
+               });
+
+               map.addLayer({
+                  id: 'geojson-fill',
+                  type: 'fill',
+                  source: 'geojson-layer',
+                  layout: {},
+                  paint: {
+                     'fill-color': '#ff0000', // Beispiel: rote Farbe für die Polygone
+                     'fill-opacity': 0.5     // Halbdurchsichtig
+                  }
+               }, map.getStyle().layers[0].id); // Fügt die GeoJSON-Ebene unter der ersten Basemap-Ebene ein
+
+               console.log("GeoJSON-Daten geladen");
+            })
+            .catch(error => console.error("Fehler beim Laden der GeoJSON-Daten:", error));
+
+         fetch('https://kxljxv.github.io/wahlergebnisse/ergebnisse.csv')
+            .then(response => response.text())
+            .then(csv => {
+               var data = parseCSV(csv);
+               console.log("CSV-Daten geladen", data);
+               // Hier kannst du den CSV-Daten weiterverarbeiten
+            })
+            .catch(error => console.error("Fehler beim Laden der CSV-Daten:", error));
+      });
+
+      function parseCSV(csv) {
+         var lines = csv.split('\n');
+         var headers = lines[0].split(',');
+         var data = lines.slice(1).map(line => {
+            var values = line.split(',');
+            var obj = {};
+            headers.forEach((header, index) => {
+               obj[header.trim()] = values[index].trim();
+            });
+            return obj;
+         });
+         return data;
+      }
+
+      // Hier kannst du den Code für das Säulendiagramm hinzufügen
+      var ctx = document.getElementById('chart').getContext('2d');
+      var chart = new Chart(ctx, {
+         type: 'bar',
+         data: {
+            // Beispiel-Daten
+            labels: ['Partei 1', 'Partei 2', 'Partei 3'],
+            datasets: [{
+               label: 'Ergebnisse',
+               data: [12, 19, 3],
+               backgroundColor: [
+                  'rgba(255, 99, 132, 0.2)',
+                  'rgba(54, 162, 235, 0.2)',
+                  'rgba(75, 192, 192, 0.2)'
+               ],
+               borderColor: [
+                  'rgba(255, 99, 132, 1)',
+                  'rgba(54, 162, 235, 1)',
+                  'rgba(75, 192, 192, 1)'
+               ],
+               borderWidth: 1
+            }]
+         },
+         options: {
+            responsive: true,
+            scales: {
+               y: {
+                  beginAtZero: true
+               }
+            },
+            plugins: {
+               tooltip: {
+                  callbacks: {
+                     label: function (context) {
+                        return context.raw + '%';
+                     }
+                  }
+               }
+            }
+         }
+      });
+
+      // Funktion zum Umschalten zwischen Landscape- und Hochformatmodus
+      function toggleMode() {
+         var container = document.getElementById('chart-container');
+         if (container.classList.contains('landscape')) {
+            container.classList.remove('landscape');
+            container.classList.add('portrait');
+         } else {
+            container.classList.remove('portrait');
+            container.classList.add('landscape');
+         }
+      }
+
+      // Beispiel-Schaltfläche zum Umschalten des Modus (diese sollte auf der Website hinzugefügt werden)
+      var button = document.createElement('button');
+      button.textContent = 'Modus wechseln';
+      button.onclick = toggleMode;
+      document.body.appendChild(button);
+   </script>
+
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+
+</html>
