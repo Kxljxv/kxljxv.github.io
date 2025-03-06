@@ -1,173 +1,695 @@
 <!DOCTYPE html>
-<html lang="de">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Berlin Wahlergebnisse</title>
-    <script src='https://unpkg.com/maplibre-gl@3.2.1/dist/maplibre-gl.js'></script>
-    <link href='https://unpkg.com/maplibre-gl@3.2.1/dist/maplibre-gl.css' rel='stylesheet' />
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Berliner Wahlergebnisse</title>
+    <script src='https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js'></script>
+    <link href='https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css' rel='stylesheet' />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
         }
-        #map {
-            position: absolute;
-            top: 0;
-            bottom: 0;
+
+        .container {
             width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        #district-info {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(255,255,255,0.8);
+
+        .container.landscape {
+            flex-direction: row;
+        }
+
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .chart-container {
+            padding: 15px;
+            background-color: #f9f9f9;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .container.landscape .chart-container {
+            width: 30%;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .container:not(.landscape) .chart-container {
+            height: 40%;
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .selected-info {
+            margin-bottom: 15px;
             padding: 10px;
-            z-index: 1;
+            background-color: #f0f0f0;
             border-radius: 5px;
+        }
+
+        .chart-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .bar {
+            transition: opacity 0.2s;
+        }
+
+        .bar:hover {
+            opacity: 0.8;
         }
     </style>
 </head>
 <body>
-    <div id="map" class="map"></div>
-    <div id="district-info">
-        <h3>Wahlergebnisse Berlin</h3>
+    <div id="container" class="container landscape">
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+        <div class="chart-container">
+            <div class="selected-info">
+                <h3 id="selected-district">Berlin (Gesamt)</h3>
+                <div id="selected-uwb"></div>
+            </div>
+            <div class="chart-title">Wahlergebnisse</div>
+            <div id="chart"></div>
+        </div>
     </div>
 
     <script>
-        // Konfiguration für Farben und Darstellung
-        const COLUMN_CONFIGS = {
-            '21AFD': {
-                winnerColor: '#0066CC',
-                minColor: '#B0C4DE',
-                maxColor: '#00008B',
-                minValue: 0,
-                maxValue: 30,
-                displayColor: '#4169E1'
+        // Konfiguration
+        const config = {
+            wahljahr: '25', // Standard: 2025
+            ergebnisTyp: 'gewinner', // Standard: Gewinnerkarte
+            landscape: true, // Standard: Landscape-Modus
+            // Farbschemata für Parteien und Daten
+            parteiFarben: {
+                'AFD': {
+                    gewinner: '#009ee0',
+                    display: '#009ee0',
+                    minColor: '#e6f3fa',
+                    maxColor: '#009ee0',
+                    minValue: 0,
+                    maxValue: 30
+                },
+                'GRUENE': {
+                    gewinner: '#1ea04d',
+                    display: '#1ea04d',
+                    minColor: '#e7f5ec',
+                    maxColor: '#1ea04d',
+                    minValue: 0,
+                    maxValue: 30
+                },
+                'LINKE': {
+                    gewinner: '#be3075',
+                    display: '#be3075',
+                    minColor: '#f7e9ef',
+                    maxColor: '#be3075',
+                    minValue: 0,
+                    maxValue: 30
+                },
+                'VOLT': {
+                    gewinner: '#562883',
+                    display: '#562883',
+                    minColor: '#ede8f2',
+                    maxColor: '#562883',
+                    minValue: 0,
+                    maxValue: 10
+                },
+                'SPD': {
+                    gewinner: '#e3000f',
+                    display: '#e3000f',
+                    minColor: '#fce6e7',
+                    maxColor: '#e3000f',
+                    minValue: 0,
+                    maxValue: 30
+                },
+                'PMUT': {
+                    gewinner: '#ec798d',
+                    display: '#ec798d',
+                    minColor: '#fdeef1',
+                    maxColor: '#ec798d',
+                    minValue: 0,
+                    maxValue: 5
+                },
+                'MLPD': {
+                    gewinner: '#951b1e',
+                    display: '#951b1e',
+                    minColor: '#f2e7e8',
+                    maxColor: '#951b1e',
+                    minValue: 0,
+                    maxValue: 5
+                },
+                'FW': {
+                    gewinner: '#ff9900',
+                    display: '#ff9900',
+                    minColor: '#fff3e6',
+                    maxColor: '#ff9900',
+                    minValue: 0,
+                    maxValue: 5
+                },
+                'FDP': {
+                    gewinner: '#ffed00',
+                    display: '#ffed00',
+                    minColor: '#fffbe6',
+                    maxColor: '#ffed00',
+                    minValue: 0,
+                    maxValue: 10
+                },
+                'CDU': {
+                    gewinner: '#000000',
+                    display: '#000000',
+                    minColor: '#e6e6e6',
+                    maxColor: '#000000',
+                    minValue: 0,
+                    maxValue: 30
+                },
+                'BSW': {
+                    gewinner: '#9c6937',
+                    display: '#9c6937',
+                    minColor: '#f3ede7',
+                    maxColor: '#9c6937',
+                    minValue: 0,
+                    maxValue: 20
+                }
             },
-            '25SPD': {
-                winnerColor: '#FF0000',
-                minColor: '#FFB6C1',
-                maxColor: '#8B0000',
-                minValue: 0,
-                maxValue: 40,
-                displayColor: '#FF4500'
+            // Konfiguration für andere Datentypen
+            dataSets: {
+                'WAHLBETEILIGUNG': {
+                    display: '#6b6b6b',
+                    minColor: '#f0f0f0',
+                    maxColor: '#2a2a2a',
+                    minValue: 40,
+                    maxValue: 90
+                }
+            },
+            // Durchschnittsergebnisse für ganz Berlin (2025)
+            berlinGesamt25: {
+                'AFD': 12.5,
+                'GRUENE': 18.3,
+                'LINKE': 12.1,
+                'VOLT': 5.2,
+                'SPD': 23.7,
+                'PMUT': 2.1,
+                'MLPD': 0.3,
+                'FW': 1.8,
+                'FDP': 5.9,
+                'CDU': 14.2,
+                'BSW': 3.9,
+                'WAHLBETEILIGUNG': 69.8
+            },
+            // Durchschnittsergebnisse für ganz Berlin (2021)
+            berlinGesamt21: {
+                'AFD': 14.1,
+                'GRUENE': 22.4,
+                'LINKE': 14.3,
+                'VOLT': 2.7,
+                'SPD': 21.6,
+                'PMUT': 2.5,
+                'MLPD': 0.2,
+                'FW': 1.2,
+                'FDP': 9.1,
+                'CDU': 11.9,
+                'WAHLBETEILIGUNG': 73.2
             }
-            // Weitere Parteien können hier konfiguriert werden
         };
 
-        let map, geojsonSource, csvData;
-        let selectedYear = '25', selectedColumn = 'gewinner';
+        // Parteireihenfolge für Diagramm
+        const parteienReihenfolge = ['SPD', 'CDU', 'GRUENE', 'LINKE', 'AFD', 'FDP', 'BSW', 'VOLT', 'PMUT', 'FW', 'MLPD'];
 
-        // MapLibre Initialisierung
-        function initMap() {
-            map = new maplibregl.Map({
-                container: 'map',
-                style: 'https://kxljxv.github.io/bm_web_gry_7.json',
-                center: [13.404954, 52.520008],
-                zoom: 9,
-                maxZoom: 14,
-                minZoom: 8
-            });
+        // Aktuelles Layout
+        let layout = config.landscape ? 'landscape' : 'portrait';
 
-            map.addControl(new maplibregl.NavigationControl());
-            map.addControl(new maplibregl.GeolocateControl());
+        // Initialisierung der Map
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://kxljxv.github.io/bm_web_gry_7.json',
+            center: [13.4, 52.52], // Berlin Zentrum
+            zoom: 10,
+            pitchWithRotate: false, // Neigung deaktivieren
+            dragRotate: false      // Rotation deaktivieren
+        });
 
-            map.on('load', () => {
-                Promise.all([
-                    fetch('https://kxljxv.github.io/wahlergebnisse/map.json').then(r => r.json()),
-                    fetch('https://kxljxv.github.io/wahlergebnisse/ergebnisse.csv').then(r => r.text())
-                ]).then(([geojsonData, csvText]) => {
-                    csvData = Papa.parse(csvText, { header: true }).data;
-                    setupMap(geojsonData);
-                }).catch(error => {
-                    console.error('Fehler beim Laden der Daten:', error);
+        // Geladene Daten
+        let geojsonData = null;
+        let csvData = null;
+        let selectedFeature = null;
+
+        // CSV-Daten abrufen und verarbeiten
+        async function fetchData() {
+            try {
+                // GeoJSON und CSV parallel laden
+                const [geojsonResponse, csvResponse] = await Promise.all([
+                    fetch('https://kxljxv.github.io/wahlergebnisse/map.json'),
+                    fetch('https://kxljxv.github.io/wahlergebnisse/ergebnisse.csv')
+                ]);
+
+                if (!geojsonResponse.ok || !csvResponse.ok) {
+                    throw new Error('Fehler beim Laden der Daten');
+                }
+
+                geojsonData = await geojsonResponse.json();
+                
+                // CSV parsen
+                const csvText = await csvResponse.text();
+                csvData = parseCSV(csvText);
+                
+                // Karte initialisieren, nachdem alle Daten geladen sind
+                initializeMap();
+            } catch (error) {
+                console.error('Fehler beim Laden der Daten:', error);
+            }
+        }
+
+        // Einfacher CSV-Parser
+        function parseCSV(text) {
+            const rows = text.trim().split('\n');
+            const headers = rows[0].split(',');
+            
+            return rows.slice(1).map(row => {
+                const values = row.split(',');
+                const obj = {};
+                
+                headers.forEach((header, i) => {
+                    // Numerische Werte konvertieren
+                    if (i > 0 && values[i]) {
+                        obj[header] = parseFloat(values[i]);
+                    } else {
+                        obj[header] = values[i];
+                    }
                 });
+                
+                return obj;
             });
         }
 
-        function setupMap(geojsonData) {
-            // GeoJSON-Quelle hinzufügen
-            map.addSource('berlin-districts', {
-                type: 'geojson',
-                data: geojsonData
+        // Map initialisieren
+        function initializeMap() {
+            // Mapping zwischen GeoJSON-IDs und CSV-Daten erstellen
+            const idToData = {};
+            csvData.forEach(item => {
+                idToData[item.ID] = item;
             });
 
-            // GeoJSON-Layer mit Füllfarbe hinzufügen
-            map.addLayer({
-                id: 'districts-fill',
-                type: 'fill',
-                source: 'berlin-districts',
-                paint: {
-                    'fill-color': getPolygonColor,
-                    'fill-opacity': 0.7
-                }
-            }, 'background'); // Wichtig: Layer unter der Basemap hinzufügen
-
-            // Umrandung der Distrikte
-            map.addLayer({
-                id: 'districts-line',
-                type: 'line',
-                source: 'berlin-districts',
-                paint: {
-                    'line-color': [
-                        'case', 
-                        ['boolean', ['feature-state', 'selected'], false],
-                        'black',
-                        'transparent'
-                    ],
-                    'line-width': 2
+            // GeoJSON-Features mit CSV-Daten anreichern
+            geojsonData.features.forEach(feature => {
+                const id = feature.properties.id;
+                if (idToData[id]) {
+                    feature.properties = {
+                        ...feature.properties,
+                        ...idToData[id]
+                    };
                 }
             });
 
-            map.on('click', 'districts-fill', handleDistrictClick);
+            map.on('load', function() {
+                // Polygone für Wahlbezirke hinzufügen
+                map.addSource('wahlbezirke', {
+                    type: 'geojson',
+                    data: geojsonData
+                });
+
+                // Layer für Wahlbezirke hinzufügen
+                map.addLayer({
+                    id: 'wahlbezirke-fill',
+                    type: 'fill',
+                    source: 'wahlbezirke',
+                    layout: {},
+                    paint: {
+                        'fill-color': getFillColorExpression(),
+                        'fill-opacity': 0.8
+                    }
+                }, map.getStyle().layers[0].id); // Unter der ersten Basemap-Ebene einfügen
+
+                // Layer für ausgewählten Wahlbezirk hinzufügen
+                map.addLayer({
+                    id: 'selected-wahlbezirk',
+                    type: 'line',
+                    source: 'wahlbezirke',
+                    layout: {},
+                    paint: {
+                        'line-color': '#000000',
+                        'line-width': 3,
+                        'line-opacity': [
+                            'case',
+                            ['boolean', ['feature-state', 'selected'], false],
+                            1,
+                            0
+                        ]
+                    }
+                }, map.getStyle().layers[0].id);
+
+                // Klick-Event für Wahlbezirke
+                map.on('click', 'wahlbezirke-fill', function(e) {
+                    if (selectedFeature) {
+                        map.setFeatureState(
+                            { source: 'wahlbezirke', id: selectedFeature.id },
+                            { selected: false }
+                        );
+                    }
+
+                    const feature = e.features[0];
+                    selectedFeature = {
+                        id: feature.id,
+                        properties: feature.properties
+                    };
+
+                    map.setFeatureState(
+                        { source: 'wahlbezirke', id: feature.id },
+                        { selected: true }
+                    );
+
+                    updateChart(feature.properties);
+                });
+
+                // Cursor ändern beim Hovern über Wahlbezirke
+                map.on('mouseenter', 'wahlbezirke-fill', function() {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+                
+                map.on('mouseleave', 'wahlbezirke-fill', function() {
+                    map.getCanvas().style.cursor = '';
+                });
+
+                // Standort-Button hinzufügen
+                map.addControl(new maplibregl.GeolocateControl({
+                    positionOptions: {
+                        enableHighAccuracy: true
+                    },
+                    trackUserLocation: false
+                }));
+
+                // Initial Chart rendern
+                renderChart();
+            });
         }
 
-        function getPolygonColor(feature) {
-            // Grundlegende Farblogik für Polygone
-            if (selectedColumn === 'gewinner') {
-                // Gewinner-Logik implementieren
-                return '#4169E1'; // Temporäre Farbe
+        // Farbe basierend auf Konfiguration und Wert berechnen
+        function getFillColorExpression() {
+            if (config.ergebnisTyp === 'gewinner') {
+                // Gewinnerkarte
+                return [
+                    'match',
+                    ['string', getWinnerExpression()],
+                    'AFD', config.parteiFarben.AFD.gewinner,
+                    'GRUENE', config.parteiFarben.GRUENE.gewinner,
+                    'LINKE', config.parteiFarben.LINKE.gewinner,
+                    'VOLT', config.parteiFarben.VOLT.gewinner,
+                    'SPD', config.parteiFarben.SPD.gewinner,
+                    'PMUT', config.parteiFarben.PMUT.gewinner,
+                    'MLPD', config.parteiFarben.MLPD.gewinner,
+                    'FW', config.parteiFarben.FW.gewinner,
+                    'FDP', config.parteiFarben.FDP.gewinner,
+                    'CDU', config.parteiFarben.CDU.gewinner,
+                    'BSW', config.parteiFarben.BSW.gewinner,
+                    '#cccccc' // Default
+                ];
+            } else {
+                // Spezifischer Datensatz (z.B. Wahlbeteiligung oder Parteiergebnis)
+                const dataKey = config.ergebnisTyp;
+                const colorConfig = getColorConfigForDataKey(dataKey);
+                
+                if (!colorConfig) return '#cccccc';
+                
+                return [
+                    'interpolate',
+                    ['linear'],
+                    ['get', dataKey],
+                    colorConfig.minValue, colorConfig.minColor,
+                    colorConfig.maxValue, colorConfig.maxColor
+                ];
             }
-
-            // Für spezifische Spalten Farbverlauf implementieren
-            const columnConfig = COLUMN_CONFIGS[selectedYear + selectedColumn];
-            if (!columnConfig) return 'lightgray';
-
-            // Dummy-Implementierung für Farbverlauf
-            return columnConfig.displayColor;
         }
 
-        function handleDistrictClick(e) {
-            const feature = e.features[0];
-            const districtId = feature.properties.ID;
-            const districtData = csvData.find(row => row.ID === districtId);
+        // Farbkonfiguration für ein Datenfeld erhalten
+        function getColorConfigForDataKey(dataKey) {
+            const party = dataKey.replace(config.wahljahr, '');
+            
+            if (party === 'WAHLBETEILIGUNG') {
+                return config.dataSets.WAHLBETEILIGUNG;
+            }
+            
+            if (config.parteiFarben[party]) {
+                return config.parteiFarben[party];
+            }
+            
+            return null;
+        }
 
-            if (districtData) {
-                // Alle Features deselektieren
-                map.getSource('berlin-districts').setFeatureState(
-                    { source: 'berlin-districts' },
-                    { selected: false }
-                );
+        // Expression zur Bestimmung der Gewinnerpartei
+        function getWinnerExpression() {
+            const parteien = [];
+            const werte = [];
+            
+            // Liste aller Parteien für das aktuelle Jahr erstellen
+            for (const partei in config.parteiFarben) {
+                const key = `${config.wahljahr}${partei}`;
+                parteien.push(partei);
+                werte.push(['get', key]);
+            }
+            
+            return [
+                'let',
+                'maxWert', ['max', ...werte],
+                [
+                    'match',
+                    ['max', ...werte.map((wert, i) => ['case', ['==', wert, ['var', 'maxWert']], parteien[i], ''])],
+                    '', 'unbekannt',
+                    ['max', ...werte.map((wert, i) => ['case', ['==', wert, ['var', 'maxWert']], parteien[i], ''])]
+                ]
+            ];
+        }
 
-                // Aktuelles Feature selektieren
-                map.getSource('berlin-districts').setFeatureState(
-                    { id: feature.id, source: 'berlin-districts' },
-                    { selected: true }
-                );
-
-                // Aktualisiere Distrikt-Informationen
-                document.getElementById('district-info').innerHTML = `
-                    <h3>${districtData.BEZIRK}</h3>
-                    <p>Wahlbezirk: ${districtData[selectedYear + 'UWB']}</p>
-                `;
+        // Update der Karte bei Konfigurationsänderungen
+        function updateMapConfig() {
+            if (!map.isStyleLoaded() || !map.getSource('wahlbezirke')) return;
+            
+            map.setPaintProperty('wahlbezirke-fill', 'fill-color', getFillColorExpression());
+            
+            if (selectedFeature) {
+                updateChart(selectedFeature.properties);
+            } else {
+                renderChart();
             }
         }
 
-        // Initialisierung
-        initMap();
+        // Aktualisierung des Charts
+        function updateChart(properties) {
+            const bezirksname = properties.BEZIRK || 'Unbekannt';
+            const uwbKey = `${config.wahljahr}UWB`;
+            const uwbNummer = properties[uwbKey] || 'Unbekannt';
+            
+            document.getElementById('selected-district').textContent = bezirksname;
+            document.getElementById('selected-uwb').textContent = `Wahlbezirk: ${uwbNummer}`;
+            
+            renderChart(properties);
+        }
+
+        // Diagramm rendern
+        function renderChart(properties) {
+            // Container leeren
+            d3.select('#chart').html('');
+            
+            // Daten sammeln
+            const chartData = [];
+            const yearKey = config.wahljahr;
+            
+            // Parteien und ihre Werte für das ausgewählte Jahr
+            for (const partei of parteienReihenfolge) {
+                const key = `${yearKey}${partei}`;
+                let value;
+                
+                if (properties) {
+                    // Wert aus ausgewähltem Wahlbezirk
+                    value = properties[key];
+                } else {
+                    // Durchschnittswert für ganz Berlin
+                    const berlinGesamt = yearKey === '25' ? config.berlinGesamt25 : config.berlinGesamt21;
+                    value = berlinGesamt[partei];
+                }
+                
+                // Nur Parteien hinzufügen, die im ausgewählten Jahr existieren
+                if (value !== undefined) {
+                    chartData.push({
+                        partei: partei,
+                        wert: value,
+                        farbe: config.parteiFarben[partei].display
+                    });
+                }
+            }
+            
+            // Dimensionen
+            const margin = { top: 20, right: 30, bottom: 40, left: 40 };
+            const chartContainer = document.getElementById('chart');
+            const width = chartContainer.clientWidth - margin.left - margin.right;
+            const height = 300 - margin.top - margin.bottom;
+            
+            // SVG erstellen
+            const svg = d3.select('#chart')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+            
+            // X-Achse
+            const x = d3.scaleBand()
+                .range([0, width])
+                .domain(chartData.map(d => d.partei))
+                .padding(0.2);
+            
+            svg.append('g')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x))
+                .selectAll('text')
+                .style('text-anchor', 'middle');
+            
+            // Y-Achse
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(chartData, d => d.wert) * 1.1])
+                .range([height, 0]);
+            
+            svg.append('g')
+                .call(d3.axisLeft(y).ticks(5).tickFormat(d => d + '%'));
+            
+            // Tooltip erstellen
+            const tooltip = d3.select('body')
+                .append('div')
+                .attr('class', 'tooltip');
+            
+            // Balken zeichnen
+            svg.selectAll('rect')
+                .data(chartData)
+                .enter()
+                .append('rect')
+                .attr('class', 'bar')
+                .attr('x', d => x(d.partei))
+                .attr('y', d => y(d.wert))
+                .attr('width', x.bandwidth())
+                .attr('height', d => height - y(d.wert))
+                .attr('fill', d => d.farbe)
+                .on('mouseover', function(event, d) {
+                    tooltip
+                        .style('opacity', 1)
+                        .html(`${d.partei}: ${d.wert.toFixed(1)}%`)
+                        .style('left', (event.pageX + 10) + 'px')
+                        .style('top', (event.pageY - 28) + 'px');
+                })
+                .on('mouseout', function() {
+                    tooltip.style('opacity', 0);
+                });
+        }
+        
+        // Layout-Änderung
+        function updateLayout(isLandscape) {
+            const container = document.getElementById('container');
+            
+            if (isLandscape) {
+                container.classList.add('landscape');
+                container.classList.remove('portrait');
+            } else {
+                container.classList.add('portrait');
+                container.classList.remove('landscape');
+            }
+            
+            // Map-Größe aktualisieren
+            map.resize();
+            
+            // Chart neu rendern
+            if (selectedFeature) {
+                updateChart(selectedFeature.properties);
+            } else {
+                renderChart();
+            }
+        }
+        
+        // API-Methoden für externe Nutzung
+        window.berlinWahlergebnisse = {
+            // Konfiguration ändern
+            setWahljahr: function(jahr) {
+                if (jahr === '21' || jahr === '25') {
+                    config.wahljahr = jahr;
+                    updateMapConfig();
+                    return true;
+                }
+                return false;
+            },
+            
+            setErgebnisTyp: function(typ) {
+                const validTypes = ['gewinner'];
+                // Alle gültigen Spalten aus der CSV hinzufügen
+                ['21', '25'].forEach(year => {
+                    validTypes.push(`${year}WAHLBETEILIGUNG`);
+                    for (const partei in config.parteiFarben) {
+                        validTypes.push(`${year}${partei}`);
+                    }
+                });
+                
+                if (validTypes.includes(typ)) {
+                    config.ergebnisTyp = typ;
+                    updateMapConfig();
+                    return true;
+                }
+                return false;
+            },
+            
+            setLayout: function(isLandscape) {
+                config.landscape = isLandscape;
+                updateLayout(isLandscape);
+                return true;
+            },
+            
+            // Map-Methoden
+            resetSelection: function() {
+                if (selectedFeature) {
+                    map.setFeatureState(
+                        { source: 'wahlbezirke', id: selectedFeature.id },
+                        { selected: false }
+                    );
+                    selectedFeature = null;
+                    document.getElementById('selected-district').textContent = 'Berlin (Gesamt)';
+                    document.getElementById('selected-uwb').textContent = '';
+                    renderChart();
+                }
+                return true;
+            },
+            
+            fitToBounds: function() {
+                // Auf Berlin zoomen
+                map.fitBounds([
+                    [13.088333, 52.338333], // SW
+                    [13.761389, 52.675556]  // NE
+                ]);
+                return true;
+            }
+        };
+        
+        // Daten laden und Initialisierung starten
+        fetchData();
     </script>
 </body>
 </html>
