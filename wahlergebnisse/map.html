@@ -2,42 +2,46 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Wahlergebnisse Karte Berlin - Embed</title>
+  <title>Choroplethen Karte Berlin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- MapLibre GL CSS -->
   <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
   <style>
-    /* Schlichtes White-Mode Design in Pastelltönen */
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #ffffff;
+      background: #fff;
       color: #333;
     }
     #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
       width: 100%;
-      height: 100vh;
-      position: relative;
     }
   </style>
 </head>
 <body>
   <div id="map"></div>
-  
   <!-- MapLibre GL JS -->
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
   <script>
-    /***********************************************************************
-     * Konfiguration
-     *
-     * - wahljahr: "2021" oder "2025"
-     * - ergebnissart: "gewinner" oder eine konkrete Spalte (z. B. "25VOLT")
-     * - Für jede Spalte aus der CSV wird hier ein Objekt mit den entsprechenden
-     *   Farben und min/max Werten definiert.
-     ***********************************************************************/
+    // Hilfsfunktion zum Auslesen von URL-Parametern
+    function getQueryParams() {
+      const params = {};
+      window.location.search.substring(1).split("&").forEach(pair => {
+        const [key, value] = pair.split("=");
+        if (key) params[key] = decodeURIComponent(value);
+      });
+      return params;
+    }
+    
+    const urlParams = getQueryParams();
+    // Konfiguration – Standardwerte können über URL-Parameter überschrieben werden
     const config = {
-      wahljahr: "2025", // "2021" oder "2025"
-      ergebnissart: "gewinner", // "gewinner" oder z. B. "25VOLT"
+      wahljahr: urlParams.wahljahr || "2021",         // z. B. "2025"
+      ergebnissart: urlParams.ergebnissart || "gewinner", // z. B. "gewinner" oder "25VOLT" etc.
+      // Für jede CSV-Spalte werden hier die Farbanpassungen definiert (nur ein Auszug; passe ggf. weitere Spalten an)
       columns: {
         "21WAHLBETEILIGUNG": { winnerColor: "#A8DADC", minColor: "#F1FAEE", maxColor: "#457B9D", minValue: 30, maxValue: 90 },
         "21AFD":            { winnerColor: "#FFADAD", minColor: "#FFE5E5", maxColor: "#FF0000", minValue: 0,  maxValue: 40 },
@@ -65,15 +69,11 @@
       }
     };
 
-    /***********************************************************************
-     * Globale Variablen und Hilfsfunktionen
-     ***********************************************************************/
-    let geojsonData;
-    let csvData = [];
+    let geojsonData, csvData = [];
     let map;
     let selectedFeatureId = null;
 
-    // Interpoliert zwischen zwei Hex-Farben anhand eines Faktors (0...1)
+    // Interpolationsfunktion für Farben
     function interpolateColor(color1, color2, factor) {
       const c1 = parseInt(color1.slice(1), 16);
       const c2 = parseInt(color2.slice(1), 16);
@@ -93,10 +93,10 @@
       return interpolateColor(minColor, maxColor, factor);
     }
 
-    // Bestimmt im "gewinner"-Modus die Farbe der Partei mit dem höchsten Wert
+    // Ermittelt im "gewinner"-Modus die Farbe der Partei mit dem höchsten Wert
     function getWinnerColor(feature) {
       const jahr = config.wahljahr;
-      const parties = jahr === "2021" 
+      const parties = jahr === "2021"
         ? ["AFD", "GRUENE", "LINKE", "VOLT", "SPD", "PMUT", "MLPD", "FW", "FDP", "CDU"]
         : ["AFD", "GRUENE", "LINKE", "VOLT", "SPD", "PMUT", "MLPD", "FW", "FDP", "CDU", "BSW"];
       let maxVal = -Infinity, winningParty = null;
@@ -114,7 +114,7 @@
       return "#cccccc";
     }
 
-    // Einfaches CSV-Parsing (Header in der ersten Zeile)
+    // Einfaches CSV-Parsing (erste Zeile als Header)
     function parseCSV(text) {
       const lines = text.trim().split("\n");
       const headers = lines[0].split(",");
@@ -130,9 +130,6 @@
       return result;
     }
 
-    /***********************************************************************
-     * Daten laden und verbinden (GeoJSON + CSV)
-     ***********************************************************************/
     async function loadData() {
       try {
         const geojsonResponse = await fetch("https://kxljxv.github.io/wahlergebnisse/map.json");
@@ -160,24 +157,22 @@
           if (csvRow) {
             feature.properties = { ...feature.properties, ...csvRow };
           }
-          // Setze die Füllfarbe je nach ergebnissart
           if (config.ergebnissart === "gewinner") {
             feature.properties.fillColor = getWinnerColor(feature);
           } else {
             const col = config.ergebnissart;
             const value = parseFloat(feature.properties[col]);
-            feature.properties.fillColor = (!isNaN(value) && config.columns[col])
-              ? getFillColor(value, config.columns[col])
-              : "#cccccc";
+            if (!isNaN(value) && config.columns[col]) {
+              feature.properties.fillColor = getFillColor(value, config.columns[col]);
+            } else {
+              feature.properties.fillColor = "#cccccc";
+            }
           }
         });
       }
       initMap();
     }
 
-    /***********************************************************************
-     * Karte initialisieren (MapLibre mit Basemap und GeoJSON-Layer)
-     ***********************************************************************/
     function initMap() {
       map = new maplibregl.Map({
         container: 'map',
@@ -188,6 +183,7 @@
         dragRotate: false
       });
       map.touchZoomRotate.disableRotation();
+
       map.addControl(new maplibregl.NavigationControl());
       map.addControl(new maplibregl.GeolocateControl({
          positionOptions: { enableHighAccuracy: true },
@@ -200,6 +196,7 @@
           type: 'geojson',
           data: geojsonData
         });
+
         map.addLayer({
           id: 'wahlergebnisse-fill',
           type: 'fill',
@@ -211,55 +208,31 @@
           }
         }, map.getStyle().layers[0].id);
 
-        // Klick auf ein Polygon: Bestimme die ID, setze eine Hervorhebung und sende diese an den Parent
+        // Klick auf ein Polygon: Hebe es hervor und sende die ID an das Parent-Fenster
         map.on('click', 'wahlergebnisse-fill', function(e) {
           if (e.features.length > 0) {
             const feature = e.features[0];
             selectedFeatureId = feature.properties.ID;
             updateSelection();
-            console.log("Ausgewählter Wahlbezirk ID: " + selectedFeatureId);
-            // Sende die ID an die Parent-Seite (z. B. im IFrame)
-            if(window.parent) {
+            if (window.parent) {
               window.parent.postMessage({ selectedID: selectedFeatureId }, "*");
             }
           }
         });
 
-        // Klick außerhalb eines Polygons: Auswahl zurücksetzen
+        // Klick außerhalb eines Polygons: Rücksetzen und leere Auswahl senden
         map.on('click', function(e) {
           const features = map.queryRenderedFeatures(e.point, { layers: ['wahlergebnisse-fill'] });
           if (!features.length) {
             selectedFeatureId = null;
             removeSelectionLayer();
-            console.log("Keine Auswahl");
-            if(window.parent) {
+            if (window.parent) {
               window.parent.postMessage({ selectedID: null }, "*");
             }
           }
         });
         console.log("Karte und Layer erfolgreich initialisiert.");
       });
-    }
-
-    // Aktualisiert die Hervorhebung des ausgewählten Wahlbezirks
-    function updateSelection() {
-      removeSelectionLayer();
-      map.addLayer({
-        id: 'selected-outline',
-        type: 'line',
-        source: 'wahlergebnisse',
-        filter: ['==', ['get', 'ID'], selectedFeatureId],
-        layout: {},
-        paint: {
-          'line-color': '#000000',
-          'line-width': 2
-        }
-      });
-    }
-    function removeSelectionLayer() {
-      if (map.getLayer('selected-outline')) {
-        map.removeLayer('selected-outline');
-      }
     }
 
     loadData();
