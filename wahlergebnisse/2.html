@@ -1,0 +1,37 @@
+<!-- 1. Add this div where you want the map to appear -->
+<div id="berlin-election-map" style="width: 100%; height: 600px;"></div>
+
+<!-- 2. Include the HTML file -->
+<iframe id="election-map-frame" src="path/to/saved/berlin-election-map.html" 
+    style="width: 100%; height: 600px; border: none;"></iframe>
+
+<!-- 3. Optional: Add controls to change the map configuration -->
+<div class="map-controls">
+    <button onclick="changeMapMode('landscape')">Landscape Mode</button>
+    <button onclick="changeMapMode('portrait')">Portrait Mode</button>
+    <button onclick="changeMapYear('21')">Wahl 2021</button>
+    <button onclick="changeMapYear('25')">Wahl 2025</button>
+    <button onclick="changeMapResult('gewinner')">Gewinner</button>
+    <button onclick="changeMapResult('25WAHLBETEILIGUNG')">Wahlbeteiligung</button>
+</div>
+
+<script>
+    // Function to communicate with the iframe
+    function updateMapConfig(config) {
+        const iframe = document.getElementById('election-map-frame');
+        iframe.contentWindow.BerlinElectionMap.updateConfig(config);
+    }
+
+    // Example functions for your buttons
+    function changeMapMode(mode) {
+        updateMapConfig({ mode: mode });
+    }
+
+    function changeMapYear(year) {
+        updateMapConfig({ year: year });
+    }
+
+    function changeMapResult(resultType) {
+        updateMapConfig({ resultType: resultType });
+    }
+</script>
