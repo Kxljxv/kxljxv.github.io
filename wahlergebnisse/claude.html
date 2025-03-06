@@ -372,7 +372,7 @@
                     throw new Error('GeoJSON konnte nicht geladen werden');
                 }
                 geoData = await geoResponse.json();
-                console.log("GeoJSON-Daten erfolgreich geladen");
+                console.log("GeoJSON-Daten erfolgreich geladen:", geoData);
                 
                 console.log("Lade Wahlergebnisse...");
                 const resultsResponse = await fetch('https://kxljxv.github.io/wahlergebnisse/ergebnisse.csv');
@@ -381,13 +381,27 @@
                 }
                 const resultsText = await resultsResponse.text();
                 electionData = parseCSV(resultsText);
-                console.log("Wahlergebnisse erfolgreich geladen");
+                console.log("Wahlergebnisse erfolgreich geladen, Beispiel:", electionData.length > 0 ? electionData[0] : "Keine Daten");
+                
+                // Create a lookup dictionary for faster access
+                electionData = createDataLookup(electionData);
                 
                 initMap();
                 
             } catch (error) {
                 console.error("Fehler beim Laden der Daten:", error);
             }
+        }
+        
+        // Create a lookup dictionary for faster access
+        function createDataLookup(data) {
+            const lookup = {};
+            data.forEach(item => {
+                if (item.ID) {
+                    lookup[item.ID] = item;
+                }
+            });
+            return lookup;
         }
         
         // CSV Parser
@@ -401,8 +415,10 @@
                 
                 headers.forEach((header, i) => {
                     // Versuchen, numerische Werte zu konvertieren
-                    const value = values[i] ? values[i].replace(',', '.') : '';
-                    entry[header] = isNaN(value) ? value : parseFloat(value);
+                    if (i < values.length) {
+                        const value = values[i] ? values[i].replace(',', '.') : '';
+                        entry[header] = isNaN(value) ? value : parseFloat(value);
+                    }
                 });
                 
                 return entry;
@@ -445,6 +461,8 @@
             }));
             
             map.on('load', function() {
+                console.log("Map loaded");
+                
                 // Add geojson source
                 map.addSource('districts', {
                     type: 'geojson',
@@ -457,7 +475,10 @@
                     type: 'fill',
                     source: 'districts',
                     layout: {},
-                    paint: {}
+                    paint: {
+                        'fill-color': '#cccccc',  // Default color
+                        'fill-opacity': 0.75
+                    }
                 }, map.getStyle().layers[0].id); // Unter der ersten Ebene der Basemap
                 
                 // Add layer for selected district outline
@@ -475,33 +496,43 @@
                 });
                 
                 // Update map colors based on selected display
-                updateMapColors();
-                
-                // Draw initial chart
-                drawChart();
+                setTimeout(() => {
+                    updateMapColors();
+                    // Draw initial chart
+                    drawChart();
+                }, 500);
                 
                 // Add click interaction
                 map.on('click', 'districts-fill', function(e) {
-                    selectedFeature = e.features[0];
-                    
-                    // Update selected outline
-                    map.setFilter('districts-selected', ['==', 'ID', selectedFeature.properties.ID]);
-                    map.setPaintProperty('districts-selected', 'line-opacity', 1);
-                    
-                    // Find corresponding data
-                    const districtData = electionData.find(item => item.ID === selectedFeature.properties.ID);
-                    
-                    if (districtData) {
-                        // Update header with district info
-                        const uwbKey = config.year + 'UWB';
-                        const uwbText = districtData[uwbKey] ? `UWB ${districtData[uwbKey]}` : '';
-                        const bezirkText = districtData.BEZIRK ? districtData.BEZIRK : '';
+                    if (e.features.length > 0) {
+                        selectedFeature = e.features[0];
+                        const featureId = selectedFeature.properties.ID;
                         
-                        document.getElementById('results-header').textContent = 
-                            `Wahlergebnisse für ${uwbText} (${bezirkText})`;
+                        console.log("Selected feature:", featureId);
                         
-                        // Update chart
-                        drawChart(districtData);
+                        // Update selected outline
+                        map.setFilter('districts-selected', ['==', 'ID', featureId]);
+                        map.setPaintProperty('districts-selected', 'line-opacity', 1);
+                        
+                        // Find corresponding data
+                        const districtData = electionData[featureId];
+                        
+                        if (districtData) {
+                            console.log("Found district data:", districtData);
+                            
+                            // Update header with district info
+                            const uwbKey = config.year + 'UWB';
+                            const uwbText = districtData[uwbKey] ? `UWB ${districtData[uwbKey]}` : '';
+                            const bezirkText = districtData.BEZIRK ? districtData.BEZIRK : '';
+                            
+                            document.getElementById('results-header').textContent = 
+                                `Wahlergebnisse für ${uwbText} (${bezirkText})`;
+                            
+                            // Update chart
+                            drawChart(districtData);
+                        } else {
+                            console.warn("No data found for district ID:", featureId);
+                        }
                     }
                 });
                 
@@ -520,56 +551,106 @@
         
         // Update map colors based on selected display
         function updateMapColors() {
-            if (!map || !map.isStyleLoaded() || !electionData) return;
+            if (!map || !map.isStyleLoaded() || !electionData) {
+                console.warn("Map not ready to update colors");
+                return;
+            }
             
-            console.log("Aktualisiere Kartenfarben...");
+            console.log("Aktualisiere Kartenfarben für Modus:", config.display);
             
             if (config.display === 'gewinner') {
                 // For "gewinner" display, color by winning party
-                map.setPaintProperty('districts-fill', 'fill-color', [
-                    'match',
-                    ['get', 'ID'],
-                    ...getWinnerColors(),
-                    '#cccccc' // default color
-                ]);
+                const expressionParts = ['match', ['get', 'ID']];
+                let hasData = false;
                 
-                map.setPaintProperty('districts-fill', 'fill-opacity', 0.75);
+                // Generate color mapping from election data
+                Object.keys(electionData).forEach(districtId => {
+                    const district = electionData[districtId];
+                    const winner = findWinner(district);
+                    
+                    if (winner) {
+                        hasData = true;
+                        expressionParts.push(districtId);
+                        expressionParts.push(config.partyColors[winner] || '#cccccc');
+                    }
+                });
+                
+                // Add default color
+                expressionParts.push('#cccccc');
+                
+                if (hasData) {
+                    // Update fill color using the match expression
+                    map.setPaintProperty('districts-fill', 'fill-color', expressionParts);
+                } else {
+                    console.warn("No winner data available for coloring");
+                }
                 
             } else if (config.columnConfig[config.display]) {
-                // For specific column display, use gradients
+                // For specific column display, create a mapping
                 const colConfig = config.columnConfig[config.display];
+                const expressionParts = ['match', ['get', 'ID']];
+                let hasData = false;
                 
-                map.setPaintProperty('districts-fill', 'fill-color', [
-                    'interpolate',
-                    ['linear'],
-                    ['get', config.display, ['object', ['get', 'ID']]],
-                    colConfig.minValue, colConfig.minColor,
-                    colConfig.maxValue, colConfig.maxColor
-                ]);
+                // Generate color mapping from election data
+                Object.keys(electionData).forEach(districtId => {
+                    const district = electionData[districtId];
+                    const value = district[config.display];
+                    
+                    if (value !== undefined) {
+                        hasData = true;
+                        // Calculate color based on value
+                        const normalizedValue = Math.min(Math.max((value - colConfig.minValue) / 
+                            (colConfig.maxValue - colConfig.minValue), 0), 1);
+                        
+                        const color = interpolateColor(
+                            colConfig.minColor, 
+                            colConfig.maxColor, 
+                            normalizedValue
+                        );
+                        
+                        expressionParts.push(districtId);
+                        expressionParts.push(color);
+                    }
+                });
                 
-                map.setPaintProperty('districts-fill', 'fill-opacity', 0.75);
+                // Add default color
+                expressionParts.push('#cccccc');
+                
+                if (hasData) {
+                    // Update fill color using the match expression
+                    map.setPaintProperty('districts-fill', 'fill-color', expressionParts);
+                } else {
+                    console.warn("No column data available for coloring");
+                }
             }
         }
         
-        // Calculate winner colors for each district
-        function getWinnerColors() {
-            const colorMapping = [];
+        // Helper function to interpolate between two colors
+        function interpolateColor(color1, color2, factor) {
+            if (factor <= 0) return color1;
+            if (factor >= 1) return color2;
             
-            electionData.forEach(district => {
-                const id = district.ID;
-                const winner = findWinner(district);
-                
-                if (winner) {
-                    colorMapping.push(id);
-                    colorMapping.push(config.partyColors[winner] || '#cccccc');
-                }
-            });
+            const r1 = parseInt(color1.substr(1, 2), 16);
+            const g1 = parseInt(color1.substr(3, 2), 16);
+            const b1 = parseInt(color1.substr(5, 2), 16);
             
-            return colorMapping;
+            const r2 = parseInt(color2.substr(1, 2), 16);
+            const g2 = parseInt(color2.substr(3, 2), 16);
+            const b2 = parseInt(color2.substr(5, 2), 16);
+            
+            const r = Math.round(r1 + factor * (r2 - r1));
+            const g = Math.round(g1 + factor * (g2 - g1));
+            const b = Math.round(b1 + factor * (b2 - b1));
+            
+            return "#" + 
+                ((1 << 24) + (r << 16) + (g << 8) + b)
+                .toString(16).slice(1);
         }
         
         // Find winning party for a district
         function findWinner(district) {
+            if (!district) return null;
+            
             let maxVotes = -1;
             let winner = null;
             
@@ -706,9 +787,11 @@
         // Hilfe beim Fenstergrößen-Event
         window.addEventListener('resize', function() {
             if (map) map.resize();
-            drawChart(selectedFeature ? 
-                electionData.find(item => item.ID === selectedFeature.properties.ID) : 
-                null);
+            
+            const featureId = selectedFeature ? selectedFeature.properties.ID : null;
+            const districtData = featureId ? electionData[featureId] : null;
+            
+            drawChart(districtData);
         });
         
         // Starte die Initialisierung
