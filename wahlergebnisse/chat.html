@@ -13,19 +13,22 @@
   <div id="map"></div>
   <script>
     /**
-     * Erstellt eine MapLibre-Karte, lädt GeoJSON und CSV, verbindet die Daten
-     * und färbt die Polygone stufenlos anhand des "darzustellenden Werts".
+     * Erstellt eine MapLibre-Karte, lädt GeoJSON und CSV,
+     * verbindet die Daten und färbt die Polygone anhand
+     * eines interpolierten Wertes zwischen minValue und maxValue.
      *
      * @param {string} geojsonUrl - URL zur GeoJSON-Datei.
      * @param {string} csvUrl - URL zur CSV-Datei (Spalten: ID, tatsächlicher Wert, darzustellender Wert).
-     * @param {string} minColor - Farbe, wenn der darzustellende Wert 0 ist.
-     * @param {string} maxColor - Farbe, wenn der darzustellende Wert >= 1 ist.
+     * @param {string} minColor - Farbe, wenn der Wert minValue erreicht.
+     * @param {string} maxColor - Farbe, wenn der Wert maxValue erreicht.
+     * @param {number} minValue - Minimalwert für die Interpolation (z.B. 0).
+     * @param {number} maxValue - Maximalwert für die Interpolation (z.B. 1).
      */
-    function createMap(geojsonUrl, csvUrl, minColor, maxColor) {
-      // Karte initialisieren – der basemap-style hat den unsichtbaren Hintergrund
+    function createMap(geojsonUrl, csvUrl, minColor, maxColor, minValue, maxValue) {
+      // Karte initialisieren – basemap-style mit transparentem Hintergrund
       var map = new maplibregl.Map({
         container: 'map',
-        style: 'https://kxljxv.github.io/bm_web_gry_7.json',
+        style: 'https://kxljxv.github.io/style.json',
         center: [10, 51],
         zoom: 6
       });
@@ -36,32 +39,38 @@
         fetch(geojsonUrl).then(response => response.json())
       ])
       .then(([csvText, geojsonData]) => {
-        // CSV parsen: Es wird davon ausgegangen, dass die erste Zeile Header enthält.
-        // Spalten: 0: ID, 1: tatsächlicher Wert, 2: darzustellender Wert (zwischen 0 und 1)
+        // CSV parsen – Annahme: Erste Zeile enthält Header
+        // Spalten: 0: ID, 1: tatsächlicher Wert, 2: darzustellender Wert
         var csvMapping = {};
         var lines = csvText.trim().split('\n');
         for (var i = 1; i < lines.length; i++) {
           var cols = lines[i].split(',');
           var id = cols[0].trim();
-          var displayValue = parseFloat(cols[2].trim());
+          var raw = cols[2].trim();
+          // Wenn kein Dezimalpunkt enthalten ist, Wert als "0."+Wert interpretieren (z.B. "45" wird zu "0.45")
+          if (raw.indexOf('.') === -1) {
+            raw = "0." + raw;
+          }
+          var displayValue = parseFloat(raw);
           csvMapping[id] = displayValue;
         }
 
-        // Für jedes Feature in der GeoJSON-Daten wird der darzustellende Wert (falls vorhanden) eingefügt.
+        // In die GeoJSON-Features den darzustellenden Wert einfügen.
         geojsonData.features.forEach(function(feature) {
           var featureId = feature.properties.ID;
-          // Falls kein Wert gefunden wird, default auf 0 setzen.
-          feature.properties.displayValue = csvMapping.hasOwnProperty(featureId) ? csvMapping[featureId] : 0;
+          feature.properties.displayValue = csvMapping.hasOwnProperty(featureId)
+            ? csvMapping[featureId]
+            : minValue;
         });
 
-        // Sobald die Karte geladen ist, die GeoJSON-Daten als Quelle hinzufügen und einen Layer erstellen.
+        // Nach Laden der Karte die GeoJSON-Daten als Quelle und Layer hinzufügen.
         map.on('load', function() {
           map.addSource('geojson-layer', {
             type: 'geojson',
             data: geojsonData
           });
-
-          // Wir fügen die Ebene unterhalb der ersten vorhandenen Basemap-Ebene ein.
+          
+          // Fügt die Ebene unter der ersten Basemap-Ebene ein.
           var firstLayerId = map.getStyle().layers[0].id;
           map.addLayer({
             id: 'geojson-fill',
@@ -69,14 +78,13 @@
             source: 'geojson-layer',
             layout: {},
             paint: {
-              // Linearer Farbverlauf von minColor (bei displayValue 0) zu maxColor (bei displayValue 1 oder höher)
+              // Interpolation: Bei minValue wird minColor genutzt, bei maxValue maxColor.
               'fill-color': [
                 'interpolate',
                 ['linear'],
-                // Falls kein Wert gesetzt ist, wird 0 verwendet.
-                ['coalesce', ['get', 'displayValue'], 0],
-                0, minColor,
-                1, maxColor
+                ['coalesce', ['get', 'displayValue'], minValue],
+                minValue, minColor,
+                maxValue, maxColor
               ],
               'fill-opacity': 0.5
             }
@@ -86,12 +94,14 @@
       .catch(error => console.error('Fehler beim Laden der Daten:', error));
     }
 
-    // Aufruf der Funktion mit den entsprechenden Eingaben:
+    // Funktionsaufruf mit den gewünschten Eingaben:
     createMap(
       'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025nurID.json',
       'https://kxljxv.github.io/wahlergebnisse/wahlbeteiligung2025nurID.csv',
-      '#00FF00', // Minimalfarbe (z. B. Grün)
-      '#FF0000'  // Maximalfarbe (z. B. Rot)
+      '#00FF00',  // Minimalfarbe (z. B. Grün)
+      '#FF0000',  // Maximalfarbe (z. B. Rot)
+      0,          // Minimalwert
+      1           // Maximalwert
     );
   </script>
 </body>
