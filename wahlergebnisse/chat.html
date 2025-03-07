@@ -28,7 +28,7 @@
       // Karte initialisieren – basemap-style mit transparentem Hintergrund
       var map = new maplibregl.Map({
         container: 'map',
-        style: 'https://kxljxv.github.io/bm_web_gry_7.json',
+        style: 'https://kxljxv.github.io/style.json',
         center: [10, 51],
         zoom: 6
       });
@@ -97,7 +97,7 @@
     // Funktionsaufruf mit den gewünschten Eingaben:
     createMap(
       'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025nurID.json',
-      'https://kxljxv.github.io/wahlergebnisse/wahlbeteiligung2025nurID.csv',
+      'https://kxljxv.github.io/wahlergebnisse/wahlbeteiligung2025commasep.csv',
       '#00FF00',  // Minimalfarbe (z. B. Grün)
       '#FF0000',  // Maximalfarbe (z. B. Rot)
       0,          // Minimalwert
