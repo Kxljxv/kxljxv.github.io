@@ -1,0 +1,69 @@
+<!-- wp:html {"lock":{"move":false,"remove":false}} -->
+
+  #map {
+    width: 100%;
+    height: 500px;
+  }
+
+<!-- Container für die Map -->
+<div id="map"></div>
+<!-- MapLibre GL JS einbinden -->
+<a href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js">https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js</a>
+
+  var selectedPolygonId = "00000";
+  /**
+   * Erstellt eine MapLibre-Karte, lädt GeoJSON und CSV,
+   * verknüpft die Daten anhand der ID und färbt die Polygone
+   * basierend auf einem interpolierten Wert aus der angegebenen CSV-Spalte.
+   *
+   * @param {string} geojsonUrl - URL zur GeoJSON-Datei.
+   * @param {string} csvUrl - URL zur CSV-Datei (enthält Spalten wie "ID" und weitere Werte).
+   * @param {string} csvColumnName - Name der CSV-Spalte, die als darzustellender Wert genutzt werden soll.
+   * @param {string} minColor - Farbe, wenn der Wert minValue erreicht.
+   * @param {string} maxColor - Farbe, wenn der Wert maxValue erreicht.
+   * @param {number} minValue - Minimalwert für die Interpolation (z. B. 0).
+   * @param {number} maxValue - Maximalwert für die Interpolation (z. B. 1).
+   */
+  function createMap(geojsonUrl, csvUrl, csvColumnName, minColor, maxColor, minValue, maxValue) {
+    // Karte initialisieren – benutzerdefinierter basemap-style mit transparentem Hintergrund und ohne Quellenanzeige
+    var map = new maplibregl.Map({
+      container: 'map',
+      style: 'https://kxljxv.github.io/bm_web_gry_7.json',
+      center: [10, 51],
+      zoom: 6,
+      attributionControl: false
+    });
+
+    // CSV und GeoJSON parallel laden
+    Promise.all([
+      fetch(csvUrl).then(response =&gt; response.text()),
+      fetch(geojsonUrl).then(response =&gt; response.json())
+    ])
+    .then(([csvText, geojsonData]) =&gt; {
+      var csvMapping = {};
+      var lines = csvText.trim().split('\n');
+      // Annahme: Erste Zeile enthält Header
+      var headers = lines[0].split(',').map(h =&gt; h.trim());
+      var colIndex = headers.indexOf(csvColumnName);
+      if (colIndex === -1) {
+        console.error("Spalte '" + csvColumnName + "' nicht gefunden!");
+        return;
+      }
+      // Ab der zweiten Zeile die Daten einlesen
+      for (var i = 1; i  console.error("Fehler beim Laden der Daten:", error));
+  }
+
+  // Aufruf der Funktion mit deinen Parametern:
+  createMap(
+    'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025nurID.json',
+    'https://kxljxv.github.io/wahlergebnisse/wahlbeteiligung2025commasep.csv',
+    'Wahlbeteil',      // CSV-Spaltenname für den darzustellenden Wert
+    '#00FF00',        // Minimalfarbe (z. B. Grün)
+    '#FF0000',        // Maximalfarbe (z. B. Rot)
+    0,                // Minimalwert
+    1                 // Maximalwert
+  );
+
+
+<!-- /wp:html -->
+
