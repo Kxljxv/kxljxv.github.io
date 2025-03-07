@@ -1,53 +1,98 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-   <title>basemap.de Web Vektor - MapLibre GL JS Demo</title>
-   <script src='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js'></script>
-   <link href='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css' rel='stylesheet' />
-   <style>
-      body {
-         margin: 0;
-         padding: 0;
-      }
-
-      #map {
-         position: absolute;
-         top: 0;
-         bottom: 0;
-         width: 100%;
-      }
-   </style>
+  <title>Map mit CSV-gestuftem GeoJSON</title>
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+  </style>
 </head>
-
 <body>
-   <div id="map" class="map"></div>
-   <script>
+  <div id="map"></div>
+  <script>
+    /**
+     * Erstellt eine MapLibre-Karte, lädt GeoJSON und CSV, verbindet die Daten
+     * und färbt die Polygone stufenlos anhand des "darzustellenden Werts".
+     *
+     * @param {string} geojsonUrl - URL zur GeoJSON-Datei.
+     * @param {string} csvUrl - URL zur CSV-Datei (Spalten: ID, tatsächlicher Wert, darzustellender Wert).
+     * @param {string} minColor - Farbe, wenn der darzustellende Wert 0 ist.
+     * @param {string} maxColor - Farbe, wenn der darzustellende Wert >= 1 ist.
+     */
+    function createMap(geojsonUrl, csvUrl, minColor, maxColor) {
+      // Karte initialisieren – der basemap-style hat den unsichtbaren Hintergrund
       var map = new maplibregl.Map({
-         container: 'map',
-         style: 'kxljxv.github.io/bm_web_gry_7.json',
-         center: [10, 51],
-         zoom: 6,
+        container: 'map',
+        style: 'https://kxljxv.github.io/bm_web_gry_7.json',
+        center: [10, 51],
+        zoom: 6
       });
 
-      map.on('load', function () {
-         map.addSource('geojson-layer', {
-            type: 'geojson',
-            data: 'https://kxljxv.github.io/wahlergebnisse2025.json'
-         });
+      // Lade CSV und GeoJSON parallel
+      Promise.all([
+        fetch(csvUrl).then(response => response.text()),
+        fetch(geojsonUrl).then(response => response.json())
+      ])
+      .then(([csvText, geojsonData]) => {
+        // CSV parsen: Es wird davon ausgegangen, dass die erste Zeile Header enthält.
+        // Spalten: 0: ID, 1: tatsächlicher Wert, 2: darzustellender Wert (zwischen 0 und 1)
+        var csvMapping = {};
+        var lines = csvText.trim().split('\n');
+        for (var i = 1; i < lines.length; i++) {
+          var cols = lines[i].split(',');
+          var id = cols[0].trim();
+          var displayValue = parseFloat(cols[2].trim());
+          csvMapping[id] = displayValue;
+        }
 
-         map.addLayer({
+        // Für jedes Feature in der GeoJSON-Daten wird der darzustellende Wert (falls vorhanden) eingefügt.
+        geojsonData.features.forEach(function(feature) {
+          var featureId = feature.properties.ID;
+          // Falls kein Wert gefunden wird, default auf 0 setzen.
+          feature.properties.displayValue = csvMapping.hasOwnProperty(featureId) ? csvMapping[featureId] : 0;
+        });
+
+        // Sobald die Karte geladen ist, die GeoJSON-Daten als Quelle hinzufügen und einen Layer erstellen.
+        map.on('load', function() {
+          map.addSource('geojson-layer', {
+            type: 'geojson',
+            data: geojsonData
+          });
+
+          // Wir fügen die Ebene unterhalb der ersten vorhandenen Basemap-Ebene ein.
+          var firstLayerId = map.getStyle().layers[0].id;
+          map.addLayer({
             id: 'geojson-fill',
             type: 'fill',
             source: 'geojson-layer',
             layout: {},
             paint: {
-               'fill-color': '#ff0000', // Rote Farbe für die Polygone
-               'fill-opacity': 0.5     // Halbdurchsichtig
+              // Linearer Farbverlauf von minColor (bei displayValue 0) zu maxColor (bei displayValue 1 oder höher)
+              'fill-color': [
+                'interpolate',
+                ['linear'],
+                // Falls kein Wert gesetzt ist, wird 0 verwendet.
+                ['coalesce', ['get', 'displayValue'], 0],
+                0, minColor,
+                1, maxColor
+              ],
+              'fill-opacity': 0.5
             }
-         }, map.getStyle().layers[0].id); // Fügt die GeoJSON-Ebene unter der ersten Basemap-Ebene ein
-      });
-   </script>
-</body>
+          }, firstLayerId);
+        });
+      })
+      .catch(error => console.error('Fehler beim Laden der Daten:', error));
+    }
 
+    // Aufruf der Funktion mit den entsprechenden Eingaben:
+    createMap(
+      'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025nurID.json',
+      'https://kxljxv.github.io/wahlergebnisse/wahlbeteiligung2025.csv',
+      '#00FF00', // Minimalfarbe (z. B. Grün)
+      '#FF0000'  // Maximalfarbe (z. B. Rot)
+    );
+  </script>
+</body>
 </html>
