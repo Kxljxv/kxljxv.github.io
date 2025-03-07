@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Map mit CSV-gestuftem GeoJSON</title>
+  <title>Map mit CSV-gestuftem GeoJSON und Interaktion</title>
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
   <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
   <style>
@@ -12,42 +12,52 @@
 <body>
   <div id="map"></div>
   <script>
+    // Globale Variable für die aktuell ausgewählte Polygon-ID
+    var selectedPolygonId = "00000";
+
     /**
      * Erstellt eine MapLibre-Karte, lädt GeoJSON und CSV,
-     * verbindet die Daten und färbt die Polygone anhand
-     * eines interpolierten Wertes zwischen minValue und maxValue.
+     * verbindet die Daten anhand der ID und färbt die Polygone gemäß
+     * eines interpolierten Wertes aus der angegebenen CSV-Spalte.
      *
      * @param {string} geojsonUrl - URL zur GeoJSON-Datei.
-     * @param {string} csvUrl - URL zur CSV-Datei (Spalten: ID, tatsächlicher Wert, darzustellender Wert).
+     * @param {string} csvUrl - URL zur CSV-Datei (enthält Spalten wie "ID" und weitere Werte).
+     * @param {string} csvColumnName - Name der CSV-Spalte, die als darzustellender Wert genutzt werden soll.
      * @param {string} minColor - Farbe, wenn der Wert minValue erreicht.
      * @param {string} maxColor - Farbe, wenn der Wert maxValue erreicht.
-     * @param {number} minValue - Minimalwert für die Interpolation (z.B. 0).
-     * @param {number} maxValue - Maximalwert für die Interpolation (z.B. 1).
+     * @param {number} minValue - Minimalwert für die Interpolation (z. B. 0).
+     * @param {number} maxValue - Maximalwert für die Interpolation (z. B. 1).
      */
-    function createMap(geojsonUrl, csvUrl, minColor, maxColor, minValue, maxValue) {
+    function createMap(geojsonUrl, csvUrl, csvColumnName, minColor, maxColor, minValue, maxValue) {
       // Karte initialisieren – basemap-style mit transparentem Hintergrund
       var map = new maplibregl.Map({
         container: 'map',
-        style: 'bm_web_gry_7.json',
+        style: 'https://kxljxv.github.io/bm_web_gry_7.json',
         center: [10, 51],
         zoom: 6
       });
 
-      // Lade CSV und GeoJSON parallel
+      // CSV und GeoJSON parallel laden
       Promise.all([
         fetch(csvUrl).then(response => response.text()),
         fetch(geojsonUrl).then(response => response.json())
       ])
       .then(([csvText, geojsonData]) => {
-        // CSV parsen – Annahme: Erste Zeile enthält Header
-        // Spalten: 0: ID, 1: tatsächlicher Wert, 2: darzustellender Wert
         var csvMapping = {};
         var lines = csvText.trim().split('\n');
+        // Annahme: Erste Zeile enthält Header
+        var headers = lines[0].split(',').map(h => h.trim());
+        var colIndex = headers.indexOf(csvColumnName);
+        if(colIndex === -1) {
+          console.error("Spalte '" + csvColumnName + "' nicht gefunden!");
+          return;
+        }
+        // Ab der zweiten Zeile die Daten einlesen
         for (var i = 1; i < lines.length; i++) {
           var cols = lines[i].split(',');
           var id = cols[0].trim();
-          var raw = cols[2].trim();
-          // Wenn kein Dezimalpunkt enthalten ist, Wert als "0."+Wert interpretieren (z.B. "45" wird zu "0.45")
+          var raw = cols[colIndex].trim();
+          // Falls kein Dezimalpunkt enthalten ist, interpretieren wir z. B. "45" als "0.45"
           if (raw.indexOf('.') === -1) {
             raw = "0." + raw;
           }
@@ -55,7 +65,7 @@
           csvMapping[id] = displayValue;
         }
 
-        // In die GeoJSON-Features den darzustellenden Wert einfügen.
+        // Den GeoJSON-Features den darzustellenden Wert zuordnen
         geojsonData.features.forEach(function(feature) {
           var featureId = feature.properties.ID;
           feature.properties.displayValue = csvMapping.hasOwnProperty(featureId)
@@ -63,14 +73,15 @@
             : minValue;
         });
 
-        // Nach Laden der Karte die GeoJSON-Daten als Quelle und Layer hinzufügen.
+        // Nach dem Laden der Karte die GeoJSON-Daten als Quelle und Layer hinzufügen.
         map.on('load', function() {
+          // GeoJSON-Quelle hinzufügen
           map.addSource('geojson-layer', {
             type: 'geojson',
             data: geojsonData
           });
-          
-          // Fügt die Ebene unter der ersten Basemap-Ebene ein.
+
+          // Füll-Layer ohne eigene Umrandung (Outline transparent)
           var firstLayerId = map.getStyle().layers[0].id;
           map.addLayer({
             id: 'geojson-fill',
@@ -78,7 +89,6 @@
             source: 'geojson-layer',
             layout: {},
             paint: {
-              // Interpolation: Bei minValue wird minColor genutzt, bei maxValue maxColor.
               'fill-color': [
                 'interpolate',
                 ['linear'],
@@ -86,18 +96,64 @@
                 minValue, minColor,
                 maxValue, maxColor
               ],
-              'fill-opacity': 0.5
+              'fill-opacity': 0.5,
+              'fill-outline-color': 'transparent'
             }
           }, firstLayerId);
+
+          // Zusätzliche Quelle und Layer für die ausgewählte Polygon-Umrandung
+          map.addSource('selected-feature', {
+            type: 'geojson',
+            data: { type: "FeatureCollection", features: [] }
+          });
+          map.addLayer({
+            id: 'selected-outline',
+            type: 'line',
+            source: 'selected-feature',
+            layout: {},
+            paint: {
+              'line-color': '#000000',
+              'line-width': 2
+            }
+          });
+
+          // Maus-Cursor als Pointer anzeigen, wenn über ein Polygon gehoved wird
+          map.on('mouseenter', 'geojson-fill', function() {
+            map.getCanvas().style.cursor = 'pointer';
+          });
+          map.on('mouseleave', 'geojson-fill', function() {
+            map.getCanvas().style.cursor = '';
+          });
+
+          // Klick-Interaktion: Polygon auswählen oder deselektieren
+          map.on('click', 'geojson-fill', function(e) {
+            var feature = e.features[0];
+            var featureId = feature.properties.ID;
+            if (selectedPolygonId === featureId) {
+              // Polygon bereits ausgewählt → deselect
+              selectedPolygonId = "00000";
+              map.getSource('selected-feature').setData({ type: "FeatureCollection", features: [] });
+            } else {
+              // Ein anderes Polygon wurde ausgewählt
+              selectedPolygonId = featureId;
+              map.getSource('selected-feature').setData({
+                type: "FeatureCollection",
+                features: [feature]
+              });
+            }
+          });
         });
       })
       .catch(error => console.error('Fehler beim Laden der Daten:', error));
     }
 
-    // Funktionsaufruf mit den gewünschten Eingaben:
+    // Aufruf der Funktion:
+    // Parameter: GeoJSON-URL, CSV-URL, gewünschter Spaltenname (z. B. "Wert1"),
+    // Minimalfarbe, Maximalfarbe, Minimalwert, Maximalwert
     createMap(
-      'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025nurID.json',
+      'https://kxljxv.github.io/wahlergebnisse2025nurID.json',
       'https://kxljxv.github.io/wahlergebnisse/wahlbeteiligung2025commasep.csv',
+      'Wert1',
       '#00FF00',  // Minimalfarbe (z. B. Grün)
       '#FF0000',  // Maximalfarbe (z. B. Rot)
       0,          // Minimalwert
