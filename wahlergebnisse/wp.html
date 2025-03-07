@@ -1,16 +1,24 @@
-<!-- wp:html {"lock":{"move":false,"remove":false}} -->
-
+<!-- wp:columns -->
+<div class="wp-block-columns"><!-- wp:column {"width":"100%"} -->
+<div class="wp-block-column" style="flex-basis:100%"><!-- wp:html {"lock":{"move":false,"remove":false}} -->
+<style>
+  /* Größe des Karten-Containers */
   #map {
-    width: 100%;
-    height: 500px;
+    width: 99%;
+    height: 500px; /* Passe die Höhe bei Bedarf an */
   }
+</style>
 
 <!-- Container für die Map -->
 <div id="map"></div>
-<!-- MapLibre GL JS einbinden -->
-<a href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js">https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js</a>
 
+<!-- MapLibre GL JS einbinden -->
+<script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+
+<script>
+  // Globale Variable für die aktuell ausgewählte Polygon-ID
   var selectedPolygonId = "00000";
+
   /**
    * Erstellt eine MapLibre-Karte, lädt GeoJSON und CSV,
    * verknüpft die Daten anhand der ID und färbt die Polygone
@@ -36,21 +44,111 @@
 
     // CSV und GeoJSON parallel laden
     Promise.all([
-      fetch(csvUrl).then(response =&gt; response.text()),
-      fetch(geojsonUrl).then(response =&gt; response.json())
+      fetch(csvUrl).then(response => response.text()),
+      fetch(geojsonUrl).then(response => response.json())
     ])
-    .then(([csvText, geojsonData]) =&gt; {
+    .then(([csvText, geojsonData]) => {
       var csvMapping = {};
       var lines = csvText.trim().split('\n');
       // Annahme: Erste Zeile enthält Header
-      var headers = lines[0].split(',').map(h =&gt; h.trim());
+      var headers = lines[0].split(',').map(h => h.trim());
       var colIndex = headers.indexOf(csvColumnName);
       if (colIndex === -1) {
         console.error("Spalte '" + csvColumnName + "' nicht gefunden!");
         return;
       }
       // Ab der zweiten Zeile die Daten einlesen
-      for (var i = 1; i  console.error("Fehler beim Laden der Daten:", error));
+      for (var i = 1; i < lines.length; i++) {
+        var cols = lines[i].split(',');
+        var id = cols[0].trim();
+        var raw = cols[colIndex].trim();
+        // Falls kein Dezimalpunkt enthalten ist, interpretieren wir z. B. "45" als "0.45"
+        if (raw.indexOf('.') === -1) {
+          raw = "0." + raw;
+        }
+        var displayValue = parseFloat(raw);
+        csvMapping[id] = displayValue;
+      }
+
+      // Den GeoJSON-Features den darzustellenden Wert zuordnen
+      geojsonData.features.forEach(function(feature) {
+        var featureId = feature.properties.ID;
+        feature.properties.displayValue = csvMapping.hasOwnProperty(featureId)
+          ? csvMapping[featureId]
+          : minValue;
+      });
+
+      // Nach Laden der Karte die GeoJSON-Daten als Quelle und Layer hinzufügen
+      map.on('load', function() {
+        // GeoJSON-Quelle hinzufügen
+        map.addSource('geojson-layer', {
+          type: 'geojson',
+          data: geojsonData
+        });
+
+        // Füll-Layer ohne Umrandung (outline transparent)
+        map.addLayer({
+          id: 'geojson-fill',
+          type: 'fill',
+          source: 'geojson-layer',
+          layout: {},
+          paint: {
+            'fill-color': [
+              'interpolate',
+              ['linear'],
+              ['coalesce', ['get', 'displayValue'], minValue],
+              minValue, minColor,
+              maxValue, maxColor
+            ],
+            'fill-opacity': 0.5,
+            'fill-outline-color': 'transparent'
+          }
+        });
+
+        // Quelle und Layer für die ausgewählte Polygon-Umrandung
+        map.addSource('selected-feature', {
+          type: 'geojson',
+          data: { type: "FeatureCollection", features: [] }
+        });
+        map.addLayer({
+          id: 'selected-outline',
+          type: 'line',
+          source: 'selected-feature',
+          layout: {},
+          paint: {
+            'line-color': '#000000',
+            'line-width': 2
+          }
+        });
+
+        // Mauszeiger als Pointer, wenn über ein Polygon gehoved wird
+        map.on('mouseenter', 'geojson-fill', function() {
+          map.getCanvas().style.cursor = 'pointer';
+        });
+        map.on('mouseleave', 'geojson-fill', function() {
+          map.getCanvas().style.cursor = '';
+        });
+
+        // Klick-Interaktion: Polygon auswählen oder abwählen
+        map.on('click', 'geojson-fill', function(e) {
+          var feature = e.features[0];
+          var featureId = feature.properties.ID;
+          if (selectedPolygonId === featureId) {
+            // Bereits ausgewähltes Polygon abwählen
+            selectedPolygonId = "00000";
+            map.getSource('selected-feature').setData({ type: "FeatureCollection", features: [] });
+          } else {
+            // Auswahl wechseln: altes Polygon verliert Umrandung, neues wird markiert
+            selectedPolygonId = featureId;
+            map.getSource('selected-feature').setData({
+              type: "FeatureCollection",
+              features: [feature]
+            });
+          }
+        });
+      });
+    })
+    .catch(error => console.error("Fehler beim Laden der Daten:", error));
   }
 
   // Aufruf der Funktion mit deinen Parametern:
@@ -63,7 +161,12 @@
     0,                // Minimalwert
     1                 // Maximalwert
   );
+</script>
 
+<!-- /wp:html --></div>
+<!-- /wp:column --></div>
+<!-- /wp:columns -->
 
-<!-- /wp:html -->
-
+<!-- wp:paragraph -->
+<p></p>
+<!-- /wp:paragraph -->
