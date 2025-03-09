@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Cookie Pfad Beispiel</title>
+</head>
+<body>
+
+<h1>Cookie mit Pfad setzen und lesen</h1>
+
+<button onclick="setzeCookie()">Cookie mit Pfad '/testpfad' setzen</button>
+<button onclick="liesCookie()">Cookie 'meinPfadCookie' lesen</button>
+
+<script>
+function setzeCookie() {
+  var cookieName = "meinPfadCookie";
+  var cookieValue = "Wert für Pfad-Cookie";
+  var cookiePath = "/testpfad"; // Setze den Pfad auf '/testpfad'
+
+  setCookieWithPath(cookieName, cookieValue, cookiePath);
+  alert("Cookie '" + cookieName + "' mit Pfad '" + cookiePath + "' wurde gesetzt!");
+}
+
+function liesCookie() {
+  var cookieName = "meinPfadCookie";
+  var cookieValue = getCookieFromPath(cookieName);
+
+  if (cookieValue) {
+    alert("Cookie '" + cookieName + "' gefunden. Wert: " + cookieValue);
+  } else {
+    alert("Cookie '" + cookieName + "' nicht gefunden.");
+  }
+}
+
+//  Hinweis: Um den Cookie mit dem Pfad zu testen, müssten Sie diese HTML-Datei
+//  unterhalb des Pfades "/testpfad" auf Ihrem Server öffnen (oder eine entsprechende Serverkonfiguration haben).
+//  Im lokalen Dateisystem-Kontext verhält sich der Pfad möglicherweise nicht exakt wie erwartet.
+
+</script>
+
+</body>
+</html>
