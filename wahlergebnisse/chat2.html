@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Map with Local Storage Configuration</title>
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    // Global variables
+    var selectedPolygonId = "00000";
+    var map;
+    var cachedData = {
+      "2021": { geojson: null, csv: null, csvMapping: {} },
+      "2025": { geojson: null, csv: null, csvMapping: {} }
+    };
+    var currentConfig = {
+      election: null,
+      datacolumn: null,
+      minimumcolor: null,
+      maximumcolor: null,
+      minimumvalue: null,
+      maximumvalue: null
+    };
+
+    // Define data sources
+    const dataSources = {
+      "2021": {
+        geojsonUrl: 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2021nurID.json',
+        csvUrl: 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2021(8).csv'
+      },
+      "2025": {
+        geojsonUrl: 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025nurID.json',
+        csvUrl: 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025(8).csv'
+      }
+    };
+
+    // Default values if not in local storage
+    const defaultValues = {
+      election: "2025",
+      datacolumn: "Wahlbeteiligung",
+      minimumcolor: "#00FF00",
+      maximumcolor: "#FF0000",
+      minimumvalue: 0.4,
+      maximumvalue: 1
+    };
+
+    // Initialize map
+    function initializeMap() {
+      map = new maplibregl.Map({
+        container: 'map',
+        style: 'https://kxljxv.github.io/bm_web_gry_7.json',
+        center: [10, 51],
+        zoom: 6
+      });
+
+      map.on('load', function() {
+        // Add sources for GeoJSON data and selected feature
+        map.addSource('geojson-layer', {
+          type: 'geojson',
+          data: { type: "FeatureCollection", features: [] }
+        });
+
+        var firstLayerId = map.getStyle().layers[0].id;
+        map.addLayer({
+          id: 'geojson-fill',
+          type: 'fill',
+          source: 'geojson-layer',
+          layout: {},
+          paint: {
+            'fill-color': [
+              'interpolate',
+              ['linear'],
+              ['coalesce', ['get', 'displayValue'], 0],
+              0, '#FFFFFF',
+              1, '#FFFFFF'
+            ],
+            'fill-opacity': 0.5,
+            'fill-outline-color': 'transparent'
+          }
+        }, firstLayerId);
+
+        map.addSource('selected-feature', {
+          type: 'geojson',
+          data: { type: "FeatureCollection", features: [] }
+        });
+
+        map.addLayer({
+          id: 'selected-outline',
+          type: 'line',
+          source: 'selected-feature',
+          layout: {},
+          paint: {
+            'line-color': '#000000',
+            'line-width': 2
+          }
+        });
+
+        // Add interactivity
+        setupMapInteractions();
+
+        // Load data and apply initial configuration
+        loadConfiguration();
+      });
+    }
+
+    // Set up map interactions
+    function setupMapInteractions() {
+      map.on('mouseenter', 'geojson-fill', function() {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      
+      map.on('mouseleave', 'geojson-fill', function() {
+        map.getCanvas().style.cursor = '';
+      });
+
+      map.on('click', 'geojson-fill', function(e) {
+        var feature = e.features[0];
+        var featureId = feature.properties.ID;
+        
+        if (selectedPolygonId === featureId) {
+          // Polygon already selected → deselect
+          selectedPolygonId = "00000";
+          map.getSource('selected-feature').setData({ type: "FeatureCollection", features: [] });
+        } else {
+          // Another polygon was selected
+          selectedPolygonId = featureId;
+          map.getSource('selected-feature').setData({
+            type: "FeatureCollection",
+            features: [feature]
+          });
+        }
+      });
+    }
+
+    // Load configuration from local storage or use defaults
+    function loadConfiguration() {
+      const configKeys = Object.keys(defaultValues);
+      let configChanged = false;
+      
+      for (const key of configKeys) {
+        const storedValue = localStorage.getItem(key);
+        let value = storedValue !== null ? storedValue : defaultValues[key];
+        
+        // Convert numeric values
+        if (key === 'minimumvalue' || key === 'maximumvalue') {
+          value = parseFloat(value);
+        }
+        
+        if (currentConfig[key] !== value) {
+          currentConfig[key] = value;
+          configChanged = true;
+        }
+      }
+      
+      if (configChanged) {
+        applyConfiguration();
+      }
+    }
+
+    // Apply current configuration to the map
+    function applyConfiguration() {
+      const electionChanged = currentConfig.election !== null;
+      
+      loadDataIfNeeded(currentConfig.election)
+        .then(() => {
+          updateMapDisplay();
+        })
+        .catch(error => console.error('Error applying configuration:', error));
+    }
+
+    // Load GeoJSON and CSV data if not already loaded
+    function loadDataIfNeeded(election) {
+      if (!election) return Promise.resolve();
+      
+      // Check if data is already loaded
+      if (cachedData[election].geojson && cachedData[election].csv) {
+        return Promise.resolve();
+      }
+      
+      const { geojsonUrl, csvUrl } = dataSources[election];
+      
+      return Promise.all([
+        fetch(geojsonUrl).then(response => response.json()),
+        fetch(csvUrl).then(response => response.text())
+      ])
+      .then(([geojsonData, csvText]) => {
+        cachedData[election].geojson = geojsonData;
+        cachedData[election].csv = csvText;
+        processCSVData(election);
+      });
+    }
+
+    // Process CSV data and create mapping
+    function processCSVData(election) {
+      const csvText = cachedData[election].csv;
+      if (!csvText) return;
+      
+      // Clear existing mapping
+      cachedData[election].csvMapping = {};
+      
+      const lines = csvText.trim().split('\n');
+      const headers = lines[0].split(',').map(h => h.trim());
+      
+      // Create mappings for all columns - we'll extract the needed one later
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(',');
+        const id = cols[0].trim();
+        
+        cachedData[election].csvMapping[id] = {};
+        
+        for (let j = 1; j < headers.length; j++) {
+          let raw = cols[j].trim();
+          // If no decimal point is present, interpret e.g., "45" as "0.45"
+          if (raw.indexOf('.') === -1 && !isNaN(raw)) {
+            raw = "0." + raw;
+          }
+          cachedData[election].csvMapping[id][headers[j]] = parseFloat(raw);
+        }
+      }
+    }
+
+    // Update map display based on current configuration
+    function updateMapDisplay() {
+      if (!map.isStyleLoaded()) {
+        setTimeout(updateMapDisplay, 100);
+        return;
+      }
+      
+      const { election, datacolumn, minimumcolor, maximumcolor, minimumvalue, maximumvalue } = currentConfig;
+      
+      if (!election || !cachedData[election].geojson) return;
+      
+      // Create a deep copy of GeoJSON to avoid modifying the cached data
+      const geojsonData = JSON.parse(JSON.stringify(cachedData[election].geojson));
+      
+      // Assign display values from the selected column
+      geojsonData.features.forEach(function(feature) {
+        const featureId = feature.properties.ID;
+        const mapping = cachedData[election].csvMapping[featureId];
+        
+        feature.properties.displayValue = mapping && mapping[datacolumn] !== undefined
+          ? mapping[datacolumn]
+          : minimumvalue;
+      });
+      
+      // Update map data and style
+      map.getSource('geojson-layer').setData(geojsonData);
+      
+      map.setPaintProperty('geojson-fill', 'fill-color', [
+        'interpolate',
+        ['linear'],
+        ['coalesce', ['get', 'displayValue'], minimumvalue],
+        minimumvalue, minimumcolor,
+        maximumvalue, maximumcolor
+      ]);
+      
+      // Update selected feature if necessary
+      if (selectedPolygonId !== "00000") {
+        const selectedFeature = geojsonData.features.find(
+          feature => feature.properties.ID === selectedPolygonId
+        );
+        
+        if (selectedFeature) {
+          map.getSource('selected-feature').setData({
+            type: "FeatureCollection",
+            features: [selectedFeature]
+          });
+        } else {
+          // Reset selection if the feature is no longer available
+          selectedPolygonId = "00000";
+          map.getSource('selected-feature').setData({ type: "FeatureCollection", features: [] });
+        }
+      }
+    }
+
+    // Monitor local storage for changes
+    function monitorLocalStorage() {
+      window.addEventListener('storage', function(e) {
+        if (Object.keys(defaultValues).includes(e.key)) {
+          loadConfiguration();
+        }
+      });
+      
+      // Periodically check for changes (fallback for same-tab changes)
+      setInterval(loadConfiguration, 1000);
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeMap();
+      monitorLocalStorage();
+    });
+  </script>
+</body>
+</html>
