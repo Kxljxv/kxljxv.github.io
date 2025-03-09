@@ -1,28 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Cookie Pfad Beispiel</title>
+<title>Cookie ohne Pfad Beispiel</title>
 </head>
 <body>
 
-<h1>Cookie mit Pfad setzen und lesen</h1>
+<h1>Cookie ohne Pfad setzen und lesen</h1>
 
-<button onclick="setzeCookie()">Cookie mit Pfad '/testpfad' setzen</button>
-<button onclick="liesCookie()">Cookie 'meinPfadCookie' lesen</button>
+<p>Wenn Sie den Cookie ohne Pfad setzen, ist er standardmässig für den Pfad des aktuellen Dokuments gültig.</p>
+
+<button onclick="setzeCookieOhnePfad()">Cookie ohne Pfad setzen</button>
+<button onclick="liesCookieOhnePfad()">Cookie 'meinCookieOhnePfad' lesen</button>
 
 <script>
-function setzeCookie() {
-  var cookieName = "meinPfadCookie";
-  var cookieValue = "Wert für Pfad-Cookie";
-  var cookiePath = "/testpfad"; // Setze den Pfad auf '/testpfad'
+function setzeCookieOhnePfad() {
+  var cookieName = "meinCookieOhnePfad";
+  var cookieValue = "Wert ohne Pfad";
 
-  setCookieWithPath(cookieName, cookieValue, cookiePath);
-  alert("Cookie '" + cookieName + "' mit Pfad '" + cookiePath + "' wurde gesetzt!");
+  setCookieNoPath(cookieName, cookieValue);
+  alert("Cookie '" + cookieName + "' ohne expliziten Pfad wurde gesetzt!");
 }
 
-function liesCookie() {
-  var cookieName = "meinPfadCookie";
-  var cookieValue = getCookieFromPath(cookieName);
+function liesCookieOhnePfad() {
+  var cookieName = "meinCookieOhnePfad";
+  var cookieValue = getCookieNoPath(cookieName);
 
   if (cookieValue) {
     alert("Cookie '" + cookieName + "' gefunden. Wert: " + cookieValue);
@@ -31,9 +32,10 @@ function liesCookie() {
   }
 }
 
-//  Hinweis: Um den Cookie mit dem Pfad zu testen, müssten Sie diese HTML-Datei
-//  unterhalb des Pfades "/testpfad" auf Ihrem Server öffnen (oder eine entsprechende Serverkonfiguration haben).
-//  Im lokalen Dateisystem-Kontext verhält sich der Pfad möglicherweise nicht exakt wie erwartet.
+// Hinweis: Um das Verhalten des Cookies ohne Pfad zu testen, öffnen Sie diese HTML-Datei
+// in verschiedenen Ordnern auf Ihrem Webserver. Der Cookie sollte nur zugänglich sein,
+// wenn Sie sich im selben Ordner oder in Unterordnern befinden, in dem er gesetzt wurde.
+// Im lokalen Dateisystem-Kontext ist das Verhalten möglicherweise nicht immer direkt erkennbar.
 
 </script>
 
