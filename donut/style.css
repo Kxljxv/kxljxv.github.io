@@ -1,0 +1,21 @@
+/* style.css */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap');
+
+body {
+    font-family: 'Space Grotesk', sans-serif;
+    background-color: #f0f0f0; /* Light grey background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+#chartdiv {
+    width: 80%;
+    max-width: 800px;
+    height: 500px;
+    background-color: white; /* White chart background */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Light shadow */
+}
