@@ -68,15 +68,15 @@
     const electionId = urlParams.get('id');
     const electionYear = urlParams.get('year');
     
-    // Set the CSV URL based on the election year
+    // Set the CSV URL based on the election year - Using HTTPS instead of HTTP
     let csvUrl;
     let partiesToDisplay = ["SPD", "Gruen", "CDU", "LINKE", "AfD", "FDP", "PMUT", "FW", "Volt"];
     
     if (electionYear === '2025') {
-      csvUrl = 'http://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025(8).csv';
+      csvUrl = 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025(8).csv';
       partiesToDisplay.push("BSW"); // Add BSW for 2025 data
     } else if (electionYear === '2021') {
-      csvUrl = 'http://kxljxv.github.io/wahlergebnisse/wahlergebnisse2021(8).csv';
+      csvUrl = 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2021(8).csv';
     } else {
       document.getElementById('subtitle').innerHTML = 'Invalid election year. Please use 2021 or 2025.';
       document.getElementById('chartdiv').innerHTML = '<div class="error-message">Please specify a valid election year (2021 or 2025) in the URL parameters.</div>';
