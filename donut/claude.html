@@ -157,7 +157,7 @@
       // Create series
       const series = chart.series.push(
         am5percent.PieSeries.new(root, {
-          valueField: "value",
+          valueField: "value * 100",
           categoryField: "party",
           alignLabels: false
         })
