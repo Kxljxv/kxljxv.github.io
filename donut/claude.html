@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Election Results Donut Chart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- amCharts Resources -->
+  <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+  
+  <style>
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    #chartdiv {
+      width: 100%;
+      height: 500px;
+    }
+    
+    .error-message {
+      color: #d32f2f;
+      text-align: center;
+      padding: 20px;
+      font-weight: 500;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 id="title">Election Results</h1>
+      <p id="subtitle">Loading data...</p>
+    </div>
+    <div id="chartdiv"></div>
+  </div>
+
+  <script>
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const electionId = urlParams.get('id');
+    const electionYear = urlParams.get('year');
+    
+    // Set the CSV URL based on the election year
+    let csvUrl;
+    let partiesToDisplay = ["SPD", "Gruen", "CDU", "LINKE", "AfD", "FDP", "PMUT", "FW", "Volt"];
+    
+    if (electionYear === '2025') {
+      csvUrl = 'http://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025(8).csv';
+      partiesToDisplay.push("BSW"); // Add BSW for 2025 data
+    } else if (electionYear === '2021') {
+      csvUrl = 'http://kxljxv.github.io/wahlergebnisse/wahlergebnisse2021(8).csv';
+    } else {
+      document.getElementById('subtitle').innerHTML = 'Invalid election year. Please use 2021 or 2025.';
+      document.getElementById('chartdiv').innerHTML = '<div class="error-message">Please specify a valid election year (2021 or 2025) in the URL parameters.</div>';
+      throw new Error('Invalid election year');
+    }
+    
+    // Update the title and subtitle
+    document.getElementById('title').innerHTML = `Election Results ${electionYear}`;
+    
+    // Function to parse CSV data
+    function parseCSV(csv) {
+      const lines = csv.split('\n');
+      const headers = lines[0].split(',');
+      
+      const results = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        if (lines[i].trim() === '') continue;
+        
+        const values = lines[i].split(',');
+        const entry = {};
+        
+        for (let j = 0; j < headers.length; j++) {
+          entry[headers[j].trim()] = values[j] ? values[j].trim() : '';
+        }
+        
+        results.push(entry);
+      }
+      
+      return { headers, data: results };
+    }
+    
+    // Function to create the chart
+    function createChart(data) {
+      // Filter the data based on the provided ID
+      const districtData = data.data.find(item => item.ID === electionId);
+      
+      if (!districtData) {
+        document.getElementById('subtitle').innerHTML = `No data found for ID: ${electionId}`;
+        document.getElementById('chartdiv').innerHTML = '<div class="error-message">No data found for the specified ID. Please check the ID and try again.</div>';
+        return;
+      }
+      
+      // Update subtitle with district ID and turnout
+      const turnout = parseFloat(districtData.Wahlbeteiligung);
+      document.getElementById('subtitle').innerHTML = `District ID: ${electionId} | Turnout: ${turnout}%`;
+      
+      // Prepare chart data
+      const chartData = [];
+      
+      partiesToDisplay.forEach(party => {
+        if (districtData[party] && !isNaN(parseFloat(districtData[party]))) {
+          chartData.push({
+            party: party,
+            value: parseFloat(districtData[party])
+          });
+        }
+      });
+      
+      // Sort data by value (descending)
+      chartData.sort((a, b) => b.value - a.value);
+      
+      // Colors for each party
+      const partyColors = {
+        "SPD": "#E3000F",
+        "CDU": "#000000",
+        "Gruen": "#1AA037",
+        "LINKE": "#BE3075",
+        "AfD": "#009EE0",
+        "FDP": "#FFED00",
+        "PMUT": "#FF8800",
+        "FW": "#F5821F",
+        "Volt": "#502379",
+        "BSW": "#A31AE3"
+      };
+      
+      // Create the chart using amCharts
+      const root = am5.Root.new("chartdiv");
+      root.setThemes([am5themes_Animated.new(root)]);
+      
+      const chart = root.container.children.push(
+        am5percent.PieChart.new(root, {
+          layout: root.verticalLayout,
+          innerRadius: am5.percent(50)
+        })
+      );
+      
+      // Create series
+      const series = chart.series.push(
+        am5percent.PieSeries.new(root, {
+          valueField: "value",
+          categoryField: "party",
+          alignLabels: false
+        })
+      );
+      
+      // Set custom colors for parties
+      series.slices.template.adapters.add("fill", (fill, target) => {
+        const party = target.dataItem.get("category");
+        return partyColors[party] || am5.color(0x999999);
+      });
+      
+      // Configure labels
+      series.labels.template.setAll({
+        text: "{category}: {value.formatNumber('#.#')}%",
+        radius: 10,
+        fontSize: 14,
+        fontFamily: "Space Grotesk"
+      });
+      
+      // Configure tooltips
+      series.slices.template.setAll({
+        toggleKey: "none",
+        cornerRadius: 5,
+        templateField: "sliceSettings",
+        strokeWidth: 2,
+        stroke: am5.color(0xffffff)
+      });
+      
+      series.slices.template.states.create("hover", {
+        scale: 1.05
+      });
+      
+      // Create central label for turnout
+      const label = chart.seriesContainer.children.push(
+        am5.Label.new(root, {
+          text: `Turnout\n${turnout}%`,
+          fontSize: 22,
+          fontWeight: "500",
+          textAlign: "center",
+          x: am5.percent(50),
+          y: am5.percent(50),
+          centerX: am5.percent(50),
+          centerY: am5.percent(50),
+          fontFamily: "Space Grotesk"
+        })
+      );
+      
+      // Add data to series
+      series.data.setAll(chartData);
+      
+      // Add legend
+      const legend = chart.children.push(
+        am5.Legend.new(root, {
+          centerX: am5.percent(50),
+          x: am5.percent(50),
+          y: am5.percent(0),
+          layout: root.horizontalLayout,
+          fontFamily: "Space Grotesk"
+        })
+      );
+      
+      legend.data.setAll(series.dataItems);
+    }
+    
+    // Fetch and process the CSV data
+    fetch(csvUrl)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(csvData => {
+        const parsedData = parseCSV(csvData);
+        createChart(parsedData);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('subtitle').innerHTML = 'Error loading data';
+        document.getElementById('chartdiv').innerHTML = `<div class="error-message">Error loading data: ${error.message}</div>`;
+      });
+  </script>
+</body>
+</html>
