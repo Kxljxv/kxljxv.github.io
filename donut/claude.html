@@ -121,7 +121,7 @@
         if (districtData[party] && !isNaN(parseFloat(districtData[party]))) {
           chartData.push({
             party: party,
-            value: parseFloat(districtData[party])
+            value: parseFloat(districtData[party]) * 100
           });
         }
       });
@@ -157,7 +157,7 @@
       // Create series
       const series = chart.series.push(
         am5percent.PieSeries.new(root, {
-          valueField: "value * 100",
+          valueField: "value",
           categoryField: "party",
           alignLabels: false
         })
