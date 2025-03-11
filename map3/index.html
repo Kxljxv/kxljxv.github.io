@@ -1,69 +1,64 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Berlin Wahlergebnisse</title>
-  
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wahlergebnisse Berlin – Vollbild</title>
+
+  <!-- Tailwind & Flowbite (optional, as in your old code) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/flowbite@1.6.5/dist/flowbite.min.css" rel="stylesheet">
+
   <!-- MapLibre -->
   <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
-  
-  <!-- amCharts Resources -->
+
+  <!-- amCharts 5 (for donut chart) -->
   <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/radar.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/themes/Dark.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
-  <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
+
+  <!-- Your custom CSS -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Full Screen Map Container -->
-  <div id="map" class="fixed top-0 left-0 w-screen h-screen"></div>
-  
-  <!-- Header Controls -->
-  <div class="fixed top-0 left-0 w-full p-4 z-10 flex justify-between items-center">
-    <h1 class="text-white text-2xl font-bold drop-shadow-lg">Wahlergebnisse Berlin</h1>
-    <div class="flex space-x-4">
-      <button class="year-btn px-3 py-1 rounded-full backdrop-blur-md bg-white/20 text-white font-medium shadow-lg" data-year="2021">2021</button>
-      <button class="year-btn px-3 py-1 rounded-full backdrop-blur-md bg-white/20 text-white font-medium shadow-lg active" data-year="2025">2025</button>
+  <!-- The map occupies the entire screen; no scrolling. -->
+  <div id="map" class="w-full h-full"></div>
+
+  <!-- Side panel (initially hidden or slid out). It appears on district click. -->
+  <div id="infoPanel" class="info-panel hidden">
+    <div id="infoContent" class="info-content">
+      <!-- Voting District Title -->
+      <h2 id="districtTitle" class="text-xl font-bold mb-2">Wahlbezirk</h2>
+
+      <!-- Donut Chart Container -->
+      <div id="chartdiv" class="w-full h-48 mb-4"></div>
+
+      <!-- Two select boxes (for example: Year & Party). 
+           You can adapt them if you like. -->
+      <select id="yearSelect" class="mb-2 w-full p-2 rounded">
+        <option value="2025" selected>Jahr 2025</option>
+        <option value="2021">Jahr 2021</option>
+      </select>
+
+      <select id="partySelect" class="mb-4 w-full p-2 rounded">
+        <!-- We will populate these options via script, 
+             including 'winner' and 'turnout'. -->
+      </select>
+
+      <!-- Another box: e.g., a search field or anything else you want. -->
+      <input type="text" id="searchField" 
+             placeholder="Suche nach Bezirk oder Adresse" 
+             class="w-full p-2 rounded" />
     </div>
   </div>
-  
-  <!-- Floating Data Panel (initially hidden) -->
-  <div id="dataPanel" class="fixed top-20 right-4 w-80 backdrop-blur-md bg-black/40 rounded-xl shadow-2xl p-4 text-white transform transition-all duration-500 opacity-0 translate-x-full">
-    <h2 id="district" class="text-xl font-bold mb-2 text-center"></h2>
-    
-    <!-- Donut Chart -->
-    <div id="chartDiv" class="h-64 w-full"></div>
-    
-    <!-- Selection Controls -->
-    <div class="mt-4 space-y-3">
-      <div>
-        <label class="block text-sm mb-1">Partei wählen</label>
-        <select id="partySelect" class="w-full p-2 rounded bg-black/60 text-white backdrop-blur-md">
-          <option value="Gewinner">Gewinner</option>
-          <option value="Wahlbeteiligung">Wahlbeteiligung</option>
-          <!-- Other options will be populated dynamically -->
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm mb-1">Jahr</label>
-        <select id="yearSelect" class="w-full p-2 rounded bg-black/60 text-white backdrop-blur-md">
-          <option value="2025">2025</option>
-          <option value="2021">2021</option>
-        </select>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Search Bar -->
-  <div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-80 z-10">
-    <input type="text" id="searchField" placeholder="Suche nach Bezirk oder Adresse..." class="w-full p-3 rounded-full bg-black/60 text-white backdrop-blur-md shadow-lg">
-  </div>
-  
+
+  <!-- Flowbite JS (optional) -->
+  <script src="https://unpkg.com/flowbite@1.6.5/dist/flowbite.min.js"></script>
+  <!-- MapLibre JS -->
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <!-- Your custom JS -->
   <script src="script.js"></script>
 </body>
 </html>
