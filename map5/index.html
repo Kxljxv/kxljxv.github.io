@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wahlergebnisse Berlin – Embed</title>
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <style>
+    /* Die Karte füllt den gesamten Bildschirm */
+    html, body { margin: 0; padding: 0; height: 100%; }
+    #map { width: 100%; height: 100%; }
+
+    /* Infobox-Styling: rechts, mit Abstand, abgerundet, transparent mit Blur-Effekt */
+    #info-box {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 300px;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      border-radius: 10px;
+      padding: 15px;
+      color: white;
+      z-index: 10;
+    }
+    #info-box h2 { margin-top: 0; }
+    #pieChart {
+      width: 100%;
+      height: 200px;
+      margin-bottom: 15px;
+    }
+    select {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <!-- Infobox-Overlay -->
+  <div id="info-box">
+    <h2 id="district-title">Wähle einen Wahlbezirk</h2>
+    <canvas id="pieChart"></canvas>
+    <select id="partySelect">
+      <!-- Optionen werden per JavaScript gefüllt -->
+    </select>
+    <select id="yearSelect">
+      <option value="2025">2025</option>
+      <option value="2021">2021</option>
+    </select>
+  </div>
+
+  <!-- Einbinden der nötigen Bibliotheken -->
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Hilfsfunktion zum Auslesen von URL-Parametern (optional)
+    function getQueryParams() {
+      var params = {};
+      window.location.search.substr(1).split('&').forEach(function(item) {
+        if(item) {
+          var pair = item.split('=');
+          params[pair[0]] = decodeURIComponent(pair[1]);
+        }
+      });
+      return params;
+    }
+
+    // Anzeige-Namen und Farbpaletten
+    var partyDisplayNames = {
+      "WahlbeteiligunginkBW": "Wahlbeteiligung",
+      "SPDinkBW": "SPD",
+      "GrueninkBW": "Grüne",
+      "CDUinkBW": "CDU",
+      "LINKEinkBW": "Die Linke",
+      "LinkeinkBW": "Die Linke",
+      "AfDinkBW": "AfD",
+      "FDPinkBW": "FDP",
+      "BSWinkBWB": "BSW",
+      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "Tierschutzpartei",
+      "VoltDeutschlandinkBW": "Volt",
+      "VoltinkBW": "Volt",
+      "FWinkBW": "FW",
+      "MLPDinkBW": "MLPD"
+    };
+
+    var partyColorGradients = {
+      "WahlbeteiligunginkBW": { min: "#FFF7F5", max: "#002617" },
+      "SPDinkBW": { min: "#FFF7F5", max: "#570000" },
+      "GrueninkBW": { min: "#FFF7F5", max: "#004F00" },
+      "CDUinkBW": { min: "#FFF7F5", max: "#09090A" },
+      "LINKEinkBW": { min: "#FFF7F5", max: "#8F0354" },
+      "LinkeinkBW": { min: "#FFF7F5", max: "#8F0354" },
+      "AfDinkBW": { min: "#FFF7F5", max: "#002B9C" },
+      "FDPinkBW": { min: "#FFF7F5", max: "#5E4A00" },
+      "BSWinkBWB": { min: "#FFF7F5", max: "#571334" },
+      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: "#FFF7F5", max: "#00454D" },
+      "VoltDeutschlandinkBW": { min: "#FFF7F5", max: "#462270" },
+      "VoltinkBW": { min: "#FFF7F5", max: "#462270" },
+      "FWinkBW": { min: "#FFF7F5", max: "#9C4900" },
+      "MLPDinkBW": { min: "#FFF7F5", max: "#8C142A" }
+    };
+
+    // Definition der Datensätze für 2025 und 2021
+    var dataset2025 = {
+      url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
+      partyRanges: {
+        "WahlbeteiligunginkBW": { min: 0.454105275, max: 0.98 },
+        "SPDinkBW": { min: 0.06, max: 0.39984263 },
+        "GrueninkBW": { min: 0.015, max: 0.541414141 },
+        "CDUinkBW": { min: 0.025714286, max: 0.46 },
+        "LINKEinkBW": { min: 0.011583012, max: 0.5 },
+        "AfDinkBW": { min: 0.005931198, max: 0.5 },
+        "FDPinkBW": { min: 0.004, max: 0.268841395 },
+        "BSWinkBWB": { min: 0.012, max: 0.16 },
+        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.085704944 },
+        "VoltDeutschlandinkBW": { min: 0.0, max: 0.029 },
+        "FWinkBW": { min: 0.0, max: 0.034937014 },
+        "MLPDinkBW": { min: 0.0, max: 0.012658228 }
+      },
+      availableParties: [
+        "WahlbeteiligunginkBW", "SPDinkBW", "GrueninkBW", "CDUinkBW", "LINKEinkBW",
+        "AfDinkBW", "FDPinkBW", "BSWinkBWB", "PARTEIMENSCHUMWELTTIERSCHUTZinkBW",
+        "VoltDeutschlandinkBW", "FWinkBW", "MLPDinkBW"
+      ]
+    };
+
+    var dataset2021 = {
+      url: 'https://kxljxv.github.io/wahlergebnisse2021.json',
+      partyRanges: {
+        "WahlbeteiligunginkBW": { min: 0.454105275, max: 0.98 },
+        "SPDinkBW": { min: 0.06, max: 0.39984263 },
+        "GrueninkBW": { min: 0.015, max: 0.541414141 },
+        "CDUinkBW": { min: 0.025714286, max: 0.46 },
+        "LinkeinkBW": { min: 0.011583012, max: 0.5 },
+        "AfDinkBW": { min: 0.005931198, max: 0.5 },
+        "FDPinkBW": { min: 0.004, max: 0.268841395 },
+        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.085704944 },
+        "VoltinkBW": { min: 0.0, max: 0.029 },
+        "FWinkBW": { min: 0.0, max: 0.034937014 },
+        "MLPDinkBW": { min: 0.0, max: 0.012658228 }
+      },
+      availableParties: [
+        "WahlbeteiligunginkBW", "SPDinkBW", "GrueninkBW", "CDUinkBW", "LinkeinkBW",
+        "AfDinkBW", "FDPinkBW", "PARTEIMENSCHUMWELTTIERSCHUTZinkBW",
+        "VoltinkBW", "FWinkBW", "MLPDinkBW"
+      ]
+    };
+
+    // Standardwerte (Start: Jahr 2025, Wahlbeteiligung als Standardmetrik)
+    var currentDataset = dataset2025;
+    var currentParty = "WahlbeteiligunginkBW";
+
+    // Fülle das Partei-Selectfeld basierend auf dem aktuellen Datensatz
+    function populatePartySelect() {
+      var partySelect = document.getElementById('partySelect');
+      partySelect.innerHTML = "";
+      currentDataset.availableParties.forEach(function(party) {
+        var option = document.createElement('option');
+        option.value = party;
+        option.textContent = partyDisplayNames[party] || party;
+        if (party === currentParty) option.selected = true;
+        partySelect.appendChild(option);
+      });
+    }
+    populatePartySelect();
+
+    // Farbinterpolationsfunktionen
+    function hexToRgb(hex) {
+      hex = hex.replace(/^#/, '');
+      if(hex.length === 3) { hex = hex.split('').map(c => c + c).join(''); }
+      var bigint = parseInt(hex, 16);
+      return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
+    }
+    
+    function rgbToHex(r, g, b) {
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+    }
+    
+    function interpolateColors(color1Hex, color2Hex, value) {
+      var color1 = hexToRgb(color1Hex);
+      var color2 = hexToRgb(color2Hex);
+      var r = Math.round(color1.r + (color2.r - color1.r) * value);
+      var g = Math.round(color1.g + (color2.g - color1.g) * value);
+      var b = Math.round(color1.b + (color2.b - color1.b) * value);
+      return rgbToHex(r, g, b);
+    }
+    
+    // Berechne anhand des Rohwerts und der Partei die Farbe
+    function getColor(rawValue, party) {
+      var range = currentDataset.partyRanges[party];
+      if (!range) return "#CCCCCC";
+      var normalized = (rawValue - range.min) / (range.max - range.min);
+      normalized = Math.max(0, Math.min(1, normalized));
+      var gradient = partyColorGradients[party];
+      return gradient ? interpolateColors(gradient.min, gradient.max, normalized) : "#CCCCCC";
+    }
+    
+    // Aktualisiert die GeoJSON-Daten, indem für jedes Feature die Eigenschaft fillColor gesetzt wird.
+    function updateGeojsonData(data) {
+      data.features.forEach(function(feature) {
+        if(currentParty === "Gewinner") {
+          var winner = null, maxVal = -Infinity;
+          var candidateParties = currentDataset.availableParties.filter(p => p !== "WahlbeteiligunginkBW");
+          candidateParties.forEach(function(party) {
+            var value = parseFloat(feature.properties[party].replace(',', '.'));
+            if(value > maxVal) { maxVal = value; winner = party; }
+          });
+          feature.properties.fillColor = getColor(maxVal, winner);
+        } else {
+          var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
+          feature.properties.fillColor = getColor(rawValue, currentParty);
+        }
+      });
+      return data;
+    }
+    
+    // Initialisiere die Maplibre-Karte
+    var map = new maplibregl.Map({
+      container: 'map',
+      style: 'https://kxljxv.github.io/bm_web_gry_7.json',
+      center: [13.40, 52.52],
+      zoom: 10
+    });
+    
+    map.addControl(new maplibregl.NavigationControl());
+    
+    // Lädt die GeoJSON-Daten, aktualisiert sie und fügt sie der Karte hinzu
+    function loadGeoJson() {
+      fetch(currentDataset.url)
+        .then(response => response.json())
+        .then(data => {
+          var geojsonData = updateGeojsonData(data);
+          if (map.getSource('geojson-layer')) {
+            map.getSource('geojson-layer').setData(geojsonData);
+          } else {
+            map.addSource('geojson-layer', { type: 'geojson', data: geojsonData });
+            var firstLayerId = map.getStyle().layers[0].id;
+            map.addLayer({
+              id: 'geojson-fill',
+              type: 'fill',
+              source: 'geojson-layer',
+              paint: {
+                'fill-color': ['get', 'fillColor'],
+                'fill-opacity': 0.8
+              }
+            }, firstLayerId);
+          }
+        })
+        .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
+    }
+    
+    map.on('load', loadGeoJson);
+    
+    // Beim Klick auf einen Wahlbezirk: Kein Popup – stattdessen wird der Bezirk rot umrandet und die Infobox aktualisiert.
+    map.on('click', 'geojson-fill', function(e) {
+      if (!e.features.length) return;
+      var feature = e.features[0];
+      
+      // Vorherigen Highlight-Layer entfernen, falls vorhanden
+      if (map.getLayer('highlight-layer')) {
+        map.removeLayer('highlight-layer');
+        map.removeSource('highlight-layer');
+      }
+      
+      // Highlight-Layer hinzufügen (als Umrandung)
+      map.addSource('highlight-layer', {
+        type: 'geojson',
+        data: feature
+      });
+      map.addLayer({
+        id: 'highlight-layer',
+        type: 'line',
+        source: 'highlight-layer',
+        paint: {
+          'line-color': '#FF0000',
+          'line-width': 3
+        }
+      });
+      
+      // Infobox aktualisieren: Titel und Piechart
+      document.getElementById('district-title').textContent = feature.properties.UWB;
+      updatePieChart(feature);
+    });
+    
+    // Cursor-Styling
+    map.on('mouseenter', 'geojson-fill', function() {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', 'geojson-fill', function() {
+      map.getCanvas().style.cursor = '';
+    });
+    
+    // Piechart-Funktionalität mittels Chart.js
+    function updatePieChart(feature) {
+      var labels = [];
+      var dataValues = [];
+      currentDataset.availableParties.forEach(function(party) {
+        if(feature.properties[party] !== undefined) {
+          var value = parseFloat(feature.properties[party].replace(',', '.'));
+          labels.push(partyDisplayNames[party] || party);
+          // Werte als Prozentzahlen (mit 2 Nachkommastellen)
+          dataValues.push((value * 100).toFixed(2));
+        }
+      });
+      if (window.pieChart) {
+        window.pieChart.data.labels = labels;
+        window.pieChart.data.datasets[0].data = dataValues;
+        window.pieChart.data.datasets[0].backgroundColor = currentDataset.availableParties.map(function(party) {
+          return partyColorGradients[party] ? partyColorGradients[party].max : '#CCCCCC';
+        });
+        window.pieChart.update();
+      } else {
+        var ctx = document.getElementById('pieChart').getContext('2d');
+        window.pieChart = new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: dataValues,
+              backgroundColor: currentDataset.availableParties.map(function(party) {
+                return partyColorGradients[party] ? partyColorGradients[party].max : '#CCCCCC';
+              })
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        });
+      }
+    }
+    
+    // Event Listener für die Select-Felder
+    document.getElementById('partySelect').addEventListener('change', function(e) {
+      currentParty = this.value;
+      // Aktualisiere die GeoJSON-Daten entsprechend der neuen Auswahl
+      fetch(currentDataset.url)
+        .then(response => response.json())
+        .then(data => {
+          var geojsonData = updateGeojsonData(data);
+          if (map.getSource('geojson-layer')) {
+            map.getSource('geojson-layer').setData(geojsonData);
+          }
+        });
+    });
+    
+    document.getElementById('yearSelect').addEventListener('change', function(e) {
+      var selectedYear = this.value;
+      currentDataset = selectedYear === "2025" ? dataset2025 : dataset2021;
+      // Aktualisiere das Partei-Selectfeld, da sich die verfügbaren Parteien ändern können
+      populatePartySelect();
+      // Lade die GeoJSON-Daten des ausgewählten Jahres
+      loadGeoJson();
+    });
+  </script>
+</body>
+</html>
