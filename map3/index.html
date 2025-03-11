@@ -3,61 +3,88 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wahlergebnisse in Berlin – Interactive Map</title>
+  <title>Wahlergebnisse in Berlin – Interaktive Karte</title>
   
-  <!-- Maplibre CSS -->
+  <!-- MapLibre GL -->
   <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
   
-  <!-- amCharts -->
+  <!-- amCharts Resources -->
   <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/themes/Dark.js"></script>
   
   <!-- Eigene CSS -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Map füllt den gesamten Bildschirm -->
+  <!-- Fullscreen Map Container -->
   <div id="map" class="fullscreen-map"></div>
   
-  <!-- Jahreswahl: Floating Button Group -->
-  <div id="yearSelection" class="year-selection">
-    <button class="year-btn" data-year="2021">2021</button>
-    <button class="year-btn active" data-year="2025">2025</button>
+  <!-- Sidebar for Controls -->
+  <div id="sidebar" class="sidebar">
+    <div class="sidebar-content">
+      <h1>Wahlergebnisse Berlin</h1>
+      
+      <div class="control-group">
+        <label for="yearSelect">Jahr</label>
+        <select id="yearSelect" class="select-control">
+          <option value="2021">2021</option>
+          <option value="2025" selected>2025</option>
+        </select>
+      </div>
+      
+      <div class="search-container">
+        <input type="text" id="searchField" placeholder="Suche nach Bezirk oder Adresse" class="search-control">
+      </div>
+      
+      <div class="info-container">
+        <p>Klicken Sie auf einen Wahlbezirk, um Details zu sehen.</p>
+      </div>
+    </div>
   </div>
   
-  <!-- Floating Info Panel (initially hidden) -->
-  <div id="infoPanel" class="info-panel hidden">
-    <div class="panel-header">
-      <h2 id="districtHeader">Wahlbezirk</h2>
-      <button id="closePanel" class="close-btn">&times;</button>
+  <!-- District Result Panel (initially hidden) -->
+  <div id="districtPanel" class="district-panel hidden">
+    <div class="district-header">
+      <h2 id="districtName">&lt;Wahlbezirk&gt;</h2>
+      <button id="closePanel" class="close-btn">×</button>
     </div>
     
-    <div class="panel-content">
-      <!-- Donut Chart Container -->
-      <div id="donutChart" class="donut-chart"></div>
-      
-      <!-- Select Boxes -->
-      <div class="select-container">
-        <label for="partySelect">Partei wählen:</label>
-        <select id="partySelect" class="styled-select">
-          <option value="Gewinner">Gewinner</option>
+    <div id="chartContainer" class="chart-container"></div>
+    
+    <div class="select-controls">
+      <div class="control-group">
+        <label for="partySelect">Anzeige</label>
+        <select id="partySelect" class="select-control">
+          <option value="Gewinner" selected>Gewinner</option>
+          <option value="SPDinkBW">SPD</option>
+          <option value="GrueninkBW">Grüne</option>
+          <option value="CDUinkBW">CDU</option>
+          <option value="LINKEinkBW">Die Linke</option>
+          <option value="AfDinkBW">AfD</option>
+          <option value="FDPinkBW">FDP</option>
+          <option value="BSWinkBWB">BSW</option>
+          <option value="PARTEIMENSCHUMWELTTIERSCHUTZinkBW">Tierschutz</option>
+          <option value="VoltDeutschlandinkBW">Volt</option>
+          <option value="FWinkBW">FW</option>
+          <option value="MLPDinkBW">MLPD</option>
           <option value="Wahlbeteiligung">Wahlbeteiligung</option>
-          <!-- Weitere Optionen werden dynamisch hinzugefügt -->
         </select>
       </div>
       
-      <div class="select-container">
-        <label for="viewSelect">Ansicht:</label>
-        <select id="viewSelect" class="styled-select">
-          <option value="Erststimme">Erststimme</option>
-          <option value="Zweitstimme">Zweitstimme</option>
+      <div class="control-group">
+        <label for="comparisonSelect">Vergleich</label>
+        <select id="comparisonSelect" class="select-control">
+          <option value="none" selected>Keine</option>
+          <option value="2021">Mit 2021</option>
+          <option value="berlin">Mit Berlin gesamt</option>
         </select>
       </div>
     </div>
   </div>
   
-  <!-- Skript-Einbindungen -->
+  <!-- Scripts -->
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
   <script src="script.js"></script>
 </body>
