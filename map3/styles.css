@@ -1,13 +1,25 @@
-/* 
-  Zentrale Farbvariablen für Parteien usw.
-  Du kannst sie bei Bedarf anpassen.
-*/
-:root {
-  /* Grundfarben (optional) */
-  --body-bg: #1c1c1c;
-  --text-primary: #e0e0e0;
+/* Base Styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  overflow: hidden;
+}
 
-  /* Parteifarben (Beispiel aus deinem Code) */
+/* Map Container */
+#map {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Active Year Button */
+.year-btn.active {
+  background-color: rgba(255, 255, 255, 0.4);
+  font-weight: bold;
+}
+
+/* Party Colors */
+:root {
   --party-spd: #D63C3C;
   --party-gruen: #028902;
   --party-cdu: #767576;
@@ -19,75 +31,41 @@
   --party-volt: #4b2e83;
   --party-fw: #8a5a00;
   --party-mlpd: #7a112f;
-
-  /* Für "Wahlbeteiligung" z.B. ein eigener Farbverlauf oder Akzent */
-  --participation-color: #a3512b;
 }
 
-/* HTML und Body auf Vollbild setzen */
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  background-color: var(--body-bg);
-  font-family: Arial, sans-serif;
-  color: var(--text-primary);
+/* Selection Elements */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1rem;
 }
 
-/* Die Karte füllt den gesamten Hintergrund aus */
-#map {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-/* Info-Box: transparent + Blur-Effekt, fix positioniert rechts oben */
-#infoBox {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 280px;
-  padding: 16px;
-  
-  /* Transparenter Hintergrund + Blur */
-  background-color: rgba(50, 50, 50, 0.3);
-  backdrop-filter: blur(8px);
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+.panel-visible {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+  animation: fadeIn 0.5s ease-out;
 }
 
-/* District-ID-Überschrift */
-#infoBox h2 {
-  margin-top: 0;
-  margin-bottom: 8px;
-  font-size: 1.2rem;
-  text-align: center;
-}
-
-/* Chart-Container (Donut) */
-#chartDiv {
-  width: 100%;
-  height: 200px;
-  margin-bottom: 12px;
-}
-
-/* Die Select-Boxen */
-#infoBox select {
-  display: block;
-  width: 100%;
-  margin-bottom: 8px;
-  padding: 6px;
-  border: 1px solid #888;
+/* Chart tooltip style */
+.chart-tooltip {
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
   border-radius: 4px;
-  background-color: rgba(255,255,255,0.1);
-  color: var(--text-primary);
-}
-
-/* Hover-Effekt für Select (rein optional) */
-#infoBox select:hover {
-  background-color: rgba(255,255,255,0.2);
-  cursor: pointer;
+  padding: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
 }
