@@ -1,71 +1,83 @@
-/* Base Styles */
+/* styles.css */
+
 body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Arial', sans-serif;
-  overflow: hidden;
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #1c1c1c; /* Dark background */
+    color: #e0e0e0; /* Light text */
+    overflow: hidden; /* Prevent scrollbars */
 }
 
-/* Map Container */
+#map-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 #map {
-  width: 100vw;
-  height: 100vh;
+    width: 100vw;
+    height: 100vh;
 }
 
-/* Active Year Button */
-.year-btn.active {
-  background-color: rgba(255, 255, 255, 0.4);
-  font-weight: bold;
+.info-box {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(28, 28, 28, 0.5); /* Transparent dark background */
+    padding: 20px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px); /* Blur effect */
+    border: 1px solid #444444; /* Border color */
+    color: #e0e0e0;
+    z-index: 10;
+    width: 300px; /* Adjust as needed */
 }
 
-/* Party Colors */
+#info-box h2 {
+    margin-top: 0;
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+#donut-chart {
+    width: 100%;
+    height: 200px; /* Adjust chart height */
+    margin-bottom: 15px;
+}
+
+.selectors {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.selectors select {
+    background-color: #2a2a2a; /* Control background */
+    color: #e0e0e0;
+    border: 1px solid #444444;
+    padding: 8px;
+    border-radius: 5px;
+    width: 100%;
+}
+
+/* Party colors - using the same from your provided code */
 :root {
-  --party-spd: #D63C3C;
-  --party-gruen: #028902;
-  --party-cdu: #767576;
-  --party-linke: #C72DC1;
-  --party-afd: #4667FA;
-  --party-fdp: #6b4c00;
-  --party-bsw: #6a0dad;
-  --party-tierschutz: #005c5c;
-  --party-volt: #4b2e83;
-  --party-fw: #8a5a00;
-  --party-mlpd: #7a112f;
-}
-
-/* Selection Elements */
-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.5rem center;
-  background-size: 1rem;
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateX(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.panel-visible {
-  opacity: 1 !important;
-  transform: translateX(0) !important;
-  animation: fadeIn 0.5s ease-out;
-}
-
-/* Chart tooltip style */
-.chart-tooltip {
-  background-color: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(4px);
-  border-radius: 4px;
-  padding: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  font-size: 14px;
+    /* Platzhalter-Parteifarben */
+    --party-spd: #D63C3C;
+    --party-gruen: #028902;
+    --party-cdu: #767576;
+    --party-linke: #C72DC1;
+    --party-afd: #4667FA;
+    --party-fdp: #6b4c00;
+    --party-bsw: #6a0dad;
+    --party-tierschutz: #005c5c;
+    --party-volt: #4b2e83;
+    --party-fw: #8a5a00;
+    --party-mlpd: #7a112f;
 }
