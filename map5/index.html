@@ -246,8 +246,7 @@
       bearing: 0
     });
     
-    // Entferne Zoom-Buttons (NavigationControl) – werden nicht hinzugefügt
-    // Deaktiviere Kamerarotation und Neigung:
+    // Entferne Zoom-Buttons und deaktiviere Rotation/Neigung:
     map.dragRotate.disable();
     map.touchZoomRotate.disableRotation();
     map.keyboard.disable();
@@ -368,12 +367,32 @@
       series.data.setAll(chartData);
       series.appear(1000, 100);
       
-      // Beim Klick auf den PieChart sollen Labels und Ticks ein-/ausgeblendet werden
+      // Variable zur Steuerung der Sichtbarkeit der Labels
       var labelsVisible = false;
-      document.getElementById("pieChartDiv").addEventListener("click", function() {
-        labelsVisible = !labelsVisible;
-        series.labels.template.set("visible", labelsVisible);
-        series.ticks.template.set("visible", labelsVisible);
+      
+      // Wenn ein Segment geklickt wird: Deselect aller Segmente und markiere nur den angeklickten
+      series.slices.template.events.on("hit", function(ev) {
+          series.slices.each(function(slice) {
+              slice.set("active", false);
+          });
+          ev.target.set("active", true);
+          // Damit beim Klick auf ein Segment nicht gleichzeitig das Umschalten der Labels erfolgt,
+          // wird hier das Event nicht weiter propagiert.
+          ev.event.stopPropagation();
+      });
+      
+      // Klick auf den Hintergrund des Charts (also nicht auf ein Segment)
+      document.getElementById("pieChartDiv").addEventListener("click", function(e) {
+          if (e.target === this) {
+              // Deselect aller Segmente
+              series.slices.each(function(slice) {
+                  slice.set("active", false);
+              });
+              // Umschalten der Labels/Ticks
+              labelsVisible = !labelsVisible;
+              series.labels.template.set("visible", labelsVisible);
+              series.ticks.template.set("visible", labelsVisible);
+          }
       });
     }
     
