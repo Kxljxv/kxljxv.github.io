@@ -296,43 +296,40 @@
     
     // Piechart-Funktionalität mittels Chart.js
     function updatePieChart(feature) {
-      var labels = [];
-      var dataValues = [];
-      currentDataset.availableParties.forEach(function(party) {
-        if(feature.properties[party] !== undefined) {
-          var value = parseFloat(feature.properties[party].replace(',', '.'));
-          labels.push(partyDisplayNames[party] || party);
-          // Werte als Prozentzahlen (mit 2 Nachkommastellen)
-          dataValues.push((value * 100).toFixed(2));
-        }
-      });
-      if (window.pieChart) {
-        window.pieChart.data.labels = labels;
-        window.pieChart.data.datasets[0].data = dataValues;
-        window.pieChart.data.datasets[0].backgroundColor = currentDataset.availableParties.map(function(party) {
-          return partyColorGradients[party] ? partyColorGradients[party].max : '#CCCCCC';
-        });
-        window.pieChart.update();
-      } else {
-        var ctx = document.getElementById('pieChart').getContext('2d');
-        window.pieChart = new Chart(ctx, {
-          type: 'pie',
-          data: {
-            labels: labels,
-            datasets: [{
-              data: dataValues,
-              backgroundColor: currentDataset.availableParties.map(function(party) {
-                return partyColorGradients[party] ? partyColorGradients[party].max : '#CCCCCC';
-              })
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false
-          }
-        });
-      }
+  var labels = [];
+  var dataValues = [];
+  currentDataset.availableParties.forEach(function(party) {
+    if(feature.properties[party] !== undefined) {
+      var value = parseFloat(feature.properties[party].replace(',', '.'));
+      labels.push(partyDisplayNames[party] || party);
+      dataValues.push((value * 100).toFixed(2));
     }
+  });
+  
+  // Falls ein Chart existiert, zerstöre ihn
+  if (window.pieChart) {
+    window.pieChart.destroy();
+  }
+  
+  var ctx = document.getElementById('pieChart').getContext('2d');
+  window.pieChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: dataValues,
+        backgroundColor: currentDataset.availableParties.map(function(party) {
+          return partyColorGradients[party] ? partyColorGradients[party].max : '#CCCCCC';
+        })
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false
+    }
+  });
+}
+
     
     // Event Listener für die Select-Felder
     document.getElementById('partySelect').addEventListener('change', function(e) {
