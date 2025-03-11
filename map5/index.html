@@ -268,7 +268,8 @@
               source: 'geojson-layer',
               paint: {
                 'fill-color': ['get', 'fillColor'],
-                'fill-opacity': 0.8
+                'fill-opacity': 0.8,
+                'fill-outline-color': 'rgba(0,0,0,0)'  // Keine Umrandung
               }
             }, firstLayerId);
           }
@@ -278,7 +279,7 @@
     
     map.on('load', loadGeoJson);
     
-    // Beim Klick auf einen Wahlbezirk: Kein Popup – stattdessen wird der Bezirk rot umrandet und die Infobox aktualisiert.
+    // Beim Klick auf einen Wahlbezirk: Kein Popup – stattdessen wird der Bezirk hervorgehoben und die Infobox aktualisiert.
     map.on('click', 'geojson-fill', function(e) {
       if (!e.features.length) return;
       var feature = e.features[0];
@@ -289,7 +290,7 @@
         map.removeSource('highlight-layer');
       }
       
-      // Highlight-Layer hinzufügen (als Umrandung)
+      // Highlight-Layer hinzufügen (als Umrandung in Schwarz)
       map.addSource('highlight-layer', {
         type: 'geojson',
         data: feature
@@ -299,13 +300,27 @@
         type: 'line',
         source: 'highlight-layer',
         paint: {
-          'line-color': '#FF0000',
+          'line-color': '#000000',  // Schwarz statt Rot
           'line-width': 3
         }
       });
       
-      // Infobox aktualisieren: Titel und Piechart
-      document.getElementById('district-title').textContent = feature.properties.UWB;
+      // Berechne den Wert für den aktuell ausgewählten Parameter
+      var value;
+      if(currentParty === "Gewinner") {
+        var winnerValue = -Infinity;
+        currentDataset.availableParties.filter(function(p){ return p !== "WahlbeteiligunginkBW" }).forEach(function(p) {
+          var v = parseFloat(feature.properties[p].replace(',', '.'));
+          if(v > winnerValue) { winnerValue = v; }
+        });
+        value = winnerValue;
+      } else {
+        value = parseFloat(feature.properties[currentParty].replace(',', '.'));
+      }
+      
+      // Infobox-Titel: Bezirks-ID und Prozentwert (ohne zusätzlichen Labeltext)
+      document.getElementById('district-title').textContent = feature.properties.UWB + " - " + (value * 100).toFixed(2) + "%";
+      
       updatePieChart(feature);
     });
     
@@ -319,10 +334,10 @@
     
     // Piechart-Funktionalität mittels amCharts
     function updatePieChart(feature) {
-      // Daten für den Chart vorbereiten
+      // Daten für den Chart vorbereiten (Wahlbeteiligung ausschließen)
       var chartData = [];
       currentDataset.availableParties.forEach(function(party) {
-        if(feature.properties[party] !== undefined) {
+        if(feature.properties[party] !== undefined && party !== "WahlbeteiligunginkBW") {
           var value = parseFloat(feature.properties[party].replace(',', '.'));
           chartData.push({
             category: partyDisplayNames[party] || party,
@@ -370,21 +385,20 @@
       // Variable zur Steuerung der Sichtbarkeit der Labels
       var labelsVisible = false;
       
-      // Wenn ein Segment geklickt wird: Deselect aller Segmente und markiere nur den angeklickten
+      // Wenn ein Segment geklickt wird: Alle Segmente deselecten und nur das angeklickte aktivieren
       series.slices.template.events.on("hit", function(ev) {
           series.slices.each(function(slice) {
               slice.set("active", false);
           });
           ev.target.set("active", true);
-          // Damit beim Klick auf ein Segment nicht gleichzeitig das Umschalten der Labels erfolgt,
-          // wird hier das Event nicht weiter propagiert.
+          // Verhindere, dass dieser Klick auch den Container-Click auslöst
           ev.event.stopPropagation();
       });
       
       // Klick auf den Hintergrund des Charts (also nicht auf ein Segment)
       document.getElementById("pieChartDiv").addEventListener("click", function(e) {
           if (e.target === this) {
-              // Deselect aller Segmente
+              // Deselektiere alle Segmente
               series.slices.each(function(slice) {
                   slice.set("active", false);
               });
