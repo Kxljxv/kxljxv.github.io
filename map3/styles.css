@@ -1,0 +1,187 @@
+:root {
+  /* Farbvariablen */
+  --body-bg: #1c1c1c;
+  --primary-text: #e0e0e0;
+  --secondary-text: #b0b0b0;
+  --control-bg: rgba(42, 42, 42, 0.75);
+  --panel-bg: rgba(50, 50, 50, 0.8);
+  --border-color: rgba(68, 68, 68, 0.6);
+  --accent: #a3512b;
+  
+  /* Parteifarben */
+  --party-spd: #D63C3C;
+  --party-gruen: #028902;
+  --party-cdu: #767576;
+  --party-linke: #C72DC1;
+  --party-afd: #4667FA;
+  --party-fdp: #6b4c00;
+  --party-bsw: #6a0dad;
+  --party-tierschutz: #005c5c;
+  --party-volt: #4b2e83;
+  --party-fw: #8a5a00;
+  --party-mlpd: #7a112f;
+}
+
+/* Grundlegende Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: var(--body-bg);
+  color: var(--primary-text);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Fullscreen Map */
+.fullscreen-map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Sidebar */
+.sidebar {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 320px;
+  max-height: calc(100vh - 40px);
+  z-index: 2;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.sidebar-content {
+  background-color: var(--panel-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+}
+
+.sidebar h1 {
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+/* Control Elements */
+.control-group {
+  margin-bottom: 15px;
+}
+
+.control-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--secondary-text);
+}
+
+.select-control, .search-control {
+  width: 100%;
+  padding: 8px 12px;
+  background-color: var(--control-bg);
+  color: var(--primary-text);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+
+.select-control option {
+  background-color: var(--body-bg);
+}
+
+.search-container {
+  margin-bottom: 15px;
+}
+
+.info-container {
+  color: var(--secondary-text);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* District Result Panel */
+.district-panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 360px;
+  z-index: 2;
+  background-color: var(--panel-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.district-panel.hidden {
+  transform: translateX(400px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.district-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.district-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--secondary-text);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  color: var(--primary-text);
+}
+
+/* Chart Container */
+.chart-container {
+  height: 250px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* MapLibre Marker Customization */
+.maplibregl-marker {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  border: 2px solid white;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Animation styles */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animated {
+  animation: fadeIn 0.3s ease-out forwards;
+}
