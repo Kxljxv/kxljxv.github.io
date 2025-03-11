@@ -4,11 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wahlergebnisse Berlin – Embed</title>
+  <!-- Maplibre CSS -->
   <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <!-- Tailwind CSS (für Flowbite) -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Flowbite CSS -->
+  <link href="https://unpkg.com/flowbite@1.6.6/dist/flowbite.min.css" rel="stylesheet">
   <!-- Poppins Font -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <!-- Flowbite CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/flowbite@1.6.5/dist/flowbite.min.css" />
   <style>
     /* Gesamter Seiten-Hintergrund und Schriftart */
     body {
@@ -44,49 +47,35 @@
       height: 200px;
       margin-bottom: 15px;
     }
-    
-    /* Begrenzung der Dropdown-Menüs: max. Höhe und Scrollen */
-    #partyDropdownMenu,
-    #yearDropdownMenu {
-      max-height: calc(100vh - 120px);
-      overflow-y: auto;
-    }
   </style>
 </head>
 <body>
   <div id="map"></div>
   <!-- Infobox-Overlay -->
   <div id="info-box">
+    <!-- Titel zeigt Bezirks-ID und Wert -->
     <h2 id="district-title">Wähle einen Wahlbezirk</h2>
     <div id="pieChartDiv"></div>
-    <!-- Flowbite Dropdown for Party -->
-    <div id="partyDropdownContainer" class="relative inline-block text-left w-full">
-      <button id="partyDropdownButton" data-dropdown-toggle="partyDropdownMenu" type="button" class="w-full text-white bg-gray-800 hover:bg-gray-700 font-medium rounded-lg text-sm px-4 py-2 text-center inline-flex items-center">
-        Party wählen
-        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- Flowbite Dropdown für Parteien -->
+    <div id="partyDropdown" class="relative inline-block text-left w-full mb-4">
+      <button id="dropdownButton" data-dropdown-toggle="dropdownMenu" type="button" class="w-full text-white bg-gray-700 hover:bg-gray-600 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2 text-center inline-flex items-center">
+        <span id="dropdownButtonText"></span>
+        <svg class="w-4 h-4 ml-2" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
       </button>
-      <div id="partyDropdownMenu" class="hidden z-10 w-full bg-white rounded divide-y divide-gray-100 shadow">
-        <ul id="partyDropdownList" class="py-1 text-sm text-gray-700" aria-labelledby="partyDropdownButton">
-          <!-- Dynamically populated -->
+      <!-- Dropdown-Menü (scrollable, max Höhe) -->
+      <div id="dropdownMenu" class="z-10 hidden bg-white dark:bg-gray-700 divide-y divide-gray-100 rounded-lg shadow w-full max-h-60 overflow-y-auto">
+        <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownButton" id="partyDropdownList">
+          <!-- Listeneinträge werden per JS eingefügt -->
         </ul>
       </div>
     </div>
-    <!-- Flowbite Dropdown for Year -->
-    <div id="yearDropdownContainer" class="relative inline-block text-left w-full mt-2">
-      <button id="yearDropdownButton" data-dropdown-toggle="yearDropdownMenu" type="button" class="w-full text-white bg-gray-800 hover:bg-gray-700 font-medium rounded-lg text-sm px-4 py-2 text-center inline-flex items-center">
-        Jahr wählen
-        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
-      </button>
-      <div id="yearDropdownMenu" class="hidden z-10 w-full bg-white rounded divide-y divide-gray-100 shadow">
-        <ul id="yearDropdownList" class="py-1 text-sm text-gray-700" aria-labelledby="yearDropdownButton">
-          <!-- Options will be populated -->
-        </ul>
-      </div>
-    </div>
+    <!-- Standard Select für das Jahr (nur 2 Optionen, kein Scrollen notwendig) -->
+    <select id="yearSelect" class="w-full mb-2 p-2 rounded">
+      <option value="2025">2025</option>
+      <option value="2021">2021</option>
+    </select>
   </div>
 
   <!-- Bibliotheken -->
@@ -96,7 +85,7 @@
   <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
   <!-- Flowbite JS -->
-  <script src="https://unpkg.com/flowbite@1.6.5/dist/flowbite.js"></script>
+  <script src="https://unpkg.com/flowbite@1.6.6/dist/flowbite.min.js"></script>
   
   <script>
     // Hilfsfunktion zum Auslesen von URL-Parametern
@@ -196,23 +185,25 @@
     var currentDataset = dataset2025;
     var currentParty = "WahlbeteiligunginkBW";
 
-    // Flowbite Dropdown: Populate Party Dropdown
+    // Funktion zum Befüllen des Flowbite-Dropdowns für Parteien
     function populatePartyDropdown() {
-      var partyList = document.getElementById("partyDropdownList");
-      partyList.innerHTML = "";
+      var dropdownList = document.getElementById('partyDropdownList');
+      dropdownList.innerHTML = "";
       currentDataset.availableParties.forEach(function(party) {
-        var li = document.createElement("li");
-        var a = document.createElement("a");
+        var li = document.createElement('li');
+        var a = document.createElement('a');
         a.href = "#";
-        a.className = "block px-4 py-2 hover:bg-gray-100";
+        a.className = "block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600";
         a.textContent = partyDisplayNames[party] || party;
-        a.dataset.value = party;
+        a.dataset.partyValue = party;
+        // Klick-Event für jeden Eintrag
         a.addEventListener("click", function(e) {
           e.preventDefault();
-          currentParty = this.dataset.value;
-          // Update button text
-          document.getElementById("partyDropdownButton").textContent = (partyDisplayNames[currentParty] || currentParty);
-          // Reload GeoJSON-Daten mit neuer Auswahl
+          currentParty = this.dataset.partyValue;
+          // Setze den Button-Text neu
+          document.getElementById('dropdownButtonText').textContent = this.textContent;
+          // Schließe das Dropdown (Flowbite kümmert sich darum)
+          // Aktualisiere GeoJSON-Daten
           fetch(currentDataset.url)
             .then(response => response.json())
             .then(data => {
@@ -223,43 +214,12 @@
             });
         });
         li.appendChild(a);
-        partyList.appendChild(li);
+        dropdownList.appendChild(li);
       });
-      // Setze Standard-Button-Text
-      document.getElementById("partyDropdownButton").textContent = (partyDisplayNames[currentParty] || currentParty);
+      // Setze initial den Button-Text auf den aktuell ausgewählten Wert
+      var selectedText = partyDisplayNames[currentParty] || currentParty;
+      document.getElementById('dropdownButtonText').textContent = selectedText;
     }
-
-    // Flowbite Dropdown: Populate Year Dropdown
-    function populateYearDropdown() {
-      var yearList = document.getElementById("yearDropdownList");
-      yearList.innerHTML = "";
-      var years = ["2025", "2021"];
-      years.forEach(function(year) {
-        var li = document.createElement("li");
-        var a = document.createElement("a");
-        a.href = "#";
-        a.className = "block px-4 py-2 hover:bg-gray-100";
-        a.textContent = year;
-        a.dataset.value = year;
-        a.addEventListener("click", function(e) {
-          e.preventDefault();
-          var selectedYear = this.dataset.value;
-          currentDataset = selectedYear === "2025" ? dataset2025 : dataset2021;
-          // Update Button-Text
-          document.getElementById("yearDropdownButton").textContent = selectedYear;
-          // Repopulate Party Dropdown (verfügbare Parteien könnten sich ändern)
-          populatePartyDropdown();
-          // Lade GeoJSON-Daten neu
-          loadGeoJson();
-        });
-        li.appendChild(a);
-        yearList.appendChild(li);
-      });
-      document.getElementById("yearDropdownButton").textContent = "2025";
-    }
-
-    // Initiale Population der Dropdowns
-    populateYearDropdown();
     populatePartyDropdown();
 
     // Farbinterpolationsfunktionen
@@ -376,7 +336,7 @@
         type: 'line',
         source: 'highlight-layer',
         paint: {
-          'line-color': '#000000',  // Schwarz statt Rot
+          'line-color': '#000000',  // Schwarz
           'line-width': 3
         }
       });
@@ -461,27 +421,40 @@
       // Variable zur Steuerung der Sichtbarkeit der Labels
       var labelsVisible = false;
       
-      // Bei Klick auf ein Segment: Alle Segmente deselecten und nur das angeklickte aktivieren
+      // Wenn ein Segment geklickt wird: Alle Segmente deselecten und nur das angeklickte aktivieren
       series.slices.template.events.on("hit", function(ev) {
           series.slices.each(function(slice) {
               slice.set("active", false);
           });
           ev.target.set("active", true);
+          // Verhindere, dass dieser Klick auch den Container-Click auslöst
           ev.event.stopPropagation();
       });
       
       // Klick auf den Hintergrund des Charts (also nicht auf ein Segment)
       document.getElementById("pieChartDiv").addEventListener("click", function(e) {
           if (e.target === this) {
+              // Deselektiere alle Segmente
               series.slices.each(function(slice) {
                   slice.set("active", false);
               });
+              // Umschalten der Labels/Ticks
               labelsVisible = !labelsVisible;
               series.labels.template.set("visible", labelsVisible);
               series.ticks.template.set("visible", labelsVisible);
           }
       });
     }
+    
+    // Event Listener für das Jahr-Select (bleibt unverändert)
+    document.getElementById('yearSelect').addEventListener('change', function(e) {
+      var selectedYear = this.value;
+      currentDataset = selectedYear === "2025" ? dataset2025 : dataset2021;
+      // Aktualisiere das Partei-Dropdown, da sich die verfügbaren Parteien ändern können
+      populatePartyDropdown();
+      // Lade die GeoJSON-Daten des ausgewählten Jahres
+      loadGeoJson();
+    });
   </script>
 </body>
 </html>
