@@ -1,64 +1,44 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wahlergebnisse Berlin – Vollbild</title>
-
-  <!-- Tailwind & Flowbite (optional, as in your old code) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://unpkg.com/flowbite@1.6.5/dist/flowbite.min.css" rel="stylesheet">
-
-  <!-- MapLibre -->
-  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
-
-  <!-- amCharts 5 (for donut chart) -->
-  <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
-  <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
-  <script src="https://cdn.amcharts.com/lib/5/radar.js"></script>
-  <script src="https://cdn.amcharts.com/lib/5/themes/Dark.js"></script>
-  <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
-
-  <!-- Your custom CSS -->
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wahlergebnisse Berlin</title>
+    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <!-- The map occupies the entire screen; no scrolling. -->
-  <div id="map" class="w-full h-full"></div>
-
-  <!-- Side panel (initially hidden or slid out). It appears on district click. -->
-  <div id="infoPanel" class="info-panel hidden">
-    <div id="infoContent" class="info-content">
-      <!-- Voting District Title -->
-      <h2 id="districtTitle" class="text-xl font-bold mb-2">Wahlbezirk</h2>
-
-      <!-- Donut Chart Container -->
-      <div id="chartdiv" class="w-full h-48 mb-4"></div>
-
-      <!-- Two select boxes (for example: Year & Party). 
-           You can adapt them if you like. -->
-      <select id="yearSelect" class="mb-2 w-full p-2 rounded">
-        <option value="2025" selected>Jahr 2025</option>
-        <option value="2021">Jahr 2021</option>
-      </select>
-
-      <select id="partySelect" class="mb-4 w-full p-2 rounded">
-        <!-- We will populate these options via script, 
-             including 'winner' and 'turnout'. -->
-      </select>
-
-      <!-- Another box: e.g., a search field or anything else you want. -->
-      <input type="text" id="searchField" 
-             placeholder="Suche nach Bezirk oder Adresse" 
-             class="w-full p-2 rounded" />
+    <div id="map-container">
+        <div id="map"></div>
+        <div id="info-box" class="info-box">
+            <h2 id="district-id">Wahlbezirk ID</h2>
+            <div id="donut-chart">
+                <canvas id="resultChart"></canvas>
+            </div>
+            <div class="selectors">
+                <select id="data-selector">
+                    <option value="Wahlbeteiligung">Wahlbeteiligung</option>
+                    <option value="CDU">CDU</option>
+                    <option value="LINKE">LINKE</option>
+                    <option value="SPD">SPD</option>
+                    <option value="Gruen">Grüne</option>
+                    <option value="AfD">AfD</option>
+                    <option value="FDP">FDP</option>
+                    <option value="PMUT">PMUT</option>
+                    <option value="FW">FW</option>
+                    <option value="MLPD">MLPD</option>
+                    <option value="Volt">Volt</option>
+                    <option value="BSW">BSW</option>
+                </select>
+                <select id="year-selector">
+                    <option value="2021">2021</option>
+                    <option value="2025">2025</option>
+                </select>
+            </div>
+        </div>
     </div>
-  </div>
-
-  <!-- Flowbite JS (optional) -->
-  <script src="https://unpkg.com/flowbite@1.6.5/dist/flowbite.min.js"></script>
-  <!-- MapLibre JS -->
-  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
-  <!-- Your custom JS -->
-  <script src="script.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
