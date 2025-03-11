@@ -1,48 +1,69 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <title>Wahlergebnisse in Berlin</title>
-  <!-- Vollbild und Null-Rand -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Berlin Wahlergebnisse</title>
   
-  <!-- MapLibre CSS -->
-  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
-
-  <!-- amCharts 5 (Core + Prozent/Donut) -->
+  <!-- MapLibre -->
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
+  
+  <!-- amCharts Resources -->
   <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
-
-  <!-- Eigene CSS -->
-  <link rel="stylesheet" href="style.css" />
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Karte im Hintergrund -->
-  <div id="map"></div>
-
-  <!-- Info-Box (transparent + Blur) -->
-  <div id="infoBox">
-    <!-- ID-Anzeige -->
-    <h2 id="infoDistrict"></h2>
-    <!-- Donut-Chart Container -->
-    <div id="chartDiv"></div>
-
-    <!-- Attribut-Auswahl -->
-    <select id="attributeSelect">
-      <!-- Options werden dynamisch in script.js gefüllt -->
-    </select>
-
-    <!-- Jahres-Auswahl -->
-    <select id="yearSelect">
-      <option value="2021" selected>2021</option>
-      <option value="2025">2025</option>
-    </select>
+  <!-- Full Screen Map Container -->
+  <div id="map" class="fixed top-0 left-0 w-screen h-screen"></div>
+  
+  <!-- Header Controls -->
+  <div class="fixed top-0 left-0 w-full p-4 z-10 flex justify-between items-center">
+    <h1 class="text-white text-2xl font-bold drop-shadow-lg">Wahlergebnisse Berlin</h1>
+    <div class="flex space-x-4">
+      <button class="year-btn px-3 py-1 rounded-full backdrop-blur-md bg-white/20 text-white font-medium shadow-lg" data-year="2021">2021</button>
+      <button class="year-btn px-3 py-1 rounded-full backdrop-blur-md bg-white/20 text-white font-medium shadow-lg active" data-year="2025">2025</button>
+    </div>
   </div>
-
-  <!-- MapLibre Script -->
+  
+  <!-- Floating Data Panel (initially hidden) -->
+  <div id="dataPanel" class="fixed top-20 right-4 w-80 backdrop-blur-md bg-black/40 rounded-xl shadow-2xl p-4 text-white transform transition-all duration-500 opacity-0 translate-x-full">
+    <h2 id="district" class="text-xl font-bold mb-2 text-center"></h2>
+    
+    <!-- Donut Chart -->
+    <div id="chartDiv" class="h-64 w-full"></div>
+    
+    <!-- Selection Controls -->
+    <div class="mt-4 space-y-3">
+      <div>
+        <label class="block text-sm mb-1">Partei wählen</label>
+        <select id="partySelect" class="w-full p-2 rounded bg-black/60 text-white backdrop-blur-md">
+          <option value="Gewinner">Gewinner</option>
+          <option value="Wahlbeteiligung">Wahlbeteiligung</option>
+          <!-- Other options will be populated dynamically -->
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm mb-1">Jahr</label>
+        <select id="yearSelect" class="w-full p-2 rounded bg-black/60 text-white backdrop-blur-md">
+          <option value="2025">2025</option>
+          <option value="2021">2021</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Search Bar -->
+  <div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-80 z-10">
+    <input type="text" id="searchField" placeholder="Suche nach Bezirk oder Adresse..." class="w-full p-3 rounded-full bg-black/60 text-white backdrop-blur-md shadow-lg">
+  </div>
+  
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
-  <!-- Dein eigenes JS -->
   <script src="script.js"></script>
 </body>
 </html>
