@@ -1,91 +1,53 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wahlergebnisse in Berlin – Interaktive Karte</title>
-  
-  <!-- MapLibre GL -->
-  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
-  
-  <!-- amCharts Resources -->
-  <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
-  <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
-  <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
-  <script src="https://cdn.amcharts.com/lib/5/themes/Dark.js"></script>
-  
-  <!-- Eigene CSS -->
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wahlergebnisse Berlin – Fokuskarten-Ansicht</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.amcharts.com/lib/5/themes/Dark.css">
+    <link rel="stylesheet" href="styles.css">
+
+    <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+
 </head>
-<body>
-  <!-- Fullscreen Map Container -->
-  <div id="map" class="fullscreen-map"></div>
-  
-  <!-- Sidebar for Controls -->
-  <div id="sidebar" class="sidebar">
-    <div class="sidebar-content">
-      <h1>Wahlergebnisse Berlin</h1>
-      
-      <div class="control-group">
-        <label for="yearSelect">Jahr</label>
-        <select id="yearSelect" class="select-control">
-          <option value="2021">2021</option>
-          <option value="2025" selected>2025</option>
-        </select>
-      </div>
-      
-      <div class="search-container">
-        <input type="text" id="searchField" placeholder="Suche nach Bezirk oder Adresse" class="search-control">
-      </div>
-      
-      <div class="info-container">
-        <p>Klicken Sie auf einen Wahlbezirk, um Details zu sehen.</p>
-      </div>
+<body class="bg-body">
+    <div id="map" class="full-screen-map">
+        <div id="infoPanel" class="info-panel">
+            <div id="districtInfo" class="district-info">
+                <h2 id="districtName" class="district-name">Wahlbezirk XY</h2>
+                <div id="chartdiv" class="chart-container"></div>
+            </div>
+
+            <div class="controls">
+                <div class="select-box">
+                    <label for="partySelect">Partei/Modus:</label>
+                    <select id="partySelect" class="custom-select">
+                        <option value="Gewinner">Gewinner</option>
+                        <option value="SPDinkBW">SPD</option>
+                        <option value="GrueninkBW">Grüne</option>
+                        <option value="CDUinkBW">CDU</option>
+                        <option value="LINKEinkBW">Die Linke</option>
+                        <option value="AfDinkBW">AfD</option>
+                        <option value="FDPinkBW">FDP</option>
+                        <option value="BSWinkBWB">BSW</option>
+                        <option value="PARTEIMENSCHUMWELTTIERSCHUTZinkBW">Tierschutz</option>
+                        <option value="VoltDeutschlandinkBW">Volt</option>
+                        <option value="FWinkBW">FW</option>
+                        <option value="MLPDinkBW">MLPD</option>
+                    </select>
+                </div>
+                <div class="additional-box">
+                    Weitere Optionen
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-  
-  <!-- District Result Panel (initially hidden) -->
-  <div id="districtPanel" class="district-panel hidden">
-    <div class="district-header">
-      <h2 id="districtName">&lt;Wahlbezirk&gt;</h2>
-      <button id="closePanel" class="close-btn">×</button>
-    </div>
-    
-    <div id="chartContainer" class="chart-container"></div>
-    
-    <div class="select-controls">
-      <div class="control-group">
-        <label for="partySelect">Anzeige</label>
-        <select id="partySelect" class="select-control">
-          <option value="Gewinner" selected>Gewinner</option>
-          <option value="SPDinkBW">SPD</option>
-          <option value="GrueninkBW">Grüne</option>
-          <option value="CDUinkBW">CDU</option>
-          <option value="LINKEinkBW">Die Linke</option>
-          <option value="AfDinkBW">AfD</option>
-          <option value="FDPinkBW">FDP</option>
-          <option value="BSWinkBWB">BSW</option>
-          <option value="PARTEIMENSCHUMWELTTIERSCHUTZinkBW">Tierschutz</option>
-          <option value="VoltDeutschlandinkBW">Volt</option>
-          <option value="FWinkBW">FW</option>
-          <option value="MLPDinkBW">MLPD</option>
-          <option value="Wahlbeteiligung">Wahlbeteiligung</option>
-        </select>
-      </div>
-      
-      <div class="control-group">
-        <label for="comparisonSelect">Vergleich</label>
-        <select id="comparisonSelect" class="select-control">
-          <option value="none" selected>Keine</option>
-          <option value="2021">Mit 2021</option>
-          <option value="berlin">Mit Berlin gesamt</option>
-        </select>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Scripts -->
-  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
-  <script src="script.js"></script>
+
+    <script src="script.js"></script>
 </body>
 </html>
