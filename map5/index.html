@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wahlergebnisse Berlin – Embed</title>
+  
+  <!-- Maplibre CSS -->
   <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+  
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Flowbite CSS -->
+  <link href="https://unpkg.com/flowbite@1.6.5/dist/flowbite.min.css" rel="stylesheet" />
+  
   <!-- Poppins Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  
   <style>
     /* Gesamter Seiten-Hintergrund und Schriftart */
     body {
@@ -20,7 +29,7 @@
     
     /* Karte füllt den gesamten Bildschirm */
     #map { width: 100%; height: 100%; }
-
+    
     /* Infobox: rechts, mit Abstand, abgerundet, transparent mit Blur-Effekt */
     #info-box {
       position: absolute;
@@ -43,28 +52,48 @@
       margin-bottom: 15px;
     }
     
-    select {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 5px;
-      border-radius: 5px;
-      border: none;
-    }
+    /* Zusätzlicher Abstand für Dropdowns */
+    .dropdown-container { margin-top: 0.75rem; }
   </style>
 </head>
 <body>
   <div id="map"></div>
+  
   <!-- Infobox-Overlay -->
   <div id="info-box">
     <h2 id="district-title">Wähle einen Wahlbezirk</h2>
     <div id="pieChartDiv"></div>
-    <select id="partySelect">
-      <!-- Optionen werden per JavaScript gefüllt -->
-    </select>
-    <select id="yearSelect">
-      <option value="2025">2025</option>
-      <option value="2021">2021</option>
-    </select>
+    
+    <!-- Flowbite Party Dropdown -->
+    <div id="partyDropdown" class="dropdown-container relative inline-block text-left">
+      <button id="partyDropdownButton" data-dropdown-toggle="partyDropdownMenu" type="button" class="inline-flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-gray-900 bg-white rounded border border-gray-300 hover:bg-gray-100 focus:outline-none">
+        Partei wählen
+        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div id="partyDropdownMenu" class="hidden z-10 w-full bg-white rounded shadow">
+        <ul class="py-1 text-sm text-gray-700" aria-labelledby="partyDropdownButton">
+          <!-- Dynamisch befüllt -->
+        </ul>
+      </div>
+    </div>
+    
+    <!-- Flowbite Year Dropdown -->
+    <div id="yearDropdown" class="dropdown-container relative inline-block text-left">
+      <button id="yearDropdownButton" data-dropdown-toggle="yearDropdownMenu" type="button" class="inline-flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-gray-900 bg-white rounded border border-gray-300 hover:bg-gray-100 focus:outline-none">
+        Jahr wählen
+        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"  xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div id="yearDropdownMenu" class="hidden z-10 w-full bg-white rounded shadow">
+        <ul class="py-1 text-sm text-gray-700" aria-labelledby="yearDropdownButton">
+          <li><a href="#" data-value="2025" class="dropdown-year-option block px-4 py-2 hover:bg-gray-100">2025</a></li>
+          <li><a href="#" data-value="2021" class="dropdown-year-option block px-4 py-2 hover:bg-gray-100">2021</a></li>
+        </ul>
+      </div>
+    </div>
   </div>
 
   <!-- Bibliotheken -->
@@ -73,6 +102,8 @@
   <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+  <!-- Flowbite JS -->
+  <script src="https://unpkg.com/flowbite@1.6.5/dist/flowbite.min.js"></script>
   
   <script>
     // Hilfsfunktion zum Auslesen von URL-Parametern
@@ -172,19 +203,54 @@
     var currentDataset = dataset2025;
     var currentParty = "WahlbeteiligunginkBW";
 
-    // Fülle das Partei-Selectfeld basierend auf dem aktuellen Datensatz
-    function populatePartySelect() {
-      var partySelect = document.getElementById('partySelect');
-      partySelect.innerHTML = "";
+    // Fülle das Party-Dropdown-Menü (Flowbite) basierend auf dem aktuellen Datensatz
+    function populatePartyDropdown() {
+      var dropdownMenu = document.querySelector("#partyDropdownMenu ul");
+      dropdownMenu.innerHTML = "";
       currentDataset.availableParties.forEach(function(party) {
-        var option = document.createElement('option');
-        option.value = party;
-        option.textContent = partyDisplayNames[party] || party;
-        if (party === currentParty) option.selected = true;
-        partySelect.appendChild(option);
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = "#";
+        a.setAttribute("data-value", party);
+        a.className = "block px-4 py-2 hover:bg-gray-100";
+        a.textContent = partyDisplayNames[party] || party;
+        li.appendChild(a);
+        dropdownMenu.appendChild(li);
+      });
+      // Setze den Button-Text auf den aktuellen Wert
+      document.getElementById("partyDropdownButton").textContent = partyDisplayNames[currentParty] || currentParty;
+      
+      // Füge Event Listener für die neu erstellten Party-Optionen hinzu
+      document.querySelectorAll("#partyDropdownMenu a").forEach(function(item) {
+        item.addEventListener("click", function(e) {
+          e.preventDefault();
+          currentParty = this.getAttribute("data-value");
+          document.getElementById("partyDropdownButton").textContent = partyDisplayNames[currentParty] || currentParty;
+          // Aktualisiere die GeoJSON-Daten entsprechend der neuen Auswahl
+          fetch(currentDataset.url)
+            .then(response => response.json())
+            .then(data => {
+              var geojsonData = updateGeojsonData(data);
+              if (map.getSource("geojson-layer")) {
+                map.getSource("geojson-layer").setData(geojsonData);
+              }
+            });
+        });
       });
     }
-    populatePartySelect();
+    populatePartyDropdown();
+
+    // Event Listener für den Year-Dropdown (Flowbite)
+    document.querySelectorAll(".dropdown-year-option").forEach(function(item) {
+      item.addEventListener("click", function(e) {
+        e.preventDefault();
+        var selectedYear = this.getAttribute("data-value");
+        document.getElementById("yearDropdownButton").textContent = selectedYear;
+        currentDataset = selectedYear === "2025" ? dataset2025 : dataset2021;
+        populatePartyDropdown(); // Aktualisiere das Party-Dropdown, falls sich die Optionen ändern
+        loadGeoJson();
+      });
+    });
 
     // Farbinterpolationsfunktionen
     function hexToRgb(hex) {
@@ -269,7 +335,7 @@
               paint: {
                 'fill-color': ['get', 'fillColor'],
                 'fill-opacity': 0.8,
-                'fill-outline-color': 'rgba(0,0,0,0)'  // Keine Umrandung
+                'fill-outline-color': 'rgba(0,0,0,0)' // Keine Umrandung
               }
             }, firstLayerId);
           }
@@ -409,29 +475,6 @@
           }
       });
     }
-    
-    // Event Listener für die Select-Felder
-    document.getElementById('partySelect').addEventListener('change', function(e) {
-      currentParty = this.value;
-      // Aktualisiere die GeoJSON-Daten entsprechend der neuen Auswahl
-      fetch(currentDataset.url)
-        .then(response => response.json())
-        .then(data => {
-          var geojsonData = updateGeojsonData(data);
-          if (map.getSource('geojson-layer')) {
-            map.getSource('geojson-layer').setData(geojsonData);
-          }
-        });
-    });
-    
-    document.getElementById('yearSelect').addEventListener('change', function(e) {
-      var selectedYear = this.value;
-      currentDataset = selectedYear === "2025" ? dataset2025 : dataset2021;
-      // Aktualisiere das Partei-Selectfeld, da sich die verfügbaren Parteien ändern können
-      populatePartySelect();
-      // Lade die GeoJSON-Daten des ausgewählten Jahres
-      loadGeoJson();
-    });
   </script>
 </body>
 </html>
