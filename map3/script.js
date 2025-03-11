@@ -1,279 +1,165 @@
-am5.ready(function() {
+/****************************************
+ * Globale Variablen / Strukturen
+ ****************************************/
 
-    // Party Colors - Keep your color definitions here
-    const partyColors = {
-        "CDU": "#767576",
-        "LINKE": "#C72DC1",
-        "SPD": "#D63C3C",
-        "Gruen": "#028902",
-        "AfD": "#4667FA",
-        "FDP": "#6b4c00",
-        "PMUT": "#005c5c",
-        "FW": "#8a5a00",
-        "MLPD": "#7a112f",
-        "Volt": "#4b2e83",
-        "BSW": "#6a0dad"
-    };
+// URLs zu deinen Dateien (CSV + GeoJSON) - 2021
+const CSV_URL_2021 = "https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2021(8).csv";
+const GEOJSON_URL_2021 = "https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2021nurID.json";
 
-    const dataKeys = {
-        "Wahlbeteiligung": "Wahlbeteiligung",
-        "CDU": "CDU",
-        "LINKE": "LINKE",
-        "SPD": "SPD",
-        "Gruen": "Gruen",
-        "AfD": "AfD",
-        "FDP": "FDP",
-        "PMUT": "PMUT",
-        "FW": "FW",
-        "MLPD": "MLPD",
-        "Volt": "Volt",
-        "BSW": "BSW"
-    };
+// URLs zu deinen Dateien (CSV + GeoJSON) - 2025
+const CSV_URL_2025 = "https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025(8).csv";
+const GEOJSON_URL_2025 = "https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025nurID.json";
 
-    let currentYear = "2025";
-    let currentDataKey = "Wahlbeteiligung";
-    let geojsonData, electionData2021, electionData2025;
-    let currentChart;
-    let lastClickedFeatureId = null;
+/**
+ * Wir gehen davon aus, dass in den CSVs folgende Spalten vorkommen:
+ * - ID
+ * - Wahlbeteiligung
+ * - CDU
+ * - LINKE
+ * - SPD
+ * - Gruen
+ * - AfD
+ * - FDP
+ * - PMUT
+ * - FW
+ * - MLPD
+ * - Volt
+ * (und in 2025 ggf. BSW zusätzlich)
+ *
+ * Die Donut-Grafik soll alle Parteien enthalten.
+ * Die Attribut-Auswahl (Färbung) soll auch "Wahlbeteiligung" + Parteien enthalten.
+ */
 
+// Definiere, welche "Attribute" wählbar sind
+// (für die Färbung der Karte)
+const ATTRIBUTES = [
+  "Wahlbeteiligung",
+  "CDU",
+  "LINKE",
+  "SPD",
+  "Gruen",
+  "AfD",
+  "FDP",
+  "PMUT",
+  "FW",
+  "MLPD",
+  "Volt",
+  "BSW" // nur in 2025 vorhanden, in 2021 ist das Feld evtl. 0 oder nicht vorhanden
+];
 
-    // Function to load data
-    async function loadData(year) {
-        const geoJsonUrl = `https://kxljxv.github.io/wahlergebnisse/wahlergebnisse${year}nurID.json`;
-        const csvUrl = `https://kxljxv.github.io/wahlergebnisse/wahlergebnisse${year}(8).csv`;
+// Für den Donut-Chart wollen wir ALLE Parteien (ohne Wahlbeteiligung):
+const PARTIES_FOR_CHART = [
+  "CDU",
+  "LINKE",
+  "SPD",
+  "Gruen",
+  "AfD",
+  "FDP",
+  "PMUT",
+  "FW",
+  "MLPD",
+  "Volt",
+  "BSW"
+];
 
-        const [geoJsonResp, csvResp] = await Promise.all([
-            fetch(geoJsonUrl),
-            fetch(csvUrl)
-        ]);
-        geojsonData = await geoJsonResp.json();
+// Farben pro Partei / Attribut
+const COLOR_MAPPING = {
+  "CDU":  getComputedStyle(document.documentElement).getPropertyValue('--party-cdu'),
+  "LINKE": getComputedStyle(document.documentElement).getPropertyValue('--party-linke'),
+  "SPD":   getComputedStyle(document.documentElement).getPropertyValue('--party-spd'),
+  "Gruen": getComputedStyle(document.documentElement).getPropertyValue('--party-gruen'),
+  "AfD":   getComputedStyle(document.documentElement).getPropertyValue('--party-afd'),
+  "FDP":   getComputedStyle(document.documentElement).getPropertyValue('--party-fdp'),
+  "BSW":   getComputedStyle(document.documentElement).getPropertyValue('--party-bsw'),
+  "PMUT":  getComputedStyle(document.documentElement).getPropertyValue('--party-tierschutz'),
+  "Volt":  getComputedStyle(document.documentElement).getPropertyValue('--party-volt'),
+  "FW":    getComputedStyle(document.documentElement).getPropertyValue('--party-fw'),
+  "MLPD":  getComputedStyle(document.documentElement).getPropertyValue('--party-mlpd'),
+  // Für Wahlbeteiligung nehmen wir z.B.:
+  "Wahlbeteiligung": getComputedStyle(document.documentElement).getPropertyValue('--participation-color')
+};
 
-        const csvText = await csvResp.text();
-        const csvData = parseCSV(csvText);
+// Hier speichern wir die Daten aus den CSV-Dateien (nach ID geordnet)
+let csvData2021 = {};  // csvData2021[ID] = {Wahlbeteiligung: ..., SPD: ..., ...}
+let csvData2025 = {};  // csvData2025[ID] = {Wahlbeteiligung: ..., SPD: ..., ...}
 
-        if (year === "2021") {
-            electionData2021 = csvData;
-        } else {
-            electionData2025 = csvData;
-        }
-        updateMapData();
-    }
+// Hier speichern wir die GeoJSON-Daten für 2021 und 2025 (nachdem sie geladen wurden)
+let geojson2021 = null;
+let geojson2025 = null;
 
-    function parseCSV(csvText) {
-        const lines = csvText.split('\n');
-        const headers = lines[0].split('\t');
-        const data = [];
-        for (let i = 1; i < lines.length; i++) {
-            const values = lines[i].split('\t');
-            if (!values[0]) continue; // Skip empty lines
-            const entry = {};
-            for (let j = 0; j < headers.length; j++) {
-                entry[headers[j].trim()] = values[j] ? values[j].trim() : "0"; // Default to "0" if value is empty
-            }
-            data.push(entry);
-        }
-        return data;
-    }
+// Aktuelle Auswahl (Jahr und Attribut)
+let currentYear = "2021";
+let currentAttribute = "Wahlbeteiligung";
 
+// Map-Objekt (MapLibre)
+let map;
 
-    function getElectionResultsForDistrict(districtId, year) {
-        const data = year === "2021" ? electionData2021 : electionData2025;
-        return data.find(item => item.ID === districtId);
-    }
+// Marker oder Info, falls gewünscht
+let lastClickedFeature = null;
 
+// amCharts Donut-Chart
+let chartRoot;
+let chartSeries;
 
-    function updateMapData() {
-        if (!geojsonData) return;
+/****************************************
+ * Initialisierung
+ ****************************************/
+window.addEventListener("load", async () => {
+  // 1) CSV-Daten laden
+  await loadCSVData();
 
-        geojsonData.features.forEach(feature => {
-            const districtId = feature.properties.ID;
-            const electionResults = getElectionResultsForDistrict(districtId, currentYear);
-            if (electionResults) {
-                feature.properties.electionData = electionResults; // Attach all election data
-                let dataValue = parseFloat(electionResults[currentDataKey].replace(',', '.'));
-                feature.properties.dataValue = isNaN(dataValue) ? 0 : dataValue; // Use selected data value for coloring
-            } else {
-                feature.properties.electionData = {};
-                feature.properties.dataValue = 0;
-            }
-        });
+  // 2) GeoJSON-Daten laden
+  geojson2021 = await loadGeoJSON(GEOJSON_URL_2021);
+  geojson2025 = await loadGeoJSON(GEOJSON_URL_2025);
 
-        if (map.getSource('geojson-layer')) {
-            map.getSource('geojson-layer').setData(geojsonData);
-        }
-        if(lastClickedFeatureId) {
-            updateInfoBox(lastClickedFeatureId);
-        }
-    }
+  // 3) CSV-Daten in GeoJSON mergen
+  mergeCSVIntoGeoJSON(geojson2021, csvData2021);
+  mergeCSVIntoGeoJSON(geojson2025, csvData2025);
 
+  // 4) Karte initialisieren
+  initMap();
 
-    function updateMapColors() {
-        if (!geojsonData || !currentDataKey) return;
+  // 5) amCharts Donut initialisieren
+  initDonutChart();
 
-        geojsonData.features.forEach(feature => {
-            let color = '#f0f0f0'; // Default color
-            if (feature.properties.electionData) {
-                let dataValue = feature.properties.dataValue;
+  // 6) Select-Boxen füllen und Eventlistener setzen
+  populateAttributeSelect();
+  document.getElementById("attributeSelect").addEventListener("change", (e) => {
+    currentAttribute = e.target.value;
+    updateMapColors();
+    updateDonutChart(lastClickedFeature); // neu rendern, falls bereits Bezirk gewählt
+  });
 
-                if (!isNaN(dataValue)) {
-                    // Simple coloring based on value - adjust as needed
-                    let normalizedValue = Math.min(1, Math.max(0, dataValue)); // Clamp value between 0 and 1
+  document.getElementById("yearSelect").addEventListener("change", (e) => {
+    currentYear = e.target.value;
+    switchGeoJSONSource(); 
+    updateDonutChart(lastClickedFeature);
+  });
+});
 
-                    if (currentDataKey !== "Wahlbeteiligung") {
-                        const partyName = dataKeys[currentDataKey];
-                        if (partyName && partyColors[partyName]) {
-                             color = partyColors[partyName];
-                         }
-                    } else {
-                        //Grey scale for Wahlbeteiligung
-                        let grayScale = Math.round(255 - (normalizedValue * 255));
-                        color = `rgb(${grayScale}, ${grayScale}, ${grayScale})`;
-                    }
+/****************************************
+ * CSV laden und in Objekte speichern
+ ****************************************/
+async function loadCSVData() {
+  // CSV für 2021 laden
+  csvData2021 = await fetchCSVandParse(CSV_URL_2021);
+  // CSV für 2025 laden
+  csvData2025 = await fetchCSVandParse(CSV_URL_2025);
+}
 
-                }
-            }
-             feature.properties.fillColor = color;
+// Hilfsfunktion: CSV laden + parsen (ohne zusätzliche Libraries)
+async function fetchCSVandParse(url) {
+  const response = await fetch(url);
+  const csvText = await response.text();
+  return parseCSV(csvText);
+}
 
-        });
+/**
+ * Sehr einfacher CSV-Parser (Trennzeichen: \t oder ; oder ,).
+ * Gibt ein Objekt zurück: dataByID[id] = {Spalte1:Wert1, Spalte2:Wert2,...}
+ */
+function parseCSV(csvText) {
+  // Zeilen splitten (auch CRLF abfangen)
+  let lines = csvText.split(/\r?\n/).filter(line => line.trim().length > 0);
 
-        if (map.getSource('geojson-layer')) {
-            map.getSource('geojson-layer').setData(geojsonData);
-        }
-    }
-
-
-    function createDonutChart(districtId) {
-        if (currentChart) {
-            currentChart.dispose();
-        }
-
-        let root = am5.Root.new("chartdiv");
-        root.setThemes([
-            am5.Theme.new(root),
-            am5themes_Animated.Animated.new(root)
-        ]);
-
-
-        let chart = root.container.children.push(am5percent.PieChart.new(root, {
-            layout: root.verticalLayout
-        }));
-
-        let series = chart.series.push(am5percent.PieSeries.new(root, {
-            name: "Series",
-            valueField: "value",
-            categoryField: "party"
-        }));
-
-        series.slices.template.set("tooltipText", "{category}: {valuePercentTotal.formatNumber('#.00')}%");
-
-
-        series.data.setAll(getChartDataForDistrict(districtId));
-
-
-        series.appear(1000, 100);
-        currentChart = chart;
-    }
-
-
-    function getChartDataForDistrict(districtId) {
-        const districtResults = getElectionResultsForDistrict(districtId, currentYear);
-        if (!districtResults) return [];
-
-        const chartData = [];
-        for (const party in partyColors) {
-            const value = parseFloat(districtResults[party].replace(',', '.'));
-            if (!isNaN(value) && value > 0) { // Ensure valid and positive values
-                chartData.push({ party: party, value: value * 100, color: partyColors[party] });
-            }
-        }
-        return chartData;
-    }
-
-
-    function updateInfoBox(districtId) {
-        const infoBox = document.getElementById('infoBox');
-        const districtIdDisplay = document.getElementById('districtId');
-
-        if (!districtId) {
-            infoBox.classList.add('hidden');
-            return;
-        }
-
-        infoBox.classList.remove('hidden');
-        districtIdDisplay.textContent = `Wahlbezirk ID: ${districtId}`;
-
-        createDonutChart(districtId);
-    }
-
-
-    // --- Map Setup ---
-    const map = new maplibregl.Map({
-        container: 'map',
-        style: 'https://kxljxv.github.io/bm_web_gry_7.json', // Your map style URL
-        center: [13.40, 52.52], // Berlin coordinates
-        zoom: 9,
-        attributionControl: false
-    });
-
-    map.dragRotate.disable();
-    map.touchZoomRotate.disableRotation();
-
-
-    map.on('load', () => {
-        loadData(currentYear).then(() => {
-             map.addSource('geojson-layer', {
-                type: 'geojson',
-                data: geojsonData
-            });
-
-            map.addLayer({
-                id: 'geojson-fill',
-                type: 'fill',
-                source: 'geojson-layer',
-                paint: {
-                    'fill-color': ['get', 'fillColor'],
-                    'fill-opacity': 0.8,
-                    'fill-outline-color': '#888'
-                }
-            });
-            updateMapColors();
-        });
-    });
-
-
-    map.on('click', 'geojson-fill', (e) => {
-        if (!e.features.length) return;
-        const feature = e.features[0];
-        const districtId = feature.properties.ID;
-        lastClickedFeatureId = districtId;
-        updateInfoBox(districtId);
-
-    });
-
-    map.on('mouseenter', 'geojson-fill', () => {
-        map.getCanvas().style.cursor = 'pointer';
-    });
-
-    map.on('mouseleave', 'geojson-fill', () => {
-        map.getCanvas().style.cursor = '';
-    });
-
-
-    // --- Event Listeners for Select Boxes ---
-    document.getElementById('dataSelect').addEventListener('change', (e) => {
-        currentDataKey = e.target.value;
-        updateMapData();
-        updateMapColors();
-    });
-
-    document.getElementById('yearSelect').addEventListener('change', (e) => {
-        currentYear = e.target.value;
-        loadData(currentYear).then(() => {
-            updateMapColors();
-        });
-    });
-
-     // Initially hide infoBox
-     updateInfoBox(null);
-
-}); // end am5.ready()
+  // Versuchen, Delimiter zu erkennen (z.B. \t oder ; oder 
