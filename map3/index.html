@@ -3,41 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wahlergebnisse Berlin</title>
+    <title>Wahlergebnisse Karte</title>
     <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+
 </head>
 <body>
-    <div id="map-container">
-        <div id="map"></div>
-        <div id="info-box" class="info-box">
-            <h2 id="district-id">Wahlbezirk ID</h2>
-            <div id="donut-chart">
-                <canvas id="resultChart"></canvas>
-            </div>
-            <div class="selectors">
-                <select id="data-selector">
-                    <option value="Wahlbeteiligung">Wahlbeteiligung</option>
-                    <option value="CDU">CDU</option>
-                    <option value="LINKE">LINKE</option>
-                    <option value="SPD">SPD</option>
-                    <option value="Gruen">Grüne</option>
-                    <option value="AfD">AfD</option>
-                    <option value="FDP">FDP</option>
-                    <option value="PMUT">PMUT</option>
-                    <option value="FW">FW</option>
-                    <option value="MLPD">MLPD</option>
-                    <option value="Volt">Volt</option>
-                    <option value="BSW">BSW</option>
-                </select>
-                <select id="year-selector">
-                    <option value="2021">2021</option>
-                    <option value="2025">2025</option>
-                </select>
-            </div>
+    <div id="map"></div>
+
+    <div id="infoBox" class="info-box hidden">
+        <div id="districtId" class="district-id"></div>
+        <div id="chartdiv" class="chart-container"></div>
+        <div class="select-container">
+            <select id="dataSelect" class="select-box">
+                <option value="Wahlbeteiligung">Wahlbeteiligung</option>
+                <option value="CDU">CDU</option>
+                <option value="LINKE">LINKE</option>
+                <option value="SPD">SPD</option>
+                <option value="Gruen">Grüne</option>
+                <option value="AfD">AfD</option>
+                <option value="FDP">FDP</option>
+                <option value="PMUT">PMUT</option>
+                <option value="FW">FW</option>
+                <option value="MLPD">MLPD</option>
+                <option value="Volt">Volt</option>
+                <option value="BSW">BSW</option>
+            </select>
+            <select id="yearSelect" class="select-box">
+                <option value="2021">2021</option>
+                <option value="2025">2025</option>
+            </select>
         </div>
     </div>
+
     <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
     <script src="script.js"></script>
 </body>
