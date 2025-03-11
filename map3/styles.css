@@ -1,158 +1,74 @@
-/* Zentrale Farbvariablen */
-:root {
-    --body-bg: #1c1c1c;
-    --primary-text: #e0e0e0;
-    --secondary-text: #b0b0b0;
-    --control-bg: #2a2a2a;
-    --border-color: #444444;
-    --accent: #a3512b;
-
-    /* Platzhalter-Parteifarben – für verschiedene UI-Bereiche */
-    /* Reguläre Karte */
-    --party-spd-reg: #D63C3C;
-    --party-gruen-reg: #028902;
-    --party-cdu-reg: #767576;
-    --party-linke-reg: #C72DC1;
-    --party-afd-reg: #4667FA;
-    --party-fdp-reg: #6b4c00;
-    --party-bsw-reg: #6a0dad;
-    --party-tierschutz-reg: #005c5c;
-    --party-volt-reg: #4b2e83;
-    --party-fw-reg: #8a5a00;
-    --party-mlpd-reg: #7a112f;
-
-    /* Gewinnerkarte – einheitliche Farben */
-    --party-spd-win: #D63C3C;
-    --party-gruen-win: #028902;
-    --party-cdu-win: #767576;
-    --party-linke-win: #C72DC1;
-    --party-afd-win: #4667FA;
-    --party-fdp-win: #ffdd99;
-    --party-bsw-win: #dd99ff;
-    --party-tierschutz-win: #99ffff;
-    --party-volt-win: #ffe599;
-    --party-fw-win: #ffcc99;
-    --party-mlpd-win: #ff99cc;
-
-    /* Auswahlbuttons (Radio Group) - not used in this version but kept for consistency */
-    --party-spd-btn: #F06565;
-    --party-gruen-btn: #BDFF87;
-    --party-cdu-btn: #e6e6e6;
-    --party-linke-btn: #ffccf2;
-    --party-afd-btn: #cce5ff;
-    --party-fdp-btn: #ffe6cc;
-    --party-bsw-btn: #e6ccff;
-    --party-tierschutz-btn: #ccffff;
-    --party-volt-btn: #fff0cc;
-    --party-fw-btn: #ffe6b3;
-    --party-mlpd-btn: #ffcce6;
+/* Ensure no scrolling, map is fullscreen. */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* No scrolling! */
+  font-family: 'Arial', sans-serif;
 }
 
-body {
-    font-family: 'Arial', sans-serif;
-    color: var(--primary-text);
-    background-color: var(--body-bg);
-    margin: 0; /* Entfernt Standard-Margin des Bodys */
-    overflow: hidden; /* Verhindert Scrollen am Body */
+/* The #map container should fill the screen. */
+#map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
-/* Full-Screen Map */
-#map.full-screen-map {
-    position: fixed; /* Fixed, um Vollbild zu erreichen */
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1; /* Stellt sicher, dass die Karte unter dem Panel liegt, falls nötig */
+/* Side info panel. 
+   We use position absolute or fixed, top-right corner, 
+   plus backdrop-filter: blur(...) for the frosted-glass effect. */
+#infoPanel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 300px;
+  height: 100%;
+  /* Start off hidden or off-screen if you want a slide effect: */
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 10; /* above the map */
 }
 
-/* Info Panel Styles */
-#infoPanel.info-panel {
-    position: absolute; /* Absolut positioniert innerhalb des #map-Containers */
-    top: 20px; /* Abstand vom oberen Rand */
-    right: 20px; /* Abstand vom rechten Rand */
-    z-index: 2; /* Stellt sicher, dass es über der Karte liegt */
-    background-color: rgba(42, 42, 42, 0.8); /* Semi-transparenter Hintergrund */
-    backdrop-filter: blur(10px); /* Blur-Effekt */
-    border-radius: 1rem;
-    padding: 1.5rem;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
-    color: var(--primary-text);
-    width: 350px; /* Feste Breite für das Panel */
-    transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* Für Animationen */
+/* When we want it visible, we can add a class or remove transform. */
+#infoPanel.open {
+  transform: translateX(0);
 }
 
-/* Initially hide the info panel - you can control visibility in JS if needed */
-#infoPanel.info-panel {
-    opacity: 0;
-    transform: translateX(100%); /* Slide it out initially */
-    visibility: hidden; /* Hide it completely */
+/* The background blur effect. We make it partly transparent. */
+.info-content {
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  border-radius: 1rem;
+  margin: 1rem;
+  padding: 1rem;
+  color: #fff;
 }
 
-#infoPanel.info-panel.visible {
-    opacity: 1;
-    transform: translateX(0); /* Slide it in when visible class is added */
-    visibility: visible; /* Make it visible */
+/* A small utility to hide elements via class. */
+.hidden {
+  display: none;
 }
 
-
-/* District Info Section */
-#districtInfo.district-info {
-    margin-bottom: 1rem;
-    text-align: center;
+/* Some minimal styling for the select boxes, input, etc. */
+select, input[type="text"] {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid #444;
+  outline: none;
 }
 
-#districtName.district-name {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
+/* Example style for the h2 in the panel. */
+#districtTitle {
+  text-align: center;
 }
 
-/* Chart Container */
-#chartdiv.chart-container {
-    width: 100%;
-    height: 200px; /* Adjust chart height as needed */
-    margin-bottom: 1rem;
-}
-
-/* Controls Section */
-.controls {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-/* Select Boxes */
-.select-box label {
-    display: block;
-    margin-bottom: 0.3rem;
-    font-weight: bold;
-}
-
-.select-box select.custom-select {
-    width: 100%;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--border-color);
-    background-color: var(--control-bg);
-    color: var(--primary-text);
-    appearance: none; /* Entfernt Standard-Dropdown-Pfeil */
-    -webkit-appearance: none; /* Für Safari */
-    -moz-appearance: none; /* Für Firefox */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20' stroke='%23e0e0e0'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position-x: 100%;
-    background-position-y: 5px;
-    padding-right: 2rem; /* Platz für den Pfeil schaffen */
-}
-
-/* Additional Box */
-.additional-box {
-    background-color: var(--control-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    padding: 1rem;
-    text-align: center;
+/* Chart container inside the panel. 
+   amCharts will fill this area. */
+#chartdiv {
+  width: 100%;
+  height: 200px;
 }
