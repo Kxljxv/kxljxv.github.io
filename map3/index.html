@@ -1,1 +1,64 @@
-
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wahlergebnisse in Berlin – Interactive Map</title>
+  
+  <!-- Maplibre CSS -->
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
+  
+  <!-- amCharts -->
+  <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+  
+  <!-- Eigene CSS -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Map füllt den gesamten Bildschirm -->
+  <div id="map" class="fullscreen-map"></div>
+  
+  <!-- Jahreswahl: Floating Button Group -->
+  <div id="yearSelection" class="year-selection">
+    <button class="year-btn" data-year="2021">2021</button>
+    <button class="year-btn active" data-year="2025">2025</button>
+  </div>
+  
+  <!-- Floating Info Panel (initially hidden) -->
+  <div id="infoPanel" class="info-panel hidden">
+    <div class="panel-header">
+      <h2 id="districtHeader">Wahlbezirk</h2>
+      <button id="closePanel" class="close-btn">&times;</button>
+    </div>
+    
+    <div class="panel-content">
+      <!-- Donut Chart Container -->
+      <div id="donutChart" class="donut-chart"></div>
+      
+      <!-- Select Boxes -->
+      <div class="select-container">
+        <label for="partySelect">Partei wählen:</label>
+        <select id="partySelect" class="styled-select">
+          <option value="Gewinner">Gewinner</option>
+          <option value="Wahlbeteiligung">Wahlbeteiligung</option>
+          <!-- Weitere Optionen werden dynamisch hinzugefügt -->
+        </select>
+      </div>
+      
+      <div class="select-container">
+        <label for="viewSelect">Ansicht:</label>
+        <select id="viewSelect" class="styled-select">
+          <option value="Erststimme">Erststimme</option>
+          <option value="Zweitstimme">Zweitstimme</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Skript-Einbindungen -->
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
