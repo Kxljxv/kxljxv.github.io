@@ -1,83 +1,68 @@
-/* styles.css */
-
 body {
     margin: 0;
     padding: 0;
     font-family: 'Arial', sans-serif;
-    background-color: #1c1c1c; /* Dark background */
-    color: #e0e0e0; /* Light text */
-    overflow: hidden; /* Prevent scrollbars */
-}
-
-#map-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background-color: #1c1c1c; /* Dunkler Hintergrund */
+    color: #e0e0e0; /* Helles Grau für Text */
+    overflow: hidden; /* Verhindert Scrollbalken am Body */
 }
 
 #map {
-    width: 100vw;
-    height: 100vh;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    z-index: 1; /* Karte unter der Info-Box */
 }
 
 .info-box {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    background-color: rgba(28, 28, 28, 0.5); /* Transparent dark background */
+    top: 20px; /* Abstand vom oberen Rand */
+    right: 20px; /* Abstand vom rechten Rand */
+    z-index: 2; /* Info-Box über der Karte */
+    background-color: rgba(28, 28, 28, 0.6); /* Transparent dark background */
     padding: 20px;
     border-radius: 10px;
-    backdrop-filter: blur(10px); /* Blur effect */
-    border: 1px solid #444444; /* Border color */
-    color: #e0e0e0;
-    z-index: 10;
-    width: 300px; /* Adjust as needed */
+    backdrop-filter: blur(10px); /* Blur-Effekt */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 300px; /* Feste Breite der Info-Box */
 }
 
-#info-box h2 {
-    margin-top: 0;
-    font-size: 1.5em;
+.info-box.hidden {
+    display: none;
+}
+
+.district-id {
+    font-size: 1.2em;
+    font-weight: bold;
     margin-bottom: 10px;
+    text-align: center;
 }
 
-#donut-chart {
+.chart-container {
     width: 100%;
-    height: 200px; /* Adjust chart height */
+    height: 200px; /* Feste Höhe für den Donut-Chart */
     margin-bottom: 15px;
 }
 
-.selectors {
+.select-container {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: column; /* Select-Boxen untereinander */
+    gap: 10px; /* Abstand zwischen den Select-Boxen */
 }
 
-.selectors select {
-    background-color: #2a2a2a; /* Control background */
-    color: #e0e0e0;
-    border: 1px solid #444444;
+.select-box {
     padding: 8px;
     border-radius: 5px;
-    width: 100%;
+    border: 1px solid #444444;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    width: 100%; /* Breite der Select-Boxen auf 100% setzen */
+    box-sizing: border-box; /* Padding und Border in Breite einschließen */
 }
 
-/* Party colors - using the same from your provided code */
-:root {
-    /* Platzhalter-Parteifarben */
-    --party-spd: #D63C3C;
-    --party-gruen: #028902;
-    --party-cdu: #767576;
-    --party-linke: #C72DC1;
-    --party-afd: #4667FA;
-    --party-fdp: #6b4c00;
-    --party-bsw: #6a0dad;
-    --party-tierschutz: #005c5c;
-    --party-volt: #4b2e83;
-    --party-fw: #8a5a00;
-    --party-mlpd: #7a112f;
+.select-box:focus {
+    outline: none;
+    border-color: #a3512b; /* Akzentfarbe bei Fokus */
+    box-shadow: 0 0 0 2px rgba(163, 81, 43, 0.3); /* Dezenter Schatten bei Fokus */
 }
