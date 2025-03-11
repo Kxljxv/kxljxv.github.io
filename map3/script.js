@@ -1,465 +1,321 @@
-/***********************
- * Datensätze und Konfiguration
- ***********************/
-const dataset2025 = {
-  url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
-  partyRanges: {
-    "SPDinkBW": { min: 0.06, max: 0.39984263 },
-    "GrueninkBW": { min: 0.015, max: 0.541414141 },
-    "CDUinkBW": { min: 0.025714286, max: 0.46 },
-    "LINKEinkBW": { min: 0.011583012, max: 0.5 },
-    "AfDinkBW": { min: 0.005931198, max: 0.5 },
-    "FDPinkBW": { min: 0.004, max: 0.268841395 },
-    "BSWinkBWB": { min: 0.012, max: 0.16 },
-    "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.085704944 },
-    "VoltDeutschlandinkBW": { min: 0.0, max: 0.029 },
-    "FWinkBW": { min: 0.0, max: 0.034937014 },
-    "MLPDinkBW": { min: 0.0, max: 0.012658228 }
-  },
-  availableParties: [
-    "SPDinkBW", "GrueninkBW", "CDUinkBW", "LINKEinkBW",
-    "AfDinkBW", "FDPinkBW", "BSWinkBWB", "PARTEIMENSCHUMWELTTIERSCHUTZinkBW",
-    "VoltDeutschlandinkBW", "FWinkBW", "MLPDinkBW"
-  ]
+// script.js
+var map = null;
+var geojsonData2021 = null;
+var geojsonData2025 = null;
+var electionData2021 = null;
+var electionData2025 = null;
+var currentGeojsonData = null;
+var currentElectionData = null;
+var currentYear = '2025'; // Default year
+var currentDataField = 'Wahlbeteiligung'; // Default data field
+var lastClickedFeatureId = null;
+var resultChart = null;
+
+// Party display names and colors
+var partyDisplayNames = {
+    "SPD": "SPD",
+    "Gruen": "Grüne",
+    "CDU": "CDU",
+    "LINKE": "Die Linke",
+    "AfD": "AfD",
+    "FDP": "FDP",
+    "BSW": "BSW",
+    "PMUT": "Tierschutz",
+    "Volt": "Volt",
+    "FW": "FW",
+    "MLPD": "MLPD"
 };
 
-const dataset2021 = {
-  url: 'https://kxljxv.github.io/wahlergebnisse2021.json',
-  partyRanges: {
-    "SPDinkBW": { min: 0.06, max: 0.39984263 },
-    "GrueninkBW": { min: 0.015, max: 0.541414141 },
-    "CDUinkBW": { min: 0.025714286, max: 0.46 },
-    "LinkeinkBW": { min: 0.011583012, max: 0.5 },
-    "AfDinkBW": { min: 0.005931198, max: 0.5 },
-    "FDPinkBW": { min: 0.004, max: 0.268841395 },
-    "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.085704944 },
-    "VoltinkBW": { min: 0.0, max: 0.029 },
-    "FWinkBW": { min: 0.0, max: 0.034937014 },
-    "MLPDinkBW": { min: 0.0, max: 0.012658228 }
-  },
-  availableParties: [
-    "SPDinkBW", "GrueninkBW", "CDUinkBW", "LinkeinkBW",
-    "AfDinkBW", "FDPinkBW", "PARTEIMENSCHUMWELTTIERSCHUTZinkBW",
-    "VoltinkBW", "FWinkBW", "MLPDinkBW"
-  ]
+var partyColors = {
+    "SPD": getComputedStyle(document.documentElement).getPropertyValue('--party-spd').trim(),
+    "Gruen": getComputedStyle(document.documentElement).getPropertyValue('--party-gruen').trim(),
+    "CDU": getComputedStyle(document.documentElement).getPropertyValue('--party-cdu').trim(),
+    "LINKE": getComputedStyle(document.documentElement).getPropertyValue('--party-linke').trim(),
+    "AfD": getComputedStyle(document.documentElement).getPropertyValue('--party-afd').trim(),
+    "FDP": getComputedStyle(document.documentElement).getPropertyValue('--party-fdp').trim(),
+    "BSW": getComputedStyle(document.documentElement).getPropertyValue('--party-bsw').trim(),
+    "PMUT": getComputedStyle(document.documentElement).getPropertyValue('--party-tierschutz').trim(),
+    "Volt": getComputedStyle(document.documentElement).getPropertyValue('--party-volt').trim(),
+    "FW": getComputedStyle(document.documentElement).getPropertyValue('--party-fw').trim(),
+    "MLPD": getComputedStyle(document.documentElement).getPropertyValue('--party-mlpd').trim()
 };
 
-// Party name mapping for display
-const partyDisplayNames = {
-  "SPDinkBW": "SPD",
-  "GrueninkBW": "Grüne",
-  "CDUinkBW": "CDU",
-  "LINKEinkBW": "Die Linke",
-  "LinkeinkBW": "Die Linke",
-  "AfDinkBW": "AfD",
-  "FDPinkBW": "FDP",
-  "BSWinkBWB": "BSW",
-  "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "Tierschutz",
-  "VoltDeutschlandinkBW": "Volt",
-  "VoltinkBW": "Volt",
-  "FWinkBW": "FW",
-  "MLPDinkBW": "MLPD"
-};
 
-// Party color mapping
-const partyColors = {
-  "SPDinkBW": "#D63C3C",
-  "GrueninkBW": "#028902",
-  "CDUinkBW": "#767576",
-  "LINKEinkBW": "#C72DC1",
-  "LinkeinkBW": "#C72DC1",
-  "AfDinkBW": "#4667FA",
-  "FDPinkBW": "#6b4c00",
-  "BSWinkBWB": "#6a0dad",
-  "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#005c5c",
-  "VoltDeutschlandinkBW": "#4b2e83",
-  "VoltinkBW": "#4b2e83",
-  "FWinkBW": "#8a5a00",
-  "MLPDinkBW": "#7a112f"
-};
+// Function to load GeoJSON data
+function loadGeoJson(year) {
+    const url = year === '2021' ? 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2021nurID.json' : 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025nurID.json';
+    return fetch(url)
+        .then(response => response.json());
+}
 
-// For mapping between different dataset keys
-const partyMapping = {
-  "VoltinkBW": "VoltDeutschlandinkBW",
-  "LinkeinkBW": "LINKEinkBW"
-};
-
-let currentDataset = dataset2025;
-let currentParty = "Gewinner";
-let geojsonData = null;
-let chart = null;
-let selectedFeature = null;
-let marker = null;
-
-/***********************
- * Map Initialization
- ***********************/
-const map = new maplibregl.Map({
-  container: 'map',
-  style: 'https://kxljxv.github.io/bm_web_gry_7.json',
-  center: [13.40, 52.52],
-  zoom: 10,
-  minZoom: 8,
-  maxBounds: [[12.5, 51.5], [14.5, 53]],
-  attributionControl: false
-});
-
-map.dragRotate.disable();
-map.touchZoomRotate.disableRotation();
-
-// Add navigation control
-map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
-
-/***********************
- * Event Listeners
- ***********************/
-document.querySelectorAll('.year-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-    
-    const selectedYear = this.getAttribute('data-year');
-    document.getElementById('yearSelect').value = selectedYear;
-    currentDataset = (selectedYear === "2025") ? dataset2025 : dataset2021;
-    
-    populatePartySelect();
-    loadGeoJson();
-  });
-});
-
-document.getElementById('yearSelect').addEventListener('change', function() {
-  const selectedYear = this.value;
-  
-  // Update top buttons to match
-  document.querySelectorAll('.year-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.getAttribute('data-year') === selectedYear);
-  });
-  
-  currentDataset = (selectedYear === "2025") ? dataset2025 : dataset2021;
-  populatePartySelect();
-  loadGeoJson();
-  
-  if (selectedFeature) {
-    updateDonutChart(selectedFeature);
-  }
-});
-
-document.getElementById('partySelect').addEventListener('change', function() {
-  currentParty = this.value;
-  updateMapColors();
-});
-
-document.getElementById('searchField').addEventListener('input', function(e) {
-  const query = e.target.value.toLowerCase();
-  
-  if (query.includes("alexanderplatz")) {
-    map.flyTo({ center: [13.411, 52.521], zoom: 13 });
-  } else if (query.includes("potsdamer platz")) {
-    map.flyTo({ center: [13.376, 52.509], zoom: 13 });
-  } else {
-    if (!geojsonData) return;
-    
-    const filtered = JSON.parse(JSON.stringify(geojsonData));
-    filtered.features = filtered.features.filter(function(feature) {
-      return feature.properties.UWB.toLowerCase().includes(query) ||
-             (feature.properties.adresse && feature.properties.adresse.toLowerCase().includes(query));
-    });
-    
-    if (map.getSource('geojson-layer')) {
-      map.getSource('geojson-layer').setData(filtered);
-    }
-  }
-});
-
-/***********************
- * Functions
- ***********************/
-function loadGeoJson() {
-  fetch(currentDataset.url)
-    .then(response => response.json())
-    .then(data => {
-      geojsonData = data;
-      updateMapColors();
-      
-      if (!map.getSource('geojson-layer')) {
-        map.on('load', function() {
-          map.addSource('geojson-layer', { 
-            type: 'geojson', 
-            data: geojsonData 
-          });
-          
-          map.addLayer({
-            id: 'geojson-fill',
-            type: 'fill',
-            source: 'geojson-layer',
-            paint: {
-              'fill-color': ['get', 'fillColor'],
-              'fill-opacity': 0.8,
-              'fill-outline-color': '#ffffff'
-            }
-          });
-          
-          // Add hover effect
-          map.addLayer({
-            id: 'geojson-hover',
-            type: 'line',
-            source: 'geojson-layer',
-            paint: {
-              'line-color': '#ffffff',
-              'line-width': 2,
-              'line-opacity': [
-                'case',
-                ['boolean', ['feature-state', 'hover'], false],
-                1,
-                0
-              ]
-            }
-          });
-          
-          // Add click event
-          map.on('click', 'geojson-fill', handleMapClick);
-          
-          // Add hover states
-          let hoveredStateId = null;
-          
-          map.on('mousemove', 'geojson-fill', (e) => {
-            if (e.features.length > 0) {
-              if (hoveredStateId !== null) {
-                map.setFeatureState(
-                  { source: 'geojson-layer', id: hoveredStateId },
-                  { hover: false }
-                );
-              }
-              
-              hoveredStateId = e.features[0].id;
-              
-              map.setFeatureState(
-                { source: 'geojson-layer', id: hoveredStateId },
-                { hover: true }
-              );
-              
-              map.getCanvas().style.cursor = 'pointer';
-            }
-          });
-          
-          map.on('mouseleave', 'geojson-fill', () => {
-            if (hoveredStateId !== null) {
-              map.setFeatureState(
-                { source: 'geojson-layer', id: hoveredStateId },
-                { hover: false }
-              );
-            }
-            hoveredStateId = null;
-            map.getCanvas().style.cursor = '';
-          });
+// Function to load CSV data and parse it
+function loadCsvData(year) {
+    const url = year === '2021' ? 'http://kxljxv.github.io/wahlergebnisse/wahlergebnisse2021(8).csv' : 'http://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025(8).csv';
+    return fetch(url)
+        .then(response => response.text())
+        .then(csvText => {
+            const lines = csvText.split('\n').slice(1); // Skip header row
+            const data = {};
+            lines.forEach(line => {
+                const values = line.split('\t');
+                if (values[0]) { // Ensure there's an ID
+                    data[values[0]] = { // Use ID as key
+                        "Wahlbeteiligung": parseFloat(values[1]),
+                        "CDU": parseFloat(values[2]),
+                        "LINKE": parseFloat(values[3]),
+                        "SPD": parseFloat(values[4]),
+                        "Gruen": parseFloat(values[5]),
+                        "AfD": parseFloat(values[6]),
+                        "FDP": parseFloat(values[7]),
+                        "PMUT": parseFloat(values[8]),
+                        "FW": parseFloat(values[9]),
+                        "MLPD": parseFloat(values[10]),
+                        "Volt": parseFloat(values[11]),
+                        "BSW": parseFloat(values[12]) // BSW might only be in 2025 data
+                    };
+                    if (year === '2021') {
+                        delete data[values[0]].BSW; // Remove BSW for 2021 if it exists
+                    } else if (year === '2025') {
+                        delete data[values[0]].Linke; // Use LINKE consistently
+                        delete data[values[0]].Gruene; // Use Gruen consistently
+                    }
+                }
+            });
+            return data;
         });
-      } else {
-        map.getSource('geojson-layer').setData(geojsonData);
-      }
-    })
-    .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
 }
 
-function handleMapClick(e) {
-  if (!e.features.length) return;
-  
-  selectedFeature = e.features[0];
-  
-  // Update marker
-  if (marker) marker.remove();
-  marker = new maplibregl.Marker({ color: '#ffffff' })
-    .setLngLat(e.lngLat)
-    .addTo(map);
-  
-  // Show district info panel
-  document.getElementById('district').textContent = `Wahlbezirk: ${selectedFeature.properties.UWB}`;
-  document.getElementById('dataPanel').classList.add('panel-visible');
-  
-  // Update chart
-  updateDonutChart(selectedFeature);
+
+// Function to initialize the map
+function initializeMap() {
+    map = new maplibregl.Map({
+        container: 'map',
+        style: 'https://kxljxv.github.io/bm_web_gry_7.json', // Using your provided style URL
+        center: [13.40, 52.52], // Berlin coordinates
+        zoom: 9,
+        minZoom: 8,
+        maxZoom: 15,
+        dragRotate: false,
+        touchZoomRotate: false
+    });
+
+    map.on('load', () => {
+        updateMapData(currentYear); // Load initial data for default year
+    });
 }
 
-function updateMapColors() {
-  if (!geojsonData) return;
-  
-  geojsonData.features.forEach(function(feature, index) {
-    // Add an id for feature state
-    feature.id = index;
-    
-    if (currentParty === "Gewinner") {
-      // Gewinner-Modus: Find the party with the highest percentage
-      let winningParty = null;
-      let winningValue = 0;
-      
-      currentDataset.availableParties.forEach(function(key) {
-        const val = parseFloat(feature.properties[key].replace(',', '.'));
-        if (val > winningValue) {
-          winningValue = val;
-          winningParty = key;
+function mergeDataToGeoJson(geojsonData, electionData) {
+    const features = geojsonData.features.map(feature => {
+        const id = feature.properties.ID;
+        const data = electionData[id] || {}; // Default to empty if no data
+
+        // Ensure data is not undefined and then merge
+        if (data) {
+            return {
+                ...feature,
+                properties: {
+                    ...feature.properties,
+                    ...data
+                }
+            };
+        } else {
+            return feature; // Feature with no additional data
         }
-      });
-      
-      feature.properties.fillColor = partyColors[winningParty];
-    } else if (currentParty === "Wahlbeteiligung") {
-      // Special case for voter turnout if available
-      const turnout = feature.properties.Wahlbeteiligung ? 
-        parseFloat(feature.properties.Wahlbeteiligung.replace(',', '.')) : 0.5;
-      
-      // Create a gradient from red (low) to green (high)
-      const intensity = Math.min(1, Math.max(0, turnout));
-      feature.properties.fillColor = interpolateColor("#ff4444", "#44ff44", intensity);
+    });
+    return { ...geojsonData, features: features };
+}
+
+
+function updateMapData(year) {
+    Promise.all([loadGeoJson(year), loadCsvData(year)]).then(([geoJson, csvData]) => {
+        const mergedGeoJson = mergeDataToGeoJson(geoJson, csvData);
+        currentGeojsonData = mergedGeoJson;
+        currentElectionData = csvData;
+        currentYear = year;
+        updateMapLayer();
+    }).catch(error => console.error("Error loading data:", error));
+}
+
+
+function updateMapLayer() {
+    if (!map.getSource('election-data')) {
+        map.addSource('election-data', {
+            type: 'geojson',
+            data: currentGeojsonData
+        });
+
+        map.addLayer({
+            id: 'election-fill',
+            type: 'fill',
+            source: 'election-data',
+            paint: {
+                'fill-color': ['get', currentDataField, ['properties']],
+                'fill-opacity': 0.8,
+                'fill-outline-color': '#888'
+            }
+        });
+
+        map.on('click', 'election-fill', (e) => {
+            if (!e.features.length) return;
+            const feature = e.features[0];
+            lastClickedFeatureId = feature.properties.ID;
+            updateInfoBox(feature.properties);
+        });
+         map.on('mouseenter', 'election-fill', function() {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+        map.on('mouseleave', 'election-fill', function() {
+            map.getCanvas().style.cursor = '';
+        });
+
+
     } else {
-      // Regular party view: show gradient based on percentage
-      const val = parseFloat(feature.properties[currentParty].replace(',', '.'));
-      const range = currentDataset.partyRanges[currentParty];
-      const norm = (val - range.min) / (range.max - range.min);
-      const normalized = Math.max(0, Math.min(norm, 1));
-      
-      feature.properties.fillColor = interpolateColor("#f0f0f0", partyColors[currentParty], normalized);
+        map.getSource('election-data').setData(currentGeojsonData);
+        map.setPaintProperty('election-fill', 'fill-color', ['get', currentDataField, ['properties']]);
     }
-  });
-  
-  if (map.getSource('geojson-layer')) {
-    map.getSource('geojson-layer').setData(geojsonData);
-  }
 }
 
-function updateDonutChart(feature) {
-  const chartDiv = document.getElementById('chartDiv');
-  
-  // Clear previous chart
-  if (chart) {
-    chart.dispose();
-  }
-  
-  // Create root element
-  const root = am5.Root.new(chartDiv);
-  
-  // Set themes
-  root.setThemes([am5themes_Animated.new(root)]);
-  
-  // Create chart
-  const chart = root.container.children.push(
-    am5percent.PieChart.new(root, {
-      layout: root.horizontalLayout,
-      innerRadius: am5.percent(50)
-    })
-  );
-  
-  // Create series
-  const series = chart.series.push(
-    am5percent.PieSeries.new(root, {
-      valueField: "value",
-      categoryField: "category",
-      alignLabels: false
-    })
-  );
-  
-  // Configure labels
-  series.labels.template.setAll({
-    textType: "circular",
-    radius: 4,
-    inside: true,
-    fill: am5.color(0xffffff),
-    visible: false // Hide labels by default
-  });
-  
-  // Set up tooltip
-  series.slices.template.set("tooltipText", "[bold]{category}:[/] {valuePercentTotal.formatNumber('0.0')}%");
-  series.slices.template.set("stroke", am5.color(0xffffff));
-  series.slices.template.set("strokeWidth", 1);
-  
-  // Prepare data
-  const data = [];
-  currentDataset.availableParties.forEach(function(key) {
-    const val = parseFloat(feature.properties[key].replace(',', '.'));
-    if (val > 0.01) { // Only include parties with more than 1%
-      data.push({
-        category: partyDisplayNames[key],
-        value: val * 100, // Convert to percentage
-        color: partyColors[key]
-      });
+function updateInfoBox(properties) {
+    document.getElementById('info-box').style.display = 'block';
+    document.getElementById('district-id').innerText = 'Wahlbezirk ID: ' + properties.ID;
+    updateDonutChart(properties);
+}
+
+
+function updateDonutChart(properties) {
+    const labels = [];
+    const dataValues = [];
+    const backgroundColors = [];
+
+    const parties = ["CDU", "LINKE", "SPD", "Gruen", "AfD", "FDP", "PMUT", "FW", "MLPD", "Volt", "BSW"].filter(party => properties[party] !== undefined);
+
+    parties.forEach(party => {
+        if (partyDisplayNames[party]) {
+             labels.push(partyDisplayNames[party]);
+             dataValues.push(properties[party]);
+             backgroundColors.push(partyColors[party]);
+        }
+    });
+
+    if (!resultChart) {
+        const ctx = document.getElementById('resultChart').getContext('2d');
+        resultChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: dataValues,
+                    backgroundColor: backgroundColors,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: false, // Disable default tooltip
+                        external: function(context) {
+                            // Tooltip Element
+                            let tooltipEl = document.getElementById('chartjs-tooltip');
+
+                            // Create element on first render
+                            if (!tooltipEl) {
+                                tooltipEl = document.createElement('div');
+                                tooltipEl.id = 'chartjs-tooltip';
+                                tooltipEl.style.background = 'rgba(0, 0, 0, 0.7)';
+                                tooltipEl.style.color = 'white';
+                                tooltipEl.style.borderRadius = '3px';
+                                tooltipEl.style.opacity = 1;
+                                tooltipEl.style.pointerEvents = 'none';
+                                tooltipEl.style.position = 'absolute';
+                                tooltipEl.style.transform = 'translate(-50%, 0)';
+                                tooltipEl.style.transition = 'all .1s ease';
+
+                                const table = document.createElement('table');
+                                tooltipEl.appendChild(table);
+                                context.chart.canvas.parentNode.appendChild(tooltipEl);
+                            }
+
+                            // Hide if no tooltip
+                            const tooltip = context.tooltip;
+                            if (tooltip.opacity === 0) {
+                                tooltipEl.style.opacity = 0;
+                                return;
+                            }
+
+                            // Set caret Position and styles
+                            tooltipEl.classList.remove('above', 'below', 'no-transform');
+                            if (tooltip.yAlign) {
+                                tooltipEl.classList.add(tooltip.yAlign);
+                            } else {
+                                tooltipEl.classList.add('no-transform');
+                            }
+
+                            function getBody(bodyItem) {
+                                return bodyItem.lines;
+                            }
+
+                            // Set Text
+                            if (tooltip.body) {
+                                const titleLines = tooltip.title || [];
+                                const bodyLines = tooltip.body.map(getBody);
+
+                                let innerHtml = '<thead>';
+
+                                titleLines.forEach(function(title) {
+                                    innerHtml += '<tr><th>' + title + '</th></tr>';
+                                });
+                                innerHtml += '</thead><tbody>';
+
+                                bodyLines.forEach(function(body, i) {
+                                    const colors = tooltip.labelColors[i];
+                                    let style = 'background:' + colors.backgroundColor;
+                                    style += '; border-color:' + colors.borderColor;
+                                    style += '; border-width: 2px';
+                                    const span = '<span style="' + style + '"></span>';
+                                    innerHtml += '<tr><td>' + span + body + '</td></tr>';
+                                });
+                                innerHtml += '</tbody>';
+
+                                let tableRoot = tooltipEl.querySelector('table');
+                                tableRoot.innerHTML = innerHtml;
+                            }
+
+                            const position = context.chart.canvas.getBoundingClientRect();
+
+                            // Display, position, and set styles for element
+                            tooltipEl.style.opacity = 1;
+                            tooltipEl.style.left = position.left + tooltip.caretX + 'px';
+                            tooltipEl.style.top = position.top + tooltip.caretY+ 'px';
+                            tooltipEl.style.font = tooltip.options.bodyFont.string;
+                            tooltipEl.style.padding = tooltip.padding + 'px ' + tooltip.padding + 'px';
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        resultChart.data.labels = labels;
+        resultChart.data.datasets[0].data = dataValues;
+        resultChart.data.datasets[0].backgroundColor = backgroundColors;
+        resultChart.update();
     }
-  });
-  
-  // Sort data by value (descending)
-  data.sort((a, b) => b.value - a.value);
-  
-  // Set colors from party colors
-  series.slices.template.adapters.add("fill", function(fill, target) {
-    return am5.color(target.dataItem.dataContext.color);
-  });
-  
-  // Add data to series
-  series.data.setAll(data);
-  
-  // Add legend
-  chart.children.push(am5.Legend.new(root, {
-    centerX: am5.percent(50),
-    x: am5.percent(50),
-    layout: root.horizontalLayout,
-    visible: false
-  }));
 }
 
-function populatePartySelect() {
-  const select = document.getElementById('partySelect');
-  const currentValue = select.value;
-  
-  // Clear options except first two standard options
-  while (select.options.length > 2) {
-    select.remove(2);
-  }
-  
-  // Add party options
-  currentDataset.availableParties.forEach(party => {
-    const option = document.createElement('option');
-    option.value = party;
-    option.textContent = partyDisplayNames[party];
-    select.appendChild(option);
-  });
-  
-  // Restore selection if possible, otherwise default to "Gewinner"
-  if (currentDataset.availableParties.includes(currentValue)) {
-    select.value = currentValue;
-  } else if (partyMapping[currentValue] && currentDataset.availableParties.includes(partyMapping[currentValue])) {
-    select.value = partyMapping[currentValue];
-  } else {
-    select.value = "Gewinner";
-  }
-  
-  // Update current party selection
-  currentParty = select.value;
-}
+// Event listeners for selectors
+document.getElementById('data-selector').addEventListener('change', function(e) {
+    currentDataField = e.target.value;
+    updateMapLayer();
+});
 
-function interpolateColor(color1, color2, factor) {
-  const c1 = hexToRgb(color1);
-  const c2 = hexToRgb(color2);
-  
-  const result = {
-    r: Math.round(c1.r + (c2.r - c1.r) * factor),
-    g: Math.round(c1.g + (c2.g - c1.g) * factor),
-    b: Math.round(c1.b + (c2.b - c1.b) * factor)
-  };
-  
-  return `rgb(${result.r}, ${result.g}, ${result.b})`;
-}
+document.getElementById('year-selector').addEventListener('change', function(e) {
+    currentYear = e.target.value;
+    updateMapData(currentYear);
+});
 
-function hexToRgb(hex) {
-  hex = hex.replace(/^#/, '');
-  
-  if (hex.length === 3) {
-    hex = hex.split('').map(c => c + c).join('');
-  }
-  
-  const bigint = parseInt(hex, 16);
-  return {
-    r: (bigint >> 16) & 255,
-    g: (bigint >> 8) & 255,
-    b: bigint & 255
-  };
-}
-
-// Initialize
-loadGeoJson();
-populatePartySelect();
+// Initialize map on page load
+document.addEventListener('DOMContentLoaded', initializeMap);
