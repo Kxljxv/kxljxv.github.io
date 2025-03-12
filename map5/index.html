@@ -45,6 +45,19 @@
       height: 200px;
       margin-bottom: 15px;
     }
+    
+    /* Custom Dropdown-Menü: starker Blur-Effekt, abgedunkelt und weiße Schrift */
+    .custom-dropdown-menu {
+      background: rgba(0, 0, 0, 0.8) !important;
+      backdrop-filter: blur(10px);
+      color: white;
+    }
+    .custom-dropdown-menu ul {
+      color: white;
+    }
+    .custom-dropdown-menu li button {
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -62,8 +75,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
       </button>
-      <div id="partyDropdownMenu" class="z-10 hidden bg-white divide-y divide-gray-100 rounded shadow w-full max-h-40 overflow-y-auto">
-        <ul id="partyDropdownList" class="py-1 text-sm text-gray-700" aria-labelledby="partyDropdownButton">
+      <div id="partyDropdownMenu" class="z-10 hidden custom-dropdown-menu divide-y divide-gray-100 rounded shadow w-full max-h-40 overflow-y-auto">
+        <ul id="partyDropdownList" class="py-1 text-sm" aria-labelledby="partyDropdownButton">
           <!-- Dynamisch generierte Einträge -->
         </ul>
       </div>
@@ -76,8 +89,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
       </button>
-      <div id="yearDropdownMenu" class="z-10 hidden bg-white divide-y divide-gray-100 rounded shadow w-full max-h-40 overflow-y-auto">
-        <ul id="yearDropdownList" class="py-1 text-sm text-gray-700" aria-labelledby="yearDropdownButton">
+      <div id="yearDropdownMenu" class="z-10 hidden custom-dropdown-menu divide-y divide-gray-100 rounded shadow w-full max-h-40 overflow-y-auto">
+        <ul id="yearDropdownList" class="py-1 text-sm" aria-labelledby="yearDropdownButton">
           <!-- Dynamisch generierte Einträge -->
         </ul>
       </div>
@@ -206,7 +219,6 @@
           currentParty = this.dataset.value;
           // Aktualisiere Button-Text
           document.getElementById("partyDropdownButton").textContent = partyDisplayNames[currentParty] || currentParty;
-          // Schließe das Dropdown (Flowbite übernimmt dies über data-dropdown-toggle)
           // Aktualisiere die GeoJSON-Daten
           fetch(currentDataset.url)
             .then(response => response.json())
