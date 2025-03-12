@@ -46,17 +46,29 @@
       margin-bottom: 15px;
     }
     
-    /* Custom Dropdown-Menü: starker Blur-Effekt, abgedunkelt und weiße Schrift */
+    /* Custom Dropdown Button: geschlossener Zustand mit Blur, dunklem Hintergrund und weißer Schrift */
+    .custom-dropdown-button {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    /* Custom Dropdown Menü: Blur, starker Abdunkelungseffekt und weiße Schrift */
     .custom-dropdown-menu {
       background: rgba(0, 0, 0, 0.8) !important;
       backdrop-filter: blur(10px);
       color: white;
     }
-    .custom-dropdown-menu ul {
+    /* Dropdown-Listeneinträge */
+    .custom-dropdown-item {
+      padding: 0.5rem 1rem;
+      text-align: left;
+      width: 100%;
       color: white;
     }
-    .custom-dropdown-menu li button {
-      color: white;
+    .custom-dropdown-item:hover {
+      background: rgba(255, 255, 255, 0.1);
     }
   </style>
 </head>
@@ -69,7 +81,7 @@
     <div id="pieChartDiv"></div>
     <!-- Flowbite Dropdown für Party -->
     <div id="partyDropdownContainer" class="mb-2 relative inline-block text-left w-full">
-      <button id="partyDropdownButton" data-dropdown-toggle="partyDropdownMenu" type="button" class="inline-flex justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700">
+      <button id="partyDropdownButton" data-dropdown-toggle="partyDropdownMenu" type="button" class="custom-dropdown-button inline-flex justify-between w-full rounded-md shadow-sm px-4 py-2 text-sm font-medium">
         Party auswählen
         <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -83,7 +95,7 @@
     </div>
     <!-- Flowbite Dropdown für Jahr -->
     <div id="yearDropdownContainer" class="relative inline-block text-left w-full">
-      <button id="yearDropdownButton" data-dropdown-toggle="yearDropdownMenu" type="button" class="inline-flex justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700">
+      <button id="yearDropdownButton" data-dropdown-toggle="yearDropdownMenu" type="button" class="custom-dropdown-button inline-flex justify-between w-full rounded-md shadow-sm px-4 py-2 text-sm font-medium">
         Jahr auswählen
         <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -212,7 +224,7 @@
         var li = document.createElement("li");
         var btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "w-full text-left px-4 py-2 hover:bg-gray-100";
+        btn.className = "custom-dropdown-item";
         btn.textContent = partyDisplayNames[party] || party;
         btn.dataset.value = party;
         btn.addEventListener("click", function() {
@@ -243,7 +255,7 @@
         var li = document.createElement("li");
         var btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "w-full text-left px-4 py-2 hover:bg-gray-100";
+        btn.className = "custom-dropdown-item";
         btn.textContent = year;
         btn.dataset.value = year;
         btn.addEventListener("click", function() {
