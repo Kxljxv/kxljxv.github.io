@@ -166,6 +166,21 @@
       "MLPDinkBW": { min: "#FFF7F5", max: "#8C142A" }
     };
 
+    // Extra-Farben für den Pi-Chart
+    var extraPieColors = {
+      "SPDinkBW": "#E60026",
+      "GrueninkBW": "#008000",
+      "CDUinkBW": "#000000",
+      "LINKEinkBW": "#8F0354",
+      "AfDinkBW": "#002B9C",
+      "FDPinkBW": "#5E4A00",
+      "BSWinkBWB": "#571334",
+      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#00454D",
+      "VoltDeutschlandinkBW": "#462270",
+      "FWinkBW": "#9C4900",
+      "MLPDinkBW": "#8C142A"
+    };
+
     // Datensätze für 2025 und 2021
     var dataset2025 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
@@ -432,9 +447,14 @@
           chartData.push({
             category: partyDisplayNames[party] || party,
             value: Number((value * 100).toFixed(2)),
-            fill: partyColorGradients[party] ? partyColorGradients[party].max : "#CCCCCC"
+            fill: extraPieColors[party] ? extraPieColors[party] : "#CCCCCC"
           });
         }
+      });
+      
+      // Sortiere die Daten absteigend (größte zuerst)
+      chartData.sort(function(a, b) {
+        return b.value - a.value;
       });
       
       // Vorherigen Chart löschen, falls vorhanden
@@ -471,6 +491,9 @@
         return am5.color(target.dataItem.dataContext.fill);
       });
       
+      // Keine Umrandung: strokeOpacity auf 0 setzen
+      series.slices.template.setAll({ strokeOpacity: 0 });
+      
       // Standardmäßig keine Labels/Ticks anzeigen
       series.labels.template.set("visible", false);
       series.ticks.template.set("visible", false);
@@ -487,18 +510,15 @@
               slice.set("active", false);
           });
           ev.target.set("active", true);
-          // Verhindere, dass dieser Klick auch den Container-Click auslöst
           ev.event.stopPropagation();
       });
       
       // Klick auf den Hintergrund des Charts (also nicht auf ein Segment)
       document.getElementById("pieChartDiv").addEventListener("click", function(e) {
           if (e.target === this) {
-              // Deselektiere alle Segmente
               series.slices.each(function(slice) {
                   slice.set("active", false);
               });
-              // Umschalten der Labels/Ticks
               labelsVisible = !labelsVisible;
               series.labels.template.set("visible", labelsVisible);
               series.ticks.template.set("visible", labelsVisible);
