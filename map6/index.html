@@ -39,7 +39,7 @@
     }
     #info-box h2 { margin-top: 0; }
     
-    /* Container für den Chart (wird nun als Säulendiagramm dargestellt) */
+    /* Container für den Chart (Column Chart) */
     #pieChartDiv {
       width: 100%;
       height: 200px;
@@ -115,7 +115,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
   <!-- amCharts 5 Libraries -->
   <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
-  <!-- Zum Erstellen von XY-Charts -->
+  <!-- Für XY-Charts (Column Chart) -->
   <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
   
@@ -132,7 +132,7 @@
       return params;
     }
 
-    // Anzeige-Namen und Farbpaletten
+    // Anzeige-Namen (für die Tabelle) und Farbpaletten
     var partyDisplayNames = {
       "WahlbeteiligunginkBW": "Wahlbeteiligung",
       "SPDinkBW": "SPD",
@@ -148,6 +148,21 @@
       "VoltinkBW": "Volt",
       "FWinkBW": "FW",
       "MLPDinkBW": "MLPD"
+    };
+
+    // Extra-Texte für Tooltips (abweichend von den Tabellennamen)
+    var tooltipNames = {
+      "SPDinkBW": "SPD Official",
+      "GrueninkBW": "Grüne Official",
+      "CDUinkBW": "CDU Official",
+      "LINKEinkBW": "Die Linke Official",
+      "AfDinkBW": "AfD Official",
+      "FDPinkBW": "FDP Official",
+      "BSWinkBWB": "BSW Official",
+      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "Tierschutz Official",
+      "VoltDeutschlandinkBW": "Volt Official",
+      "FWinkBW": "FW Official",
+      "MLPDinkBW": "MLPD Official"
     };
 
     var partyColorGradients = {
@@ -245,9 +260,7 @@
         btn.dataset.value = party;
         btn.addEventListener("click", function() {
           currentParty = this.dataset.value;
-          // Aktualisiere Button-Text
           document.getElementById("partyDropdownButton").textContent = partyDisplayNames[currentParty] || currentParty;
-          // Aktualisiere die GeoJSON-Daten
           fetch(currentDataset.url)
             .then(response => response.json())
             .then(data => {
@@ -260,7 +273,6 @@
         li.appendChild(btn);
         list.appendChild(li);
       });
-      // Setze initialen Button-Text, falls noch nicht ausgewählt
       document.getElementById("partyDropdownButton").textContent = partyDisplayNames[currentParty] || currentParty;
     }
 
@@ -284,7 +296,6 @@
         li.appendChild(btn);
         list.appendChild(li);
       });
-      // Initialen Button-Text setzen
       document.getElementById("yearDropdownButton").textContent = "2025";
     }
 
@@ -313,7 +324,7 @@
       return rgbToHex(r, g, b);
     }
     
-    // Berechnet anhand des Rohwerts und der Partei die Farbe
+    // Berechnet anhand des Rohwerts und der Partei die Farbe (wird hier in updateGeojsonData verwendet)
     function getColor(rawValue, party) {
       var range = currentDataset.partyRanges[party];
       if (!range) return "#CCCCCC";
@@ -375,7 +386,7 @@
               paint: {
                 'fill-color': ['get', 'fillColor'],
                 'fill-opacity': 0.8,
-                'fill-outline-color': 'rgba(0,0,0,0)'  // Keine Umrandung
+                'fill-outline-color': 'rgba(0,0,0,0)'
               }
             }, firstLayerId);
           }
@@ -390,13 +401,11 @@
       if (!e.features.length) return;
       var feature = e.features[0];
       
-      // Vorherigen Highlight-Layer entfernen, falls vorhanden
       if (map.getLayer('highlight-layer')) {
         map.removeLayer('highlight-layer');
         map.removeSource('highlight-layer');
       }
       
-      // Highlight-Layer hinzufügen (als Umrandung in Schwarz)
       map.addSource('highlight-layer', {
         type: 'geojson',
         data: feature
@@ -411,7 +420,6 @@
         }
       });
       
-      // Berechne den Wert für den aktuell ausgewählten Parameter
       var value;
       if(currentParty === "Gewinner") {
         var winnerValue = -Infinity;
@@ -424,13 +432,11 @@
         value = parseFloat(feature.properties[currentParty].replace(',', '.'));
       }
       
-      // Infobox-Titel: Bezirks-ID und Prozentwert (ohne zusätzlichen Labeltext)
       document.getElementById('district-title').textContent = feature.properties.UWB + " - " + (value * 100).toFixed(2) + "%";
       
       updatePieChart(feature);
     });
     
-    // Cursor-Styling
     map.on('mouseenter', 'geojson-fill', function() {
       map.getCanvas().style.cursor = 'pointer';
     });
@@ -438,7 +444,7 @@
       map.getCanvas().style.cursor = '';
     });
     
-    // Ersetze den Pi-Chart durch einen Column-Chart (ohne Legende oder Beschriftungen)
+    // Ersetze den bisherigen Pie-Chart durch einen Column Chart (ohne Legende oder Beschriftungen)
     function updatePieChart(feature) {
       // Daten für den Chart vorbereiten (Wahlbeteiligung ausschließen)
       var chartData = [];
@@ -446,6 +452,7 @@
         if(feature.properties[party] !== undefined && party !== "WahlbeteiligunginkBW") {
           var value = parseFloat(feature.properties[party].replace(',', '.'));
           chartData.push({
+            party: party,  // Für den Tooltip benötigt
             category: partyDisplayNames[party] || party,
             value: Number((value * 100).toFixed(2)),
             fill: extraPieColors[party] ? extraPieColors[party] : "#CCCCCC"
@@ -458,20 +465,15 @@
         return b.value - a.value;
       });
       
-      // Vorherigen Chart löschen, falls vorhanden
       if(window.pieChartRoot){
         window.pieChartRoot.dispose();
       }
       
-      // Erstelle neuen amCharts Root im Container "pieChartDiv"
       window.pieChartRoot = am5.Root.new("pieChartDiv");
-      
-      // Setze Theme
       window.pieChartRoot.setThemes([
         am5themes_Animated.new(window.pieChartRoot)
       ]);
       
-      // Erstelle ein XY-Chart (Column Chart)
       var chart = window.pieChartRoot.container.children.push(
         am5xy.XYChart.new(window.pieChartRoot, {
           panX: false,
@@ -482,7 +484,6 @@
         })
       );
       
-      // Erstelle die X-Achse (Kategorie-Achse)
       var xRenderer = am5xy.AxisRendererX.new(window.pieChartRoot, { minGridDistance: 30 });
       xRenderer.labels.template.setAll({ visible: false });
       xRenderer.grid.template.setAll({ visible: false });
@@ -494,7 +495,6 @@
       );
       xAxis.data.setAll(chartData);
       
-      // Erstelle die Y-Achse (Werte-Achse)
       var yRenderer = am5xy.AxisRendererY.new(window.pieChartRoot, {});
       yRenderer.labels.template.setAll({ visible: false });
       yRenderer.grid.template.setAll({ visible: false });
@@ -504,7 +504,6 @@
         })
       );
       
-      // Erstelle die Säulenserie
       var series = chart.series.push(
         am5xy.ColumnSeries.new(window.pieChartRoot, {
           xAxis: xAxis,
@@ -514,16 +513,22 @@
         })
       );
       
-      // Säulen ohne Umrandung
       series.columns.template.setAll({ strokeOpacity: 0 });
-      // Adapter, damit die Säulenfarbe aus dem Datenobjekt übernommen wird
+      // Adapter: Verwende die im Datenobjekt gespeicherte Farbe
       series.columns.template.adapters.add("fill", function(fill, target) {
         return am5.color(target.dataItem.dataContext.fill);
       });
       
+      // Tooltip: Beim Hover wird der "offizielle" Parteiname und der Prozentwert angezeigt.
+      series.columns.template.set("tooltipText", "{tooltipText}");
+      series.columns.template.adapters.add("tooltipText", function(text, target) {
+        var data = target.dataItem.dataContext;
+        var tName = tooltipNames[data.party] || data.category;
+        return tName + ": " + data.value + "%";
+      });
+      
       series.data.setAll(chartData);
       
-      // Animation
       series.appear(1000, 100);
       chart.appear(1000, 100);
     }
