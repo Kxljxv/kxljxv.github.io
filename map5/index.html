@@ -39,7 +39,7 @@
     }
     #info-box h2 { margin-top: 0; }
     
-    /* Container für den Column-Chart */
+    /* Container für den Pie-Chart */
     #pieChartDiv {
       width: 100%;
       height: 200px;
@@ -115,7 +115,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
   <!-- amCharts 5 Libraries -->
   <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
-  <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
   <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
   
   <script>
@@ -166,7 +166,7 @@
       "MLPDinkBW": { min: "#FFF7F5", max: "#8C142A" }
     };
 
-    // Extra-Farben für den Column-Chart
+    // Extra-Farben für den Pi-Chart
     var extraPieColors = {
       "SPDinkBW": "#E60026",
       "GrueninkBW": "#008000",
@@ -437,7 +437,7 @@
       map.getCanvas().style.cursor = '';
     });
     
-    // Column-Chart-Funktionalität mittels amCharts (ersetzt den bisherigen Pie-Chart)
+    // Piechart-Funktionalität mittels amCharts
     function updatePieChart(feature) {
       // Daten für den Chart vorbereiten (Wahlbeteiligung ausschließen)
       var chartData = [];
@@ -452,7 +452,7 @@
         }
       });
       
-      // Sortiere die Daten absteigend (größte Werte zuerst)
+      // Sortiere die Daten absteigend (größte zuerst)
       chartData.sort(function(a, b) {
         return b.value - a.value;
       });
@@ -462,7 +462,7 @@
         window.pieChartRoot.dispose();
       }
       
-      // Erstelle neuen amCharts Root in "pieChartDiv"
+      // Erstelle neuen amCharts Root
       window.pieChartRoot = am5.Root.new("pieChartDiv");
       
       // Setze Theme
@@ -470,65 +470,60 @@
         am5themes_Animated.new(window.pieChartRoot)
       ]);
       
-      // Erstelle XY-Chart (Column-Chart)
+      // Erstelle PieChart
       var chart = window.pieChartRoot.container.children.push(
-        am5xy.XYChart.new(window.pieChartRoot, {
-          panX: false,
-          panY: false,
-          wheelX: "none",
-          wheelY: "none"
+        am5percent.PieChart.new(window.pieChartRoot, {
+          layout: window.pieChartRoot.verticalLayout
         })
       );
       
-      // Erstelle X-Achse (Category-Axis)
-      var xAxis = chart.xAxes.push(
-        am5xy.CategoryAxis.new(window.pieChartRoot, {
-          renderer: am5xy.AxisRendererX.new(window.pieChartRoot, { minGridDistance: 30 }),
-          categoryField: "category"
-        })
-      );
-      xAxis.data.setAll(chartData);
-      
-      // Erstelle Y-Achse (Value-Axis)
-      var yAxis = chart.yAxes.push(
-        am5xy.ValueAxis.new(window.pieChartRoot, {
-          renderer: am5xy.AxisRendererY.new(window.pieChartRoot, {})
-        })
-      );
-      
-      // Erstelle Column-Series
+      // Erstelle Serie
       var series = chart.series.push(
-        am5xy.ColumnSeries.new(window.pieChartRoot, {
-          name: "Values",
-          xAxis: xAxis,
-          yAxis: yAxis,
-          valueYField: "value",
-          categoryXField: "category"
+        am5percent.PieSeries.new(window.pieChartRoot, {
+          valueField: "value",
+          categoryField: "category",
+          alignLabels: true
         })
       );
-      
-      series.columns.template.setAll({
-        tooltipText: "{category}: {valueY}%",
-        strokeOpacity: 0
-      });
-      
-      // Fülle die Daten
-      series.data.setAll(chartData);
       
       // Adapter, damit die Füllfarbe aus dem Datenobjekt verwendet wird
-      series.columns.template.adapters.add("fill", function(fill, target) {
-        return am5.color(target.dataItem.dataContext.fill);
-      });
-      series.columns.template.adapters.add("stroke", function(stroke, target) {
+      series.slices.template.adapters.add("fill", function(fill, target) {
         return am5.color(target.dataItem.dataContext.fill);
       });
       
-      // Keine Legende hinzufügen!
-      // (Standardmäßig wird bei XY-Charts keine Legende erstellt, daher entfällt hier explizit weiterer Code)
+      // Keine Umrandung: strokeOpacity auf 0 setzen
+      series.slices.template.setAll({ strokeOpacity: 0 });
       
-      // Animationen
+      // Standardmäßig keine Labels/Ticks anzeigen
+      series.labels.template.set("visible", false);
+      series.ticks.template.set("visible", false);
+      
+      series.data.setAll(chartData);
       series.appear(1000, 100);
-      chart.appear(1000, 100);
+      
+      // Variable zur Steuerung der Sichtbarkeit der Labels
+      var labelsVisible = false;
+      
+      // Wenn ein Segment geklickt wird: Alle Segmente deselecten und nur das angeklickte aktivieren
+      series.slices.template.events.on("hit", function(ev) {
+          series.slices.each(function(slice) {
+              slice.set("active", false);
+          });
+          ev.target.set("active", true);
+          ev.event.stopPropagation();
+      });
+      
+      // Klick auf den Hintergrund des Charts (also nicht auf ein Segment)
+      document.getElementById("pieChartDiv").addEventListener("click", function(e) {
+          if (e.target === this) {
+              series.slices.each(function(slice) {
+                  slice.set("active", false);
+              });
+              labelsVisible = !labelsVisible;
+              series.labels.template.set("visible", labelsVisible);
+              series.ticks.template.set("visible", labelsVisible);
+          }
+      });
     }
   </script>
 </body>
