@@ -39,11 +39,13 @@
     }
     #info-box h2 { margin-top: 0; }
     
-    /* Container für den Chart (Column Chart) */
+    /* Container für den Column Chart */
     #pieChartDiv {
       width: 100%;
       height: 200px;
       margin-bottom: 15px;
+      /* Clippe unten 30px, um das amCharts-Logo zu verbergen */
+      clip-path: inset(0 0 30px 0);
     }
     
     /* Custom Dropdown Button: geschlossener Zustand mit Blur, dunklem Hintergrund und weißer Schrift */
@@ -324,7 +326,7 @@
       return rgbToHex(r, g, b);
     }
     
-    // Berechnet anhand des Rohwerts und der Partei die Farbe (wird hier in updateGeojsonData verwendet)
+    // Berechnet anhand des Rohwerts und der Partei die Farbe (wird in updateGeojsonData genutzt)
     function getColor(rawValue, party) {
       var range = currentDataset.partyRanges[party];
       if (!range) return "#CCCCCC";
@@ -444,7 +446,7 @@
       map.getCanvas().style.cursor = '';
     });
     
-    // Ersetze den bisherigen Pie-Chart durch einen Column Chart (ohne Legende oder Beschriftungen)
+    // Ersetze den bisherigen Column Chart durch einen Column Chart (ohne Legende/Beschriftungen, aber mit Tooltip bei Hover)
     function updatePieChart(feature) {
       // Daten für den Chart vorbereiten (Wahlbeteiligung ausschließen)
       var chartData = [];
@@ -452,7 +454,7 @@
         if(feature.properties[party] !== undefined && party !== "WahlbeteiligunginkBW") {
           var value = parseFloat(feature.properties[party].replace(',', '.'));
           chartData.push({
-            party: party,  // Für den Tooltip benötigt
+            party: party,
             category: partyDisplayNames[party] || party,
             value: Number((value * 100).toFixed(2)),
             fill: extraPieColors[party] ? extraPieColors[party] : "#CCCCCC"
@@ -514,12 +516,11 @@
       );
       
       series.columns.template.setAll({ strokeOpacity: 0 });
-      // Adapter: Verwende die im Datenobjekt gespeicherte Farbe
       series.columns.template.adapters.add("fill", function(fill, target) {
         return am5.color(target.dataItem.dataContext.fill);
       });
       
-      // Tooltip: Beim Hover wird der "offizielle" Parteiname und der Prozentwert angezeigt.
+      // Tooltip: Bei Hover wird der offizielle Parteiname und der Prozentwert angezeigt.
       series.columns.template.set("tooltipText", "{tooltipText}");
       series.columns.template.adapters.add("tooltipText", function(text, target) {
         var data = target.dataItem.dataContext;
