@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wahlergebnisse Berlin – Embed</title>
+  <!-- Maplibre CSS -->
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <!-- Tailwind CSS (für Flowbite) -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Poppins Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* Gesamter Seiten-Hintergrund und Schriftart */
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #2d2d2d;
+      font-family: 'Poppins', sans-serif;
+    }
+    html { height: 100%; }
+    
+    /* Karte füllt den gesamten Bildschirm */
+    #map { width: 100%; height: 100%; }
+
+    /* Infobox: rechts, mit Abstand, abgerundet, transparent mit Blur-Effekt */
+    #info-box {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 300px;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      border-radius: 10px;
+      padding: 15px;
+      color: white;
+      z-index: 10;
+    }
+    #info-box h2 { margin-top: 0; }
+    
+    /* Container für den Chart (wird nun als Säulendiagramm dargestellt) */
+    #pieChartDiv {
+      width: 100%;
+      height: 200px;
+      margin-bottom: 15px;
+    }
+    
+    /* Custom Dropdown Button: geschlossener Zustand mit Blur, dunklem Hintergrund und weißer Schrift */
+    .custom-dropdown-button {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    /* Custom Dropdown Menü: Blur, starker Abdunkelungseffekt und weiße Schrift */
+    .custom-dropdown-menu {
+      background: rgba(0, 0, 0, 0.8) !important;
+      backdrop-filter: blur(10px);
+      color: white;
+    }
+    /* Dropdown-Listeneinträge */
+    .custom-dropdown-item {
+      padding: 0.5rem 1rem;
+      text-align: left;
+      width: 100%;
+      color: white;
+    }
+    .custom-dropdown-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <!-- Infobox-Overlay -->
+  <div id="info-box">
+    <!-- Bezirks-ID und Prozentwert -->
+    <h2 id="district-title">Wähle einen Wahlbezirk</h2>
+    <div id="pieChartDiv"></div>
+    <!-- Flowbite Dropdown für Party -->
+    <div id="partyDropdownContainer" class="mb-2 relative inline-block text-left w-full">
+      <button id="partyDropdownButton" data-dropdown-toggle="partyDropdownMenu" type="button" class="custom-dropdown-button inline-flex justify-between w-full rounded-md shadow-sm px-4 py-2 text-sm font-medium">
+        Party auswählen
+        <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div id="partyDropdownMenu" class="z-10 hidden custom-dropdown-menu divide-y divide-gray-100 rounded shadow w-full max-h-40 overflow-y-auto">
+        <ul id="partyDropdownList" class="py-1 text-sm" aria-labelledby="partyDropdownButton">
+          <!-- Dynamisch generierte Einträge -->
+        </ul>
+      </div>
+    </div>
+    <!-- Flowbite Dropdown für Jahr -->
+    <div id="yearDropdownContainer" class="relative inline-block text-left w-full">
+      <button id="yearDropdownButton" data-dropdown-toggle="yearDropdownMenu" type="button" class="custom-dropdown-button inline-flex justify-between w-full rounded-md shadow-sm px-4 py-2 text-sm font-medium">
+        Jahr auswählen
+        <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div id="yearDropdownMenu" class="z-10 hidden custom-dropdown-menu divide-y divide-gray-100 rounded shadow w-full max-h-40 overflow-y-auto">
+        <ul id="yearDropdownList" class="py-1 text-sm" aria-labelledby="yearDropdownButton">
+          <!-- Dynamisch generierte Einträge -->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bibliotheken -->
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <!-- Flowbite JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
+  <!-- amCharts 5 Libraries -->
+  <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+  <!-- Zum Erstellen von XY-Charts -->
+  <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+  
+  <script>
+    // Hilfsfunktion zum Auslesen von URL-Parametern
+    function getQueryParams() {
+      var params = {};
+      window.location.search.substr(1).split('&').forEach(function(item) {
+        if(item) {
+          var pair = item.split('=');
+          params[pair[0]] = decodeURIComponent(pair[1]);
+        }
+      });
+      return params;
+    }
+
+    // Anzeige-Namen und Farbpaletten
+    var partyDisplayNames = {
+      "WahlbeteiligunginkBW": "Wahlbeteiligung",
+      "SPDinkBW": "SPD",
+      "GrueninkBW": "Grüne",
+      "CDUinkBW": "CDU",
+      "LINKEinkBW": "Die Linke",
+      "LinkeinkBW": "Die Linke",
+      "AfDinkBW": "AfD",
+      "FDPinkBW": "FDP",
+      "BSWinkBWB": "BSW",
+      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "Tierschutzpartei",
+      "VoltDeutschlandinkBW": "Volt",
+      "VoltinkBW": "Volt",
+      "FWinkBW": "FW",
+      "MLPDinkBW": "MLPD"
+    };
+
+    var partyColorGradients = {
+      "WahlbeteiligunginkBW": { min: "#FFF7F5", max: "#002617" },
+      "SPDinkBW": { min: "#FFF7F5", max: "#570000" },
+      "GrueninkBW": { min: "#FFF7F5", max: "#004F00" },
+      "CDUinkBW": { min: "#FFF7F5", max: "#09090A" },
+      "LINKEinkBW": { min: "#FFF7F5", max: "#8F0354" },
+      "LinkeinkBW": { min: "#FFF7F5", max: "#8F0354" },
+      "AfDinkBW": { min: "#FFF7F5", max: "#002B9C" },
+      "FDPinkBW": { min: "#FFF7F5", max: "#5E4A00" },
+      "BSWinkBWB": { min: "#FFF7F5", max: "#571334" },
+      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: "#FFF7F5", max: "#00454D" },
+      "VoltDeutschlandinkBW": { min: "#FFF7F5", max: "#462270" },
+      "VoltinkBW": { min: "#FFF7F5", max: "#462270" },
+      "FWinkBW": { min: "#FFF7F5", max: "#9C4900" },
+      "MLPDinkBW": { min: "#FFF7F5", max: "#8C142A" }
+    };
+
+    // Extra-Farben für den Column Chart
+    var extraPieColors = {
+      "SPDinkBW": "#E60026",
+      "GrueninkBW": "#008000",
+      "CDUinkBW": "#000000",
+      "LINKEinkBW": "#8F0354",
+      "AfDinkBW": "#002B9C",
+      "FDPinkBW": "#5E4A00",
+      "BSWinkBWB": "#571334",
+      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#00454D",
+      "VoltDeutschlandinkBW": "#462270",
+      "FWinkBW": "#9C4900",
+      "MLPDinkBW": "#8C142A"
+    };
+
+    // Datensätze für 2025 und 2021
+    var dataset2025 = {
+      url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
+      partyRanges: {
+        "WahlbeteiligunginkBW": { min: 0.454105275, max: 0.98 },
+        "SPDinkBW": { min: 0.06, max: 0.39984263 },
+        "GrueninkBW": { min: 0.015, max: 0.541414141 },
+        "CDUinkBW": { min: 0.025714286, max: 0.46 },
+        "LINKEinkBW": { min: 0.011583012, max: 0.5 },
+        "AfDinkBW": { min: 0.005931198, max: 0.5 },
+        "FDPinkBW": { min: 0.004, max: 0.268841395 },
+        "BSWinkBWB": { min: 0.012, max: 0.16 },
+        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.085704944 },
+        "VoltDeutschlandinkBW": { min: 0.0, max: 0.029 },
+        "FWinkBW": { min: 0.0, max: 0.034937014 },
+        "MLPDinkBW": { min: 0.0, max: 0.012658228 }
+      },
+      availableParties: [
+        "WahlbeteiligunginkBW", "SPDinkBW", "GrueninkBW", "CDUinkBW", "LINKEinkBW",
+        "AfDinkBW", "FDPinkBW", "BSWinkBWB", "PARTEIMENSCHUMWELTTIERSCHUTZinkBW",
+        "VoltDeutschlandinkBW", "FWinkBW", "MLPDinkBW"
+      ]
+    };
+
+    var dataset2021 = {
+      url: 'https://kxljxv.github.io/wahlergebnisse2021.json',
+      partyRanges: {
+        "WahlbeteiligunginkBW": { min: 0.454105275, max: 0.98 },
+        "SPDinkBW": { min: 0.06, max: 0.39984263 },
+        "GrueninkBW": { min: 0.015, max: 0.541414141 },
+        "CDUinkBW": { min: 0.025714286, max: 0.46 },
+        "LinkeinkBW": { min: 0.011583012, max: 0.5 },
+        "AfDinkBW": { min: 0.005931198, max: 0.5 },
+        "FDPinkBW": { min: 0.004, max: 0.268841395 },
+        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.085704944 },
+        "VoltinkBW": { min: 0.0, max: 0.029 },
+        "FWinkBW": { min: 0.0, max: 0.034937014 },
+        "MLPDinkBW": { min: 0.0, max: 0.012658228 }
+      },
+      availableParties: [
+        "WahlbeteiligunginkBW", "SPDinkBW", "GrueninkBW", "CDUinkBW", "LinkeinkBW",
+        "AfDinkBW", "FDPinkBW", "PARTEIMENSCHUMWELTTIERSCHUTZinkBW",
+        "VoltinkBW", "FWinkBW", "MLPDinkBW"
+      ]
+    };
+
+    // Standardwerte: Jahr 2025 und Wahlbeteiligung als Standardmetrik
+    var currentDataset = dataset2025;
+    var currentParty = "WahlbeteiligunginkBW";
+
+    // Dropdown-Funktionen für Party und Jahr (Flowbite)
+    function populatePartyDropdown() {
+      var list = document.getElementById("partyDropdownList");
+      list.innerHTML = "";
+      currentDataset.availableParties.forEach(function(party) {
+        var li = document.createElement("li");
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "custom-dropdown-item";
+        btn.textContent = partyDisplayNames[party] || party;
+        btn.dataset.value = party;
+        btn.addEventListener("click", function() {
+          currentParty = this.dataset.value;
+          // Aktualisiere Button-Text
+          document.getElementById("partyDropdownButton").textContent = partyDisplayNames[currentParty] || currentParty;
+          // Aktualisiere die GeoJSON-Daten
+          fetch(currentDataset.url)
+            .then(response => response.json())
+            .then(data => {
+              var geojsonData = updateGeojsonData(data);
+              if (map.getSource('geojson-layer')) {
+                map.getSource('geojson-layer').setData(geojsonData);
+              }
+            });
+        });
+        li.appendChild(btn);
+        list.appendChild(li);
+      });
+      // Setze initialen Button-Text, falls noch nicht ausgewählt
+      document.getElementById("partyDropdownButton").textContent = partyDisplayNames[currentParty] || currentParty;
+    }
+
+    function populateYearDropdown() {
+      var list = document.getElementById("yearDropdownList");
+      list.innerHTML = "";
+      ["2025", "2021"].forEach(function(year) {
+        var li = document.createElement("li");
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "custom-dropdown-item";
+        btn.textContent = year;
+        btn.dataset.value = year;
+        btn.addEventListener("click", function() {
+          var selectedYear = this.dataset.value;
+          currentDataset = selectedYear === "2025" ? dataset2025 : dataset2021;
+          document.getElementById("yearDropdownButton").textContent = selectedYear;
+          populatePartyDropdown();
+          loadGeoJson();
+        });
+        li.appendChild(btn);
+        list.appendChild(li);
+      });
+      // Initialen Button-Text setzen
+      document.getElementById("yearDropdownButton").textContent = "2025";
+    }
+
+    // Initiale Dropdowns befüllen
+    populatePartyDropdown();
+    populateYearDropdown();
+
+    // Farbinterpolationsfunktionen
+    function hexToRgb(hex) {
+      hex = hex.replace(/^#/, '');
+      if(hex.length === 3) { hex = hex.split('').map(c => c + c).join(''); }
+      var bigint = parseInt(hex, 16);
+      return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
+    }
+    
+    function rgbToHex(r, g, b) {
+      return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+    }
+    
+    function interpolateColors(color1Hex, color2Hex, value) {
+      var color1 = hexToRgb(color1Hex);
+      var color2 = hexToRgb(color2Hex);
+      var r = Math.round(color1.r + (color2.r - color1.r) * value);
+      var g = Math.round(color1.g + (color2.g - color1.g) * value);
+      var b = Math.round(color1.b + (color2.b - color1.b) * value);
+      return rgbToHex(r, g, b);
+    }
+    
+    // Berechnet anhand des Rohwerts und der Partei die Farbe
+    function getColor(rawValue, party) {
+      var range = currentDataset.partyRanges[party];
+      if (!range) return "#CCCCCC";
+      var normalized = (rawValue - range.min) / (range.max - range.min);
+      normalized = Math.max(0, Math.min(1, normalized));
+      var gradient = partyColorGradients[party];
+      return gradient ? interpolateColors(gradient.min, gradient.max, normalized) : "#CCCCCC";
+    }
+    
+    // Aktualisiert die GeoJSON-Daten, indem für jedes Feature die Eigenschaft fillColor gesetzt wird.
+    function updateGeojsonData(data) {
+      data.features.forEach(function(feature) {
+        if(currentParty === "Gewinner") {
+          var winner = null, maxVal = -Infinity;
+          var candidateParties = currentDataset.availableParties.filter(p => p !== "WahlbeteiligunginkBW");
+          candidateParties.forEach(function(party) {
+            var value = parseFloat(feature.properties[party].replace(',', '.'));
+            if(value > maxVal) { maxVal = value; winner = party; }
+          });
+          feature.properties.fillColor = getColor(maxVal, winner);
+        } else {
+          var rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
+          feature.properties.fillColor = getColor(rawValue, currentParty);
+        }
+      });
+      return data;
+    }
+    
+    // Initialisiere die Maplibre-Karte
+    var map = new maplibregl.Map({
+      container: 'map',
+      style: 'https://kxljxv.github.io/bm_web_gry_7.json',
+      center: [13.40, 52.52],
+      zoom: 10,
+      pitch: 0,
+      bearing: 0
+    });
+    
+    // Entferne Zoom-Buttons und deaktiviere Rotation/Neigung:
+    map.dragRotate.disable();
+    map.touchZoomRotate.disableRotation();
+    map.keyboard.disable();
+    
+    // Lädt die GeoJSON-Daten, aktualisiert sie und fügt sie der Karte hinzu
+    function loadGeoJson() {
+      fetch(currentDataset.url)
+        .then(response => response.json())
+        .then(data => {
+          var geojsonData = updateGeojsonData(data);
+          if (map.getSource('geojson-layer')) {
+            map.getSource('geojson-layer').setData(geojsonData);
+          } else {
+            map.addSource('geojson-layer', { type: 'geojson', data: geojsonData });
+            var firstLayerId = map.getStyle().layers[0].id;
+            map.addLayer({
+              id: 'geojson-fill',
+              type: 'fill',
+              source: 'geojson-layer',
+              paint: {
+                'fill-color': ['get', 'fillColor'],
+                'fill-opacity': 0.8,
+                'fill-outline-color': 'rgba(0,0,0,0)'  // Keine Umrandung
+              }
+            }, firstLayerId);
+          }
+        })
+        .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
+    }
+    
+    map.on('load', loadGeoJson);
+    
+    // Beim Klick auf einen Wahlbezirk: Kein Popup – stattdessen wird der Bezirk hervorgehoben und die Infobox aktualisiert.
+    map.on('click', 'geojson-fill', function(e) {
+      if (!e.features.length) return;
+      var feature = e.features[0];
+      
+      // Vorherigen Highlight-Layer entfernen, falls vorhanden
+      if (map.getLayer('highlight-layer')) {
+        map.removeLayer('highlight-layer');
+        map.removeSource('highlight-layer');
+      }
+      
+      // Highlight-Layer hinzufügen (als Umrandung in Schwarz)
+      map.addSource('highlight-layer', {
+        type: 'geojson',
+        data: feature
+      });
+      map.addLayer({
+        id: 'highlight-layer',
+        type: 'line',
+        source: 'highlight-layer',
+        paint: {
+          'line-color': '#000000',
+          'line-width': 3
+        }
+      });
+      
+      // Berechne den Wert für den aktuell ausgewählten Parameter
+      var value;
+      if(currentParty === "Gewinner") {
+        var winnerValue = -Infinity;
+        currentDataset.availableParties.filter(function(p){ return p !== "WahlbeteiligunginkBW" }).forEach(function(p) {
+          var v = parseFloat(feature.properties[p].replace(',', '.'));
+          if(v > winnerValue) { winnerValue = v; }
+        });
+        value = winnerValue;
+      } else {
+        value = parseFloat(feature.properties[currentParty].replace(',', '.'));
+      }
+      
+      // Infobox-Titel: Bezirks-ID und Prozentwert (ohne zusätzlichen Labeltext)
+      document.getElementById('district-title').textContent = feature.properties.UWB + " - " + (value * 100).toFixed(2) + "%";
+      
+      updatePieChart(feature);
+    });
+    
+    // Cursor-Styling
+    map.on('mouseenter', 'geojson-fill', function() {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', 'geojson-fill', function() {
+      map.getCanvas().style.cursor = '';
+    });
+    
+    // Ersetze den Pi-Chart durch einen Column-Chart (ohne Legende oder Beschriftungen)
+    function updatePieChart(feature) {
+      // Daten für den Chart vorbereiten (Wahlbeteiligung ausschließen)
+      var chartData = [];
+      currentDataset.availableParties.forEach(function(party) {
+        if(feature.properties[party] !== undefined && party !== "WahlbeteiligunginkBW") {
+          var value = parseFloat(feature.properties[party].replace(',', '.'));
+          chartData.push({
+            category: partyDisplayNames[party] || party,
+            value: Number((value * 100).toFixed(2)),
+            fill: extraPieColors[party] ? extraPieColors[party] : "#CCCCCC"
+          });
+        }
+      });
+      
+      // Sortiere die Daten absteigend (größte zuerst)
+      chartData.sort(function(a, b) {
+        return b.value - a.value;
+      });
+      
+      // Vorherigen Chart löschen, falls vorhanden
+      if(window.pieChartRoot){
+        window.pieChartRoot.dispose();
+      }
+      
+      // Erstelle neuen amCharts Root im Container "pieChartDiv"
+      window.pieChartRoot = am5.Root.new("pieChartDiv");
+      
+      // Setze Theme
+      window.pieChartRoot.setThemes([
+        am5themes_Animated.new(window.pieChartRoot)
+      ]);
+      
+      // Erstelle ein XY-Chart (Column Chart)
+      var chart = window.pieChartRoot.container.children.push(
+        am5xy.XYChart.new(window.pieChartRoot, {
+          panX: false,
+          panY: false,
+          wheelX: "none",
+          wheelY: "none",
+          layout: window.pieChartRoot.verticalLayout
+        })
+      );
+      
+      // Erstelle die X-Achse (Kategorie-Achse)
+      var xRenderer = am5xy.AxisRendererX.new(window.pieChartRoot, { minGridDistance: 30 });
+      xRenderer.labels.template.setAll({ visible: false });
+      xRenderer.grid.template.setAll({ visible: false });
+      var xAxis = chart.xAxes.push(
+        am5xy.CategoryAxis.new(window.pieChartRoot, {
+          categoryField: "category",
+          renderer: xRenderer
+        })
+      );
+      xAxis.data.setAll(chartData);
+      
+      // Erstelle die Y-Achse (Werte-Achse)
+      var yRenderer = am5xy.AxisRendererY.new(window.pieChartRoot, {});
+      yRenderer.labels.template.setAll({ visible: false });
+      yRenderer.grid.template.setAll({ visible: false });
+      var yAxis = chart.yAxes.push(
+        am5xy.ValueAxis.new(window.pieChartRoot, {
+          renderer: yRenderer
+        })
+      );
+      
+      // Erstelle die Säulenserie
+      var series = chart.series.push(
+        am5xy.ColumnSeries.new(window.pieChartRoot, {
+          xAxis: xAxis,
+          yAxis: yAxis,
+          valueYField: "value",
+          categoryXField: "category"
+        })
+      );
+      
+      // Säulen ohne Umrandung
+      series.columns.template.setAll({ strokeOpacity: 0 });
+      // Adapter, damit die Säulenfarbe aus dem Datenobjekt übernommen wird
+      series.columns.template.adapters.add("fill", function(fill, target) {
+        return am5.color(target.dataItem.dataContext.fill);
+      });
+      
+      series.data.setAll(chartData);
+      
+      // Animation
+      series.appear(1000, 100);
+      chart.appear(1000, 100);
+    }
+  </script>
+</body>
+</html>
