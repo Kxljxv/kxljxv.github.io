@@ -160,11 +160,13 @@
       "GrueninkBW": "Grüne Official",
       "CDUinkBW": "CDU Official",
       "LINKEinkBW": "Die Linke Official",
+      "LinkeinkBW": "Die Linke Official",
       "AfDinkBW": "AfD Official",
       "FDPinkBW": "FDP Official",
       "BSWinkBWB": "BSW Official",
       "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "Tierschutz Official",
       "VoltDeutschlandinkBW": "Volt Official",
+      "VoltinkBW": "Volt Official",
       "FWinkBW": "FW Official",
       "MLPDinkBW": "MLPD Official"
     };
@@ -192,26 +194,30 @@
       "GrueninkBW": "#008000",
       "CDUinkBW": "#000000",
       "LINKEinkBW": "#8F0354",
+      "LinkeinkBW": "#8F0354",
       "AfDinkBW": "#002B9C",
       "FDPinkBW": "#5E4A00",
       "BSWinkBWB": "#571334",
       "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#00454D",
       "VoltDeutschlandinkBW": "#462270",
+      "VoltinkBW": "#462270",
       "FWinkBW": "#9C4900",
       "MLPDinkBW": "#8C142A"
     };
 
-    // Extra-Farben für die Popups (Tooltips) – können von den Säulenfarben abweichen
+    // Extra-Farben für die Popups (Tooltips)
     var popupColors = {
       "SPDinkBW": "#FFC0CB",
       "GrueninkBW": "#90EE90",
       "CDUinkBW": "#D3D3D3",
       "LINKEinkBW": "#FFB6C1",
+      "LinkeinkBW": "#FFB6C1",
       "AfDinkBW": "#ADD8E6",
       "FDPinkBW": "#F0E68C",
       "BSWinkBWB": "#E6E6FA",
       "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#AFEEEE",
       "VoltDeutschlandinkBW": "#DDA0DD",
+      "VoltinkBW": "#DDA0DD",
       "FWinkBW": "#FFE4B5",
       "MLPDinkBW": "#98FB98"
     };
@@ -309,6 +315,15 @@
           var selectedYear = this.dataset.value;
           currentDataset = selectedYear === "2025" ? dataset2025 : dataset2021;
           document.getElementById("yearDropdownButton").textContent = selectedYear;
+          // Überprüfe, ob der aktuelle Party-Key im neuen Datensatz existiert; falls nicht, passe ihn an.
+          if(currentDataset.availableParties.indexOf(currentParty) === -1) {
+            if(currentParty === "VoltDeutschlandinkBW" && currentDataset.availableParties.indexOf("VoltinkBW") !== -1) {
+              currentParty = "VoltinkBW";
+            }
+            if(currentParty === "LINKEinkBW" && currentDataset.availableParties.indexOf("LinkeinkBW") !== -1) {
+              currentParty = "LinkeinkBW";
+            }
+          }
           populatePartyDropdown();
           loadGeoJson();
         });
