@@ -40,8 +40,7 @@
     #info-box h2 { margin-top: 0; }
     
     /* Container für den Column Chart.
-       Clippt die untersten 30px (zum Überdecken des amCharts-Logos)
-       und verschiebt den Chart-Inhalt nach unten, ohne die Gesamtgröße zu verändern. */
+       clip-path schneidet unten 30px ab, und translateY verschiebt den Inhalt nach unten. */
     #pieChartDiv {
       width: 100%;
       height: 200px;
@@ -136,9 +135,12 @@
       return params;
     }
 
-    /* Verwende die aktuellen Schlüssel – alle Bezeichnungen sind jetzt einheitlich:
-       CSV 2025: ID, Wahlbeteiligung, SPD, Gruen, CDU, LINKE, AfD, FDP, PMUT, FW, Volt, MLPD, BSW
-       CSV 2021: ID, Wahlbeteiligung, CDU, LINKE, SPD, Gruen, AfD, FDP, PMUT, FW, MLPD, Volt */
+    /* 
+      Neue, einheitliche CSV-Header über beide Wahljahre:
+      ID, Wahlbeteiligung, SPD, Gruen, CDU, LINKE, AfD, FDP, PMUT, FW, Volt, MLPD, BSW  
+      (BSW nur in 2025)
+    */
+
     var partyDisplayNames = {
       "Wahlbeteiligung": "Wahlbeteiligung",
       "SPD": "SPD",
@@ -154,6 +156,7 @@
       "BSW": "BSW"
     };
 
+    // Extra-Texte für Tooltips (abweichend von den Tabellennamen)
     var tooltipNames = {
       "SPD": "SPD Official",
       "Gruen": "Grüne Official",
@@ -176,7 +179,7 @@
       "LINKE": { min: "#FFF7F5", max: "#8F0354" },
       "AfD": { min: "#FFF7F5", max: "#002B9C" },
       "FDP": { min: "#FFF7F5", max: "#5E4A00" },
-      "PMUT": { min: "#FFF7F5", max: "#FF7F50" },
+      "PMUT": { min: "#FFF7F5", max: "#00454D" },
       "FW": { min: "#FFF7F5", max: "#9C4900" },
       "Volt": { min: "#FFF7F5", max: "#462270" },
       "MLPD": { min: "#FFF7F5", max: "#8C142A" },
@@ -190,13 +193,14 @@
       "LINKE": "#8F0354",
       "AfD": "#002B9C",
       "FDP": "#5E4A00",
-      "BSW": "#571334",
-      "PMUT": "#FF7F50",
+      "PMUT": "#00454D",
       "FW": "#9C4900",
       "Volt": "#462270",
-      "MLPD": "#8C142A"
+      "MLPD": "#8C142A",
+      "BSW": "#571334"
     };
 
+    // Extra-Farben für die Popups (Tooltips)
     var popupColors = {
       "SPD": "#FFC0CB",
       "Gruen": "#90EE90",
@@ -204,14 +208,14 @@
       "LINKE": "#FFB6C1",
       "AfD": "#ADD8E6",
       "FDP": "#F0E68C",
-      "PMUT": "#FFD700",
+      "PMUT": "#AFEEEE",
       "FW": "#FFE4B5",
       "Volt": "#DDA0DD",
       "MLPD": "#98FB98",
-      "BSW": "#D8BFD8"
+      "BSW": "#FFD700"
     };
 
-    // Aktualisierte Datensätze
+    // Datensätze anpassen – Schlüssel in partyRanges und availableParties an die neuen CSV-Header
     var dataset2025 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
       partyRanges: {
@@ -222,11 +226,11 @@
         "LINKE": { min: 0.011583012, max: 0.5 },
         "AfD": { min: 0.005931198, max: 0.5 },
         "FDP": { min: 0.004, max: 0.268841395 },
-        "PMUT": { min: 0.012, max: 0.16 },
+        "PMUT": { min: 0.0, max: 0.085704944 },
         "FW": { min: 0.0, max: 0.034937014 },
         "Volt": { min: 0.0, max: 0.029 },
         "MLPD": { min: 0.0, max: 0.012658228 },
-        "BSW": { min: 0.0, max: 0.085704944 }
+        "BSW": { min: 0.012, max: 0.16 }
       },
       availableParties: ["Wahlbeteiligung", "SPD", "Gruen", "CDU", "LINKE", "AfD", "FDP", "PMUT", "FW", "Volt", "MLPD", "BSW"]
     };
@@ -235,23 +239,25 @@
       url: 'https://kxljxv.github.io/wahlergebnisse2021.json',
       partyRanges: {
         "Wahlbeteiligung": { min: 0.454105275, max: 0.98 },
-        "CDU": { min: 0.025714286, max: 0.46 },
-        "LINKE": { min: 0.011583012, max: 0.5 },
         "SPD": { min: 0.06, max: 0.39984263 },
         "Gruen": { min: 0.015, max: 0.541414141 },
+        "CDU": { min: 0.025714286, max: 0.46 },
+        "LINKE": { min: 0.011583012, max: 0.5 },
         "AfD": { min: 0.005931198, max: 0.5 },
         "FDP": { min: 0.004, max: 0.268841395 },
         "PMUT": { min: 0.0, max: 0.085704944 },
         "FW": { min: 0.0, max: 0.034937014 },
-        "MLPD": { min: 0.0, max: 0.012658228 },
-        "Volt": { min: 0.0, max: 0.029 }
+        "Volt": { min: 0.0, max: 0.029 },
+        "MLPD": { min: 0.0, max: 0.012658228 }
       },
-      availableParties: ["Wahlbeteiligung", "CDU", "LINKE", "SPD", "Gruen", "AfD", "FDP", "PMUT", "FW", "MLPD", "Volt"]
+      availableParties: ["Wahlbeteiligung", "SPD", "Gruen", "CDU", "LINKE", "AfD", "FDP", "PMUT", "FW", "Volt", "MLPD"]
     };
 
+    // Standardwerte: Startjahr 2025, Standardmetrik "Wahlbeteiligung"
     var currentDataset = dataset2025;
     var currentParty = "Wahlbeteiligung";
 
+    // Dropdown-Funktionen (Flowbite)
     function populatePartyDropdown() {
       var list = document.getElementById("partyDropdownList");
       list.innerHTML = "";
@@ -306,17 +312,16 @@
     populatePartyDropdown();
     populateYearDropdown();
 
+    // Farbinterpolationsfunktionen
     function hexToRgb(hex) {
       hex = hex.replace(/^#/, '');
       if(hex.length === 3) { hex = hex.split('').map(c => c + c).join(''); }
       var bigint = parseInt(hex, 16);
       return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
     }
-    
     function rgbToHex(r, g, b) {
       return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
     }
-    
     function interpolateColors(color1Hex, color2Hex, value) {
       var color1 = hexToRgb(color1Hex);
       var color2 = hexToRgb(color2Hex);
@@ -326,6 +331,7 @@
       return rgbToHex(r, g, b);
     }
     
+    // Berechnet die Farbe basierend auf dem Rohwert (wird in updateGeojsonData genutzt)
     function getColor(rawValue, party) {
       var range = currentDataset.partyRanges[party];
       if (!range) return "#CCCCCC";
@@ -353,6 +359,7 @@
       return data;
     }
     
+    // Maplibre-Karte initialisieren
     var map = new maplibregl.Map({
       container: 'map',
       style: 'https://kxljxv.github.io/bm_web_gry_7.json',
@@ -361,7 +368,6 @@
       pitch: 0,
       bearing: 0
     });
-    
     map.dragRotate.disable();
     map.touchZoomRotate.disableRotation();
     map.keyboard.disable();
@@ -390,32 +396,23 @@
         })
         .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
     }
-    
     map.on('load', loadGeoJson);
     
+    // Beim Klick auf einen Wahlbezirk: Highlight und Aktualisierung der Infobox
     map.on('click', 'geojson-fill', function(e) {
       if (!e.features.length) return;
       var feature = e.features[0];
-      
       if (map.getLayer('highlight-layer')) {
         map.removeLayer('highlight-layer');
         map.removeSource('highlight-layer');
       }
-      
-      map.addSource('highlight-layer', {
-        type: 'geojson',
-        data: feature
-      });
+      map.addSource('highlight-layer', { type: 'geojson', data: feature });
       map.addLayer({
         id: 'highlight-layer',
         type: 'line',
         source: 'highlight-layer',
-        paint: {
-          'line-color': '#000000',
-          'line-width': 3
-        }
+        paint: { 'line-color': '#000000', 'line-width': 3 }
       });
-      
       var value;
       if(currentParty === "Gewinner") {
         var winnerValue = -Infinity;
@@ -427,9 +424,7 @@
       } else {
         value = parseFloat(feature.properties[currentParty].replace(',', '.'));
       }
-      
       document.getElementById('district-title').textContent = feature.properties.UWB + " - " + (value * 100).toFixed(2) + "%";
-      
       updatePieChart(feature);
     });
     
@@ -440,7 +435,7 @@
       map.getCanvas().style.cursor = '';
     });
     
-    // Ersetze den bisherigen Column Chart durch einen Column Chart (ohne Achsen/Beschriftungen) mit Tooltip bei Hover.
+    // Ersetze den bisherigen Pie-Chart durch einen Column Chart (ohne Achsen, Legende etc.) mit Tooltip
     function updatePieChart(feature) {
       var chartData = [];
       currentDataset.availableParties.forEach(function(party) {
@@ -455,8 +450,6 @@
           });
         }
       });
-      
-      // Sortiere absteigend nach Wert
       chartData.sort(function(a, b) {
         return b.value - a.value;
       });
@@ -466,9 +459,7 @@
       }
       
       window.pieChartRoot = am5.Root.new("pieChartDiv");
-      window.pieChartRoot.setThemes([
-        am5themes_Animated.new(window.pieChartRoot)
-      ]);
+      window.pieChartRoot.setThemes([ am5themes_Animated.new(window.pieChartRoot) ]);
       
       var chart = window.pieChartRoot.container.children.push(
         am5xy.XYChart.new(window.pieChartRoot, {
@@ -495,9 +486,7 @@
       yRenderer.labels.template.setAll({ visible: false });
       yRenderer.grid.template.setAll({ visible: false });
       var yAxis = chart.yAxes.push(
-        am5xy.ValueAxis.new(window.pieChartRoot, {
-          renderer: yRenderer
-        })
+        am5xy.ValueAxis.new(window.pieChartRoot, { renderer: yRenderer })
       );
       
       var series = chart.series.push(
@@ -508,13 +497,12 @@
           categoryXField: "category"
         })
       );
-      
       series.columns.template.setAll({ strokeOpacity: 0 });
       series.columns.template.adapters.add("fill", function(fill, target) {
         return am5.color(target.dataItem.dataContext.fill);
       });
       
-      // Tooltip: Offizieller Parteiname (aus tooltipNames) und Prozentwert
+      // Tooltip: Bei Hover den offiziellen Parteinamen (aus tooltipNames) und den Prozentwert anzeigen.
       series.columns.template.set("tooltipText", "{tooltipText}");
       series.columns.template.adapters.add("tooltipText", function(text, target) {
         var data = target.dataItem.dataContext;
@@ -532,7 +520,6 @@
       });
       
       series.data.setAll(chartData);
-      
       series.appear(1000, 100);
       chart.appear(1000, 100);
     }
