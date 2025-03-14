@@ -40,8 +40,8 @@
     #info-box h2 { margin-top: 0; }
     
     /* Container für den Column Chart.
-       Mit clip-path werden die untersten 30px abgeschnitten,
-       und mit translateY wird der Chart-Inhalt nach unten verschoben. */
+       Clippt die untersten 30px (zum Überdecken des amCharts-Logos)
+       und verschiebt den Chart-Inhalt nach unten, ohne die Gesamtgröße zu verändern. */
     #pieChartDiv {
       width: 100%;
       height: 200px;
@@ -136,143 +136,122 @@
       return params;
     }
 
-    // Anzeige-Namen (für die Tabelle) und Farbpaletten
+    /* Verwende die aktuellen Schlüssel – alle Bezeichnungen sind jetzt einheitlich:
+       CSV 2025: ID, Wahlbeteiligung, SPD, Gruen, CDU, LINKE, AfD, FDP, PMUT, FW, Volt, MLPD, BSW
+       CSV 2021: ID, Wahlbeteiligung, CDU, LINKE, SPD, Gruen, AfD, FDP, PMUT, FW, MLPD, Volt */
     var partyDisplayNames = {
-      "WahlbeteiligunginkBW": "Wahlbeteiligung",
-      "SPDinkBW": "SPD",
-      "GrueninkBW": "Grüne",
-      "CDUinkBW": "CDU",
-      "LINKEinkBW": "Die Linke",
-      "LinkeinkBW": "Die Linke",
-      "AfDinkBW": "AfD",
-      "FDPinkBW": "FDP",
-      "BSWinkBWB": "BSW",
-      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "Tierschutzpartei",
-      "VoltDeutschlandinkBW": "Volt",
-      "VoltinkBW": "Volt",
-      "FWinkBW": "FW",
-      "MLPDinkBW": "MLPD"
+      "Wahlbeteiligung": "Wahlbeteiligung",
+      "SPD": "SPD",
+      "Gruen": "Grüne",
+      "CDU": "CDU",
+      "LINKE": "Die Linke",
+      "AfD": "AfD",
+      "FDP": "FDP",
+      "PMUT": "PMUT",
+      "FW": "FW",
+      "Volt": "Volt",
+      "MLPD": "MLPD",
+      "BSW": "BSW"
     };
 
-    // Extra-Texte für Tooltips (abweichend von den Tabellennamen)
     var tooltipNames = {
-      "SPDinkBW": "SPD Official",
-      "GrueninkBW": "Grüne Official",
-      "CDUinkBW": "CDU Official",
-      "LINKEinkBW": "Die Linke Official",
-      "LinkeinkBW": "Die Linke Official",
-      "AfDinkBW": "AfD Official",
-      "FDPinkBW": "FDP Official",
-      "BSWinkBWB": "BSW Official",
-      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "Tierschutz Official",
-      "VoltDeutschlandinkBW": "Volt Official",
-      "VoltinkBW": "Volt Official",
-      "FWinkBW": "FW Official",
-      "MLPDinkBW": "MLPD Official"
+      "SPD": "SPD Official",
+      "Gruen": "Grüne Official",
+      "CDU": "CDU Official",
+      "LINKE": "Die Linke Official",
+      "AfD": "AfD Official",
+      "FDP": "FDP Official",
+      "PMUT": "PMUT Official",
+      "FW": "FW Official",
+      "Volt": "Volt Official",
+      "MLPD": "MLPD Official",
+      "BSW": "BSW Official"
     };
 
     var partyColorGradients = {
-      "WahlbeteiligunginkBW": { min: "#FFF7F5", max: "#002617" },
-      "SPDinkBW": { min: "#FFF7F5", max: "#570000" },
-      "GrueninkBW": { min: "#FFF7F5", max: "#004F00" },
-      "CDUinkBW": { min: "#FFF7F5", max: "#09090A" },
-      "LINKEinkBW": { min: "#FFF7F5", max: "#8F0354" },
-      "LinkeinkBW": { min: "#FFF7F5", max: "#8F0354" },
-      "AfDinkBW": { min: "#FFF7F5", max: "#002B9C" },
-      "FDPinkBW": { min: "#FFF7F5", max: "#5E4A00" },
-      "BSWinkBWB": { min: "#FFF7F5", max: "#571334" },
-      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: "#FFF7F5", max: "#00454D" },
-      "VoltDeutschlandinkBW": { min: "#FFF7F5", max: "#462270" },
-      "VoltinkBW": { min: "#FFF7F5", max: "#462270" },
-      "FWinkBW": { min: "#FFF7F5", max: "#9C4900" },
-      "MLPDinkBW": { min: "#FFF7F5", max: "#8C142A" }
+      "Wahlbeteiligung": { min: "#FFF7F5", max: "#002617" },
+      "SPD": { min: "#FFF7F5", max: "#570000" },
+      "Gruen": { min: "#FFF7F5", max: "#004F00" },
+      "CDU": { min: "#FFF7F5", max: "#09090A" },
+      "LINKE": { min: "#FFF7F5", max: "#8F0354" },
+      "AfD": { min: "#FFF7F5", max: "#002B9C" },
+      "FDP": { min: "#FFF7F5", max: "#5E4A00" },
+      "PMUT": { min: "#FFF7F5", max: "#FF7F50" },
+      "FW": { min: "#FFF7F5", max: "#9C4900" },
+      "Volt": { min: "#FFF7F5", max: "#462270" },
+      "MLPD": { min: "#FFF7F5", max: "#8C142A" },
+      "BSW": { min: "#FFF7F5", max: "#571334" }
     };
 
-    // Extra-Farben für den Column Chart
     var extraPieColors = {
-      "SPDinkBW": "#E60026",
-      "GrueninkBW": "#008000",
-      "CDUinkBW": "#000000",
-      "LINKEinkBW": "#8F0354",
-      "LinkeinkBW": "#8F0354",
-      "AfDinkBW": "#002B9C",
-      "FDPinkBW": "#5E4A00",
-      "BSWinkBWB": "#571334",
-      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#00454D",
-      "VoltDeutschlandinkBW": "#462270",
-      "VoltinkBW": "#462270",
-      "FWinkBW": "#9C4900",
-      "MLPDinkBW": "#8C142A"
+      "SPD": "#E60026",
+      "Gruen": "#008000",
+      "CDU": "#000000",
+      "LINKE": "#8F0354",
+      "AfD": "#002B9C",
+      "FDP": "#5E4A00",
+      "BSW": "#571334",
+      "PMUT": "#FF7F50",
+      "FW": "#9C4900",
+      "Volt": "#462270",
+      "MLPD": "#8C142A"
     };
 
-    // Extra-Farben für die Popups (Tooltips)
     var popupColors = {
-      "SPDinkBW": "#FFC0CB",
-      "GrueninkBW": "#90EE90",
-      "CDUinkBW": "#D3D3D3",
-      "LINKEinkBW": "#FFB6C1",
-      "LinkeinkBW": "#FFB6C1",
-      "AfDinkBW": "#ADD8E6",
-      "FDPinkBW": "#F0E68C",
-      "BSWinkBWB": "#E6E6FA",
-      "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": "#AFEEEE",
-      "VoltDeutschlandinkBW": "#DDA0DD",
-      "VoltinkBW": "#DDA0DD",
-      "FWinkBW": "#FFE4B5",
-      "MLPDinkBW": "#98FB98"
+      "SPD": "#FFC0CB",
+      "Gruen": "#90EE90",
+      "CDU": "#D3D3D3",
+      "LINKE": "#FFB6C1",
+      "AfD": "#ADD8E6",
+      "FDP": "#F0E68C",
+      "PMUT": "#FFD700",
+      "FW": "#FFE4B5",
+      "Volt": "#DDA0DD",
+      "MLPD": "#98FB98",
+      "BSW": "#D8BFD8"
     };
 
-    // Datensätze für 2025 und 2021
+    // Aktualisierte Datensätze
     var dataset2025 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
       partyRanges: {
-        "WahlbeteiligunginkBW": { min: 0.454105275, max: 0.98 },
-        "SPDinkBW": { min: 0.06, max: 0.39984263 },
-        "GrueninkBW": { min: 0.015, max: 0.541414141 },
-        "CDUinkBW": { min: 0.025714286, max: 0.46 },
-        "LINKEinkBW": { min: 0.011583012, max: 0.5 },
-        "AfDinkBW": { min: 0.005931198, max: 0.5 },
-        "FDPinkBW": { min: 0.004, max: 0.268841395 },
-        "BSWinkBWB": { min: 0.012, max: 0.16 },
-        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.085704944 },
-        "VoltDeutschlandinkBW": { min: 0.0, max: 0.029 },
-        "FWinkBW": { min: 0.0, max: 0.034937014 },
-        "MLPDinkBW": { min: 0.0, max: 0.012658228 }
+        "Wahlbeteiligung": { min: 0.454105275, max: 0.98 },
+        "SPD": { min: 0.06, max: 0.39984263 },
+        "Gruen": { min: 0.015, max: 0.541414141 },
+        "CDU": { min: 0.025714286, max: 0.46 },
+        "LINKE": { min: 0.011583012, max: 0.5 },
+        "AfD": { min: 0.005931198, max: 0.5 },
+        "FDP": { min: 0.004, max: 0.268841395 },
+        "PMUT": { min: 0.012, max: 0.16 },
+        "FW": { min: 0.0, max: 0.034937014 },
+        "Volt": { min: 0.0, max: 0.029 },
+        "MLPD": { min: 0.0, max: 0.012658228 },
+        "BSW": { min: 0.0, max: 0.085704944 }
       },
-      availableParties: [
-        "WahlbeteiligunginkBW", "SPDinkBW", "GrueninkBW", "CDUinkBW", "LINKEinkBW",
-        "AfDinkBW", "FDPinkBW", "BSWinkBWB", "PARTEIMENSCHUMWELTTIERSCHUTZinkBW",
-        "VoltDeutschlandinkBW", "FWinkBW", "MLPDinkBW"
-      ]
+      availableParties: ["Wahlbeteiligung", "SPD", "Gruen", "CDU", "LINKE", "AfD", "FDP", "PMUT", "FW", "Volt", "MLPD", "BSW"]
     };
 
     var dataset2021 = {
       url: 'https://kxljxv.github.io/wahlergebnisse2021.json',
       partyRanges: {
-        "WahlbeteiligunginkBW": { min: 0.454105275, max: 0.98 },
-        "SPDinkBW": { min: 0.06, max: 0.39984263 },
-        "GrueninkBW": { min: 0.015, max: 0.541414141 },
-        "CDUinkBW": { min: 0.025714286, max: 0.46 },
-        "LinkeinkBW": { min: 0.011583012, max: 0.5 },
-        "AfDinkBW": { min: 0.005931198, max: 0.5 },
-        "FDPinkBW": { min: 0.004, max: 0.268841395 },
-        "PARTEIMENSCHUMWELTTIERSCHUTZinkBW": { min: 0.0, max: 0.085704944 },
-        "VoltinkBW": { min: 0.0, max: 0.029 },
-        "FWinkBW": { min: 0.0, max: 0.034937014 },
-        "MLPDinkBW": { min: 0.0, max: 0.012658228 }
+        "Wahlbeteiligung": { min: 0.454105275, max: 0.98 },
+        "CDU": { min: 0.025714286, max: 0.46 },
+        "LINKE": { min: 0.011583012, max: 0.5 },
+        "SPD": { min: 0.06, max: 0.39984263 },
+        "Gruen": { min: 0.015, max: 0.541414141 },
+        "AfD": { min: 0.005931198, max: 0.5 },
+        "FDP": { min: 0.004, max: 0.268841395 },
+        "PMUT": { min: 0.0, max: 0.085704944 },
+        "FW": { min: 0.0, max: 0.034937014 },
+        "MLPD": { min: 0.0, max: 0.012658228 },
+        "Volt": { min: 0.0, max: 0.029 }
       },
-      availableParties: [
-        "WahlbeteiligunginkBW", "SPDinkBW", "GrueninkBW", "CDUinkBW", "LinkeinkBW",
-        "AfDinkBW", "FDPinkBW", "PARTEIMENSCHUMWELTTIERSCHUTZinkBW",
-        "VoltinkBW", "FWinkBW", "MLPDinkBW"
-      ]
+      availableParties: ["Wahlbeteiligung", "CDU", "LINKE", "SPD", "Gruen", "AfD", "FDP", "PMUT", "FW", "MLPD", "Volt"]
     };
 
-    // Standardwerte: Jahr 2025 und Wahlbeteiligung als Standardmetrik
     var currentDataset = dataset2025;
-    var currentParty = "WahlbeteiligunginkBW";
+    var currentParty = "Wahlbeteiligung";
 
-    // Dropdown-Funktionen für Party und Jahr (Flowbite)
     function populatePartyDropdown() {
       var list = document.getElementById("partyDropdownList");
       list.innerHTML = "";
@@ -315,15 +294,6 @@
           var selectedYear = this.dataset.value;
           currentDataset = selectedYear === "2025" ? dataset2025 : dataset2021;
           document.getElementById("yearDropdownButton").textContent = selectedYear;
-          // Überprüfe, ob der aktuelle Party-Key im neuen Datensatz existiert; falls nicht, passe ihn an.
-          if(currentDataset.availableParties.indexOf(currentParty) === -1) {
-            if(currentParty === "VoltDeutschlandinkBW" && currentDataset.availableParties.indexOf("VoltinkBW") !== -1) {
-              currentParty = "VoltinkBW";
-            }
-            if(currentParty === "LINKEinkBW" && currentDataset.availableParties.indexOf("LinkeinkBW") !== -1) {
-              currentParty = "LinkeinkBW";
-            }
-          }
           populatePartyDropdown();
           loadGeoJson();
         });
@@ -333,11 +303,9 @@
       document.getElementById("yearDropdownButton").textContent = "2025";
     }
 
-    // Initiale Dropdowns befüllen
     populatePartyDropdown();
     populateYearDropdown();
 
-    // Farbinterpolationsfunktionen
     function hexToRgb(hex) {
       hex = hex.replace(/^#/, '');
       if(hex.length === 3) { hex = hex.split('').map(c => c + c).join(''); }
@@ -358,7 +326,6 @@
       return rgbToHex(r, g, b);
     }
     
-    // Berechnet anhand des Rohwerts und der Partei die Farbe (wird in updateGeojsonData genutzt)
     function getColor(rawValue, party) {
       var range = currentDataset.partyRanges[party];
       if (!range) return "#CCCCCC";
@@ -368,12 +335,11 @@
       return gradient ? interpolateColors(gradient.min, gradient.max, normalized) : "#CCCCCC";
     }
     
-    // Aktualisiert die GeoJSON-Daten, indem für jedes Feature die Eigenschaft fillColor gesetzt wird.
     function updateGeojsonData(data) {
       data.features.forEach(function(feature) {
         if(currentParty === "Gewinner") {
           var winner = null, maxVal = -Infinity;
-          var candidateParties = currentDataset.availableParties.filter(p => p !== "WahlbeteiligunginkBW");
+          var candidateParties = currentDataset.availableParties.filter(p => p !== "Wahlbeteiligung");
           candidateParties.forEach(function(party) {
             var value = parseFloat(feature.properties[party].replace(',', '.'));
             if(value > maxVal) { maxVal = value; winner = party; }
@@ -387,7 +353,6 @@
       return data;
     }
     
-    // Initialisiere die Maplibre-Karte
     var map = new maplibregl.Map({
       container: 'map',
       style: 'https://kxljxv.github.io/bm_web_gry_7.json',
@@ -397,12 +362,10 @@
       bearing: 0
     });
     
-    // Entferne Zoom-Buttons und deaktiviere Rotation/Neigung:
     map.dragRotate.disable();
     map.touchZoomRotate.disableRotation();
     map.keyboard.disable();
     
-    // Lädt die GeoJSON-Daten, aktualisiert sie und fügt sie der Karte hinzu
     function loadGeoJson() {
       fetch(currentDataset.url)
         .then(response => response.json())
@@ -430,7 +393,6 @@
     
     map.on('load', loadGeoJson);
     
-    // Beim Klick auf einen Wahlbezirk: Kein Popup – stattdessen wird der Bezirk hervorgehoben und die Infobox aktualisiert.
     map.on('click', 'geojson-fill', function(e) {
       if (!e.features.length) return;
       var feature = e.features[0];
@@ -457,7 +419,7 @@
       var value;
       if(currentParty === "Gewinner") {
         var winnerValue = -Infinity;
-        currentDataset.availableParties.filter(function(p){ return p !== "WahlbeteiligunginkBW" }).forEach(function(p) {
+        currentDataset.availableParties.filter(function(p){ return p !== "Wahlbeteiligung" }).forEach(function(p) {
           var v = parseFloat(feature.properties[p].replace(',', '.'));
           if(v > winnerValue) { winnerValue = v; }
         });
@@ -478,12 +440,11 @@
       map.getCanvas().style.cursor = '';
     });
     
-    // Ersetze den bisherigen Column Chart durch einen Column Chart (ohne Legende/Beschriftungen, aber mit Tooltip bei Hover)
+    // Ersetze den bisherigen Column Chart durch einen Column Chart (ohne Achsen/Beschriftungen) mit Tooltip bei Hover.
     function updatePieChart(feature) {
-      // Daten für den Chart vorbereiten (Wahlbeteiligung ausschließen)
       var chartData = [];
       currentDataset.availableParties.forEach(function(party) {
-        if(feature.properties[party] !== undefined && party !== "WahlbeteiligunginkBW") {
+        if(feature.properties[party] !== undefined && party !== "Wahlbeteiligung") {
           var value = parseFloat(feature.properties[party].replace(',', '.'));
           chartData.push({
             party: party,
@@ -495,7 +456,7 @@
         }
       });
       
-      // Sortiere die Daten absteigend (größte zuerst)
+      // Sortiere absteigend nach Wert
       chartData.sort(function(a, b) {
         return b.value - a.value;
       });
@@ -553,7 +514,7 @@
         return am5.color(target.dataItem.dataContext.fill);
       });
       
-      // Tooltip: Beim Hover wird der offizielle Parteiname (aus tooltipNames) und der Prozentwert angezeigt.
+      // Tooltip: Offizieller Parteiname (aus tooltipNames) und Prozentwert
       series.columns.template.set("tooltipText", "{tooltipText}");
       series.columns.template.adapters.add("tooltipText", function(text, target) {
         var data = target.dataItem.dataContext;
