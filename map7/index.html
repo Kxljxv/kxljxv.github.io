@@ -24,7 +24,7 @@
     /* Karte füllt den gesamten Bildschirm */
     #map { width: 100%; height: 100%; }
 
-    /* Infobox – Standard (Landscape): rechts oben, 300px breit */
+    /* Standard-Infobox (Landscape-Modus): rechts, mit Abstand, abgerundet, transparent mit Blur */
     #info-box {
       position: absolute;
       top: 20px;
@@ -40,7 +40,8 @@
     #info-box h2 { margin-top: 0; }
     
     /* Container für den Column Chart.
-       clip-path und translateY sorgen dafür, dass der amCharts-Logo-Bereich nicht sichtbar ist */
+       clip-path schneidet die untersten 30px ab,
+       transform verschiebt den Chart-Inhalt nach unten, um das amCharts-Logo auszublenden */
     #pieChartDiv {
       width: 100%;
       height: 200px;
@@ -73,8 +74,8 @@
     .custom-dropdown-item:hover {
       background: rgba(255, 255, 255, 0.1);
     }
-
-    /* Portrait-Modus: Infobox wird unten positioniert, fast volle Breite (mit Rand) und max. ein Drittel der Höhe */
+    
+    /* Hochformat-Modus: Infobox wird unten positioniert und nimmt fast die ganze Breite ein */
     @media (orientation: portrait) {
       #info-box {
         top: auto;
@@ -82,7 +83,8 @@
         left: 20px;
         right: 20px;
         width: auto;
-        max-height: min(33vh, 300px);
+        /* max-height: max. ein Drittel der Höhe, aber nicht mehr als 400px */
+        max-height: min(33vh, 400px);
       }
     }
   </style>
@@ -91,7 +93,7 @@
   <div id="map"></div>
   <!-- Infobox-Overlay -->
   <div id="info-box">
-    <!-- Bezirks-ID und Prozentwert (ID aus CSV) -->
+    <!-- Bezirks-ID und Prozentwert (aus CSV, ID als Schlüssel) -->
     <h2 id="district-title">Wähle einen Wahlbezirk</h2>
     <div id="pieChartDiv"></div>
     <!-- Flowbite Dropdown für Party -->
@@ -149,9 +151,9 @@
       return params;
     }
 
-    /* Über beide Wahljahre hinweg werden folgende CSV-Header verwendet:
+    /* Verwende über beide Wahljahre hinweg folgende CSV-Header:
        ID, Wahlbeteiligung, SPD, Gruen, CDU, LINKE, AfD, FDP, PMUT, FW, Volt, MLPD, BSW
-       (BSW existiert nur 2025) */
+       (BSW existiert nur in 2025) */
 
     var partyDisplayNames = {
       "Wahlbeteiligung": "Wahlbeteiligung",
@@ -228,7 +230,7 @@
       "BSW": "#E6E6FA"
     };
 
-    // Datensätze mit GeoJSON- und CSV-URLs (CSV über HTTPS)
+    // Datensätze: GeoJSON-URLs und CSV-URLs (jetzt über HTTPS)
     var dataset2025 = {
       url: 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025nurID.json',
       csvUrl: 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025(8).csv',
@@ -354,12 +356,13 @@
       return gradient ? interpolateColors(gradient.min, gradient.max, normalized) : "#CCCCCC";
     }
     
-    // Merge CSV-Daten in GeoJSON (basierend auf ID)
+    // Merge CSV-Daten in GeoJSON (über ID)
     function updateGeojsonData(data) {
       data.features.forEach(function(feature) {
         var id = feature.properties.ID;
-        // Suche in den CSV-Daten (wurde bereits gemergt)
-        // Da wir die CSV-Daten über PapaParse mergen, gehen wir davon aus, dass alle Werte vorhanden sind.
+        // CSV-Merging: Sucht den entsprechenden Eintrag in den CSV-Daten (müssen vorher geladen worden sein)
+        if(feature.csvMerged) return; // Falls schon gemerged
+        // Wir gehen davon aus, dass nach dem CSV-Merging alle nötigen Werte in feature.properties vorhanden sind.
         if(currentParty === "Gewinner") {
           var winner = null, maxVal = -Infinity;
           var candidateParties = currentDataset.availableParties.filter(p => p !== "Wahlbeteiligung");
@@ -377,6 +380,7 @@
           }
           feature.properties.fillColor = getColor(rawValue, currentParty);
         }
+        feature.csvMerged = true;
       });
       return data;
     }
@@ -395,7 +399,7 @@
     map.touchZoomRotate.disableRotation();
     map.keyboard.disable();
     
-    // CSV-Daten laden, mit GeoJSON mergen und in die Karte einfügen
+    // CSV laden, dann GeoJSON abrufen, CSV-Daten mergen und Karte aktualisieren
     function loadGeoJson() {
       Papa.parse(currentDataset.csvUrl, {
         download: true,
@@ -491,7 +495,7 @@
     });
     
     // Ersetze den bisherigen Column Chart durch einen Column Chart (ohne Achsen oder Beschriftungen)
-    // Mit Tooltip: Beim Hover zeigt der Tooltip den offiziellen Parteinamen und den Prozentwert, Tooltip-Hintergrund wird mit extra Popup-Farbe gesetzt.
+    // Mit Tooltip: Beim Hover zeigt der Tooltip den offiziellen Parteinamen (aus popupColors & tooltipNames) und den Prozentwert.
     function updatePieChart(feature) {
       var chartData = [];
       currentDataset.availableParties.forEach(function(party) {
@@ -516,9 +520,6 @@
       }
       
       window.pieChartRoot = am5.Root.new("pieChartDiv");
-      // Entferne das amCharts-Logo (Quellen)
-      window.pieChartRoot.logo.dispose();
-      
       window.pieChartRoot.setThemes([
         am5themes_Animated.new(window.pieChartRoot)
       ]);
