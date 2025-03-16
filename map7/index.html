@@ -24,7 +24,7 @@
     /* Karte füllt den gesamten Bildschirm */
     #map { width: 100%; height: 100%; }
 
-    /* Standard-Infobox (Landscape-Modus): rechts, mit Abstand, abgerundet, transparent mit Blur */
+    /* Infobox: Standardposition oben rechts */
     #info-box {
       position: absolute;
       top: 20px;
@@ -74,8 +74,8 @@
     .custom-dropdown-item:hover {
       background: rgba(255, 255, 255, 0.1);
     }
-    
-    /* Hochformat-Modus: Infobox wird unten positioniert und nimmt fast die ganze Breite ein */
+
+    /* Portrait-Modus: Infobox unten, volle Breite (mit Rand) und maximal ein Drittel der Höhe */
     @media (orientation: portrait) {
       #info-box {
         top: auto;
@@ -83,8 +83,7 @@
         left: 20px;
         right: 20px;
         width: auto;
-        /* max-height: max. ein Drittel der Höhe, aber nicht mehr als 400px */
-        max-height: min(33vh, 400px);
+        max-height: 33vh;
       }
     }
   </style>
@@ -93,7 +92,7 @@
   <div id="map"></div>
   <!-- Infobox-Overlay -->
   <div id="info-box">
-    <!-- Bezirks-ID und Prozentwert (aus CSV, ID als Schlüssel) -->
+    <!-- Bezirks-ID und Prozentwert (ID aus CSV) -->
     <h2 id="district-title">Wähle einen Wahlbezirk</h2>
     <div id="pieChartDiv"></div>
     <!-- Flowbite Dropdown für Party -->
@@ -143,7 +142,7 @@
     function getQueryParams() {
       var params = {};
       window.location.search.substr(1).split('&').forEach(function(item) {
-        if(item) {
+        if (item) {
           var pair = item.split('=');
           params[pair[0]] = decodeURIComponent(pair[1]);
         }
@@ -230,7 +229,7 @@
       "BSW": "#E6E6FA"
     };
 
-    // Datensätze: GeoJSON-URLs und CSV-URLs (jetzt über HTTPS)
+    // Datensätze mit GeoJSON- und CSV-URLs
     var dataset2025 = {
       url: 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025nurID.json',
       csvUrl: 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025(8).csv',
@@ -329,7 +328,7 @@
     // Farbinterpolationsfunktionen
     function hexToRgb(hex) {
       hex = hex.replace(/^#/, '');
-      if(hex.length === 3) { hex = hex.split('').map(c => c + c).join(''); }
+      if (hex.length === 3) { hex = hex.split('').map(c => c + c).join(''); }
       var bigint = parseInt(hex, 16);
       return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
     }
@@ -356,50 +355,7 @@
       return gradient ? interpolateColors(gradient.min, gradient.max, normalized) : "#CCCCCC";
     }
     
-    // Merge CSV-Daten in GeoJSON (über ID)
-    function updateGeojsonData(data) {
-      data.features.forEach(function(feature) {
-        var id = feature.properties.ID;
-        // CSV-Merging: Sucht den entsprechenden Eintrag in den CSV-Daten (müssen vorher geladen worden sein)
-        if(feature.csvMerged) return; // Falls schon gemerged
-        // Wir gehen davon aus, dass nach dem CSV-Merging alle nötigen Werte in feature.properties vorhanden sind.
-        if(currentParty === "Gewinner") {
-          var winner = null, maxVal = -Infinity;
-          var candidateParties = currentDataset.availableParties.filter(p => p !== "Wahlbeteiligung");
-          candidateParties.forEach(function(party) {
-            if(feature.properties[party] !== undefined) {
-              var value = parseFloat(feature.properties[party].replace(',', '.'));
-              if(!isNaN(value) && value > maxVal) { maxVal = value; winner = party; }
-            }
-          });
-          feature.properties.fillColor = getColor(maxVal, winner);
-        } else {
-          var rawValue = 0;
-          if(feature.properties[currentParty] !== undefined) {
-            rawValue = parseFloat(feature.properties[currentParty].replace(',', '.'));
-          }
-          feature.properties.fillColor = getColor(rawValue, currentParty);
-        }
-        feature.csvMerged = true;
-      });
-      return data;
-    }
-    
-    // Maplibre-Karte initialisieren
-    var map = new maplibregl.Map({
-      container: 'map',
-      style: 'https://kxljxv.github.io/bm_web_gry_7.json',
-      center: [13.40, 52.52],
-      zoom: 10,
-      pitch: 0,
-      bearing: 0
-    });
-    
-    map.dragRotate.disable();
-    map.touchZoomRotate.disableRotation();
-    map.keyboard.disable();
-    
-    // CSV laden, dann GeoJSON abrufen, CSV-Daten mergen und Karte aktualisieren
+    // CSV-Daten laden, mergen und in GeoJSON einfügen
     function loadGeoJson() {
       Papa.parse(currentDataset.csvUrl, {
         download: true,
@@ -412,7 +368,7 @@
               geojson.features.forEach(function(feature) {
                 var id = feature.properties.ID;
                 var row = csvData.find(r => r.ID === id);
-                if(row) {
+                if (row) {
                   feature.properties = Object.assign({}, row);
                 }
               });
@@ -465,7 +421,7 @@
       });
       
       var value;
-      if(currentParty === "Gewinner") {
+      if (currentParty === "Gewinner") {
         var winnerValue = -Infinity;
         currentDataset.availableParties.filter(function(p){ return p !== "Wahlbeteiligung" }).forEach(function(p) {
           if(feature.properties[p] !== undefined) {
@@ -494,8 +450,8 @@
       map.getCanvas().style.cursor = '';
     });
     
-    // Ersetze den bisherigen Column Chart durch einen Column Chart (ohne Achsen oder Beschriftungen)
-    // Mit Tooltip: Beim Hover zeigt der Tooltip den offiziellen Parteinamen (aus popupColors & tooltipNames) und den Prozentwert.
+    // Ersetze den bisherigen Column Chart durch einen Column Chart (ohne Achsen, Legenden oder Beschriftungen)
+    // Mit Tooltip: Beim Hover zeigt der Tooltip den offiziellen Parteinamen und den Prozentwert.
     function updatePieChart(feature) {
       var chartData = [];
       currentDataset.availableParties.forEach(function(party) {
@@ -578,7 +534,7 @@
       series.columns.template.events.on("pointerover", function(ev) {
         var data = ev.target.dataItem.dataContext;
         var tooltip = ev.target.get("tooltip");
-        if(tooltip && tooltip.get("background") && data.popupColor) {
+        if (tooltip && tooltip.get("background") && data.popupColor) {
           tooltip.get("background").set("fill", am5.color(data.popupColor));
         }
       });
@@ -587,6 +543,12 @@
       
       series.appear(1000, 100);
       chart.appear(1000, 100);
+
+      // Entferne das amCharts-Logo (Quellen) falls vorhanden
+      var logo = window.pieChartRoot.children.getIndex(0).logo;
+      if(logo){
+        logo.dispose();
+      }
     }
   </script>
 </body>
