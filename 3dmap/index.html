@@ -15,20 +15,28 @@
       font-family: Arial, sans-serif;
       z-index: 1;
     }
+    #menu label, #menu select, #menu input {
+      margin-right: 10px;
+    }
   </style>
 </head>
 <body>
   <div id="menu">
     <label for="colorField">Color by: </label>
     <select id="colorField"></select>
+    <label for="minvalue">Min Value:</label>
+    <input type="number" id="minvalue" step="0.01" value="0">
+    <label for="maxvalue">Max Value:</label>
+    <input type="number" id="maxvalue" step="0.01" value="1">
   </div>
   <div id="map"></div>
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
   <script>
+    // Initialize the map with the provided background style
     const map = new maplibregl.Map({
       container: 'map',
-      style: 'https://demotiles.maplibre.org/style.json',
-      center: [13.405, 52.52], // Center on Berlin (adjust as needed)
+      style: 'https://kxljxv.github.io/bm_web_gry_7.json',
+      center: [13.405, 52.52], // Center on Berlin; adjust as needed.
       zoom: 10,
       pitch: 45,
       bearing: -17.6,
@@ -39,13 +47,27 @@
 
     const geojsonUrl = 'https://kxljxv.github.io/wahlergebnisse/pankow2025erg3d.json';
 
+    // Function to update the color mapping based on the selected field and min/max values
+    function updateColorMapping() {
+      const selectedField = document.getElementById('colorField').value;
+      const minValue = parseFloat(document.getElementById('minvalue').value);
+      const maxValue = parseFloat(document.getElementById('maxvalue').value);
+      
+      map.setPaintProperty('3d-extrusion', 'fill-extrusion-color', [
+        'interpolate',
+        ['linear'],
+        ['to-number', ['get', selectedField]],
+        minValue, 'red',
+        maxValue, 'green'
+      ]);
+    }
+
     fetch(geojsonUrl)
       .then(response => response.json())
       .then(data => {
-        // Use the first feature to determine the fields
+        // Use the first feature to determine available fields
         const properties = data.features[0].properties;
         const excludedFields = ['UWB', 'hoehe', 'funktion_t'];
-        // Identify numerical fields (0 to 1) and allow conversion if values are strings
         const numericalFields = Object.keys(properties).filter(key => {
           if (excludedFields.includes(key)) return false;
           const value = properties[key];
@@ -53,6 +75,7 @@
           return !isNaN(num) && num >= 0 && num <= 1;
         });
 
+        // Populate the dropdown with numerical fields
         const select = document.getElementById('colorField');
         numericalFields.forEach(field => {
           const option = document.createElement('option');
@@ -67,7 +90,7 @@
             data: data
           });
 
-          // Initially, use the first numerical field for coloring
+          // Set initial field for coloring
           const initialField = numericalFields[0];
 
           map.addLayer({
@@ -80,24 +103,17 @@
                 'interpolate',
                 ['linear'],
                 ['to-number', ['get', initialField]],
-                0, 'green',
-                1, 'red'
+                parseFloat(document.getElementById('minvalue').value), 'red',
+                parseFloat(document.getElementById('maxvalue').value), 'green'
               ],
               'fill-extrusion-opacity': 0.8
             }
           });
 
-          // Update the color mapping when a new field is selected
-          select.addEventListener('change', (event) => {
-            const selectedField = event.target.value;
-            map.setPaintProperty('3d-extrusion', 'fill-extrusion-color', [
-              'interpolate',
-              ['linear'],
-              ['to-number', ['get', selectedField]],
-              0, 'green',
-              1, 'red'
-            ]);
-          });
+          // Event listeners for changes
+          select.addEventListener('change', updateColorMapping);
+          document.getElementById('minvalue').addEventListener('change', updateColorMapping);
+          document.getElementById('maxvalue').addEventListener('change', updateColorMapping);
         });
       })
       .catch(error => console.error('Error loading GeoJSON data:', error));
