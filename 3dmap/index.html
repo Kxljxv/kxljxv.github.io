@@ -13,7 +13,7 @@
       background: #fff;
       padding: 10px;
       font-family: Arial, sans-serif;
-      z-index: 1;
+      z-index: 2;
     }
     #menu label, #menu select, #menu input {
       margin-right: 10px;
@@ -22,7 +22,12 @@
 </head>
 <body>
   <div id="menu">
-    <label for="colorField">Color by: </label>
+    <label for="mapStyle">Base Map:</label>
+    <select id="mapStyle">
+      <option value="https://kxljxv.github.io/bm_web_gry_7.json">Grayscale</option>
+      <option value="https://basemaps.cartocdn.com/satellite-gl-style/style.json">Satellite</option>
+    </select>
+    <label for="colorField">Color by:</label>
     <select id="colorField"></select>
     <label for="minvalue">Min Value:</label>
     <input type="number" id="minvalue" step="0.01" value="0">
@@ -32,10 +37,17 @@
   <div id="map"></div>
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
   <script>
-    // Initialize the map with the provided background style
+    // Global variables to store the GeoJSON data and numerical fields list
+    let geojsonData = null;
+    let numericalFields = [];
+
+    // Create the map using the initially selected style
+    const mapStyleSelect = document.getElementById('mapStyle');
+    let currentStyle = mapStyleSelect.value;
+
     const map = new maplibregl.Map({
       container: 'map',
-      style: 'https://kxljxv.github.io/bm_web_gry_7.json',
+      style: currentStyle,
       center: [13.405, 52.52], // Center on Berlin; adjust as needed.
       zoom: 10,
       pitch: 45,
@@ -43,122 +55,143 @@
       antialias: true
     });
 
-    // Add navigation control
+    // Add navigation control and geolocate (location) control
     map.addControl(new maplibregl.NavigationControl());
-
-    // Add geolocate control for user's location
     map.addControl(new maplibregl.GeolocateControl({
-      positionOptions: {
-        enableHighAccuracy: true
-      },
+      positionOptions: { enableHighAccuracy: true },
       trackUserLocation: true,
       showUserLocation: true
     }));
 
-    // Set light properties to add realistic shadows
-    map.on('style.load', () => {
+    // Set up lighting for realistic shadows
+    function setupLighting() {
       map.setLight({
         anchor: 'viewport',
         color: 'white',
         intensity: 0.5,
         position: [1.15, 210, 30]
       });
-    });
+    }
 
-    const geojsonUrl = 'https://kxljxv.github.io/wahlergebnisse/pankow2025erg3d.json';
+    // Function to add the GeoJSON source and 3D extrusion layer
+    function addExtrusionLayer() {
+      if (!geojsonData) return;
+      // Add (or re-add) the source
+      if (!map.getSource('geojson-data')) {
+        map.addSource('geojson-data', {
+          type: 'geojson',
+          data: geojsonData
+        });
+      }
+      // Determine the field to use for the color gradient (default to first numerical field)
+      const selectedField = document.getElementById('colorField').value || (numericalFields[0] || '');
+      const minValue = parseFloat(document.getElementById('minvalue').value);
+      const maxValue = parseFloat(document.getElementById('maxvalue').value);
 
-    // Function to update the color mapping based on the selected field and min/max values
+      // Add the 3D extrusion layer if it doesn't exist
+      if (!map.getLayer('3d-extrusion')) {
+        map.addLayer({
+          id: '3d-extrusion',
+          type: 'fill-extrusion',
+          source: 'geojson-data',
+          paint: {
+            'fill-extrusion-height': ['to-number', ['get', 'hoehe']],
+            'fill-extrusion-color': [
+              'interpolate',
+              ['linear'],
+              ['to-number', ['get', selectedField]],
+              minValue, 'red',
+              maxValue, 'green'
+            ],
+            'fill-extrusion-opacity': 0.8
+          }
+        });
+      }
+      // Add click event to show popup with feature details
+      map.on('click', '3d-extrusion', onExtrusionClick);
+      map.on('mouseenter', '3d-extrusion', () => map.getCanvas().style.cursor = 'pointer');
+      map.on('mouseleave', '3d-extrusion', () => map.getCanvas().style.cursor = '');
+    }
+
+    // Function to update the extrusion color based on user inputs
     function updateColorMapping() {
       const selectedField = document.getElementById('colorField').value;
       const minValue = parseFloat(document.getElementById('minvalue').value);
       const maxValue = parseFloat(document.getElementById('maxvalue').value);
-      
-      map.setPaintProperty('3d-extrusion', 'fill-extrusion-color', [
-        'interpolate',
-        ['linear'],
-        ['to-number', ['get', selectedField]],
-        minValue, 'red',
-        maxValue, 'green'
-      ]);
+      if (map.getLayer('3d-extrusion')) {
+        map.setPaintProperty('3d-extrusion', 'fill-extrusion-color', [
+          'interpolate',
+          ['linear'],
+          ['to-number', ['get', selectedField]],
+          minValue, 'red',
+          maxValue, 'green'
+        ]);
+      }
     }
 
+    // Popup click event handler: show all feature properties in a table
+    function onExtrusionClick(e) {
+      if (!e.features.length) return;
+      const feature = e.features[0];
+      const props = feature.properties;
+      let tableHtml = '<table border="1" style="border-collapse: collapse; font-size: 12px;">';
+      for (const key in props) {
+        tableHtml += `<tr><td style="padding: 4px;">${key}</td><td style="padding: 4px;">${props[key]}</td></tr>`;
+      }
+      tableHtml += '</table>';
+      new maplibregl.Popup({ offset: 25 })
+        .setLngLat(e.lngLat)
+        .setHTML(tableHtml)
+        .addTo(map);
+    }
+
+    // Listen for changes in the color field and min/max inputs
+    document.getElementById('colorField').addEventListener('change', updateColorMapping);
+    document.getElementById('minvalue').addEventListener('change', updateColorMapping);
+    document.getElementById('maxvalue').addEventListener('change', updateColorMapping);
+
+    // Listen for changes in the base map style
+    mapStyleSelect.addEventListener('change', (e) => {
+      currentStyle = e.target.value;
+      map.setStyle(currentStyle);
+    });
+
+    // When the style is loaded (including after switching), set up lighting and re-add the extrusion layer
+    map.on('style.load', () => {
+      setupLighting();
+      // Re-add the extrusion layer if the geojsonData is loaded
+      if (geojsonData) {
+        addExtrusionLayer();
+      }
+    });
+
+    // Fetch the GeoJSON data and set up the color field dropdown
+    const geojsonUrl = 'https://kxljxv.github.io/wahlergebnisse/pankow2025erg3d.json';
     fetch(geojsonUrl)
       .then(response => response.json())
       .then(data => {
-        // Use the first feature to determine available fields
+        geojsonData = data;
+        // Use the first feature to determine available numerical fields
         const properties = data.features[0].properties;
         const excludedFields = ['UWB', 'hoehe', 'funktion_t'];
-        const numericalFields = Object.keys(properties).filter(key => {
+        numericalFields = Object.keys(properties).filter(key => {
           if (excludedFields.includes(key)) return false;
           const value = properties[key];
           const num = Number(value);
           return !isNaN(num) && num >= 0 && num <= 1;
         });
-
-        // Populate the dropdown with numerical fields
-        const select = document.getElementById('colorField');
+        // Populate the color field dropdown
+        const colorFieldSelect = document.getElementById('colorField');
         numericalFields.forEach(field => {
           const option = document.createElement('option');
           option.value = field;
           option.textContent = field;
-          select.appendChild(option);
+          colorFieldSelect.appendChild(option);
         });
-
-        map.on('load', () => {
-          map.addSource('geojson-data', {
-            type: 'geojson',
-            data: data
-          });
-
-          // Set initial field for coloring
-          const initialField = numericalFields[0];
-
-          map.addLayer({
-            id: '3d-extrusion',
-            type: 'fill-extrusion',
-            source: 'geojson-data',
-            paint: {
-              'fill-extrusion-height': ['to-number', ['get', 'hoehe']],
-              'fill-extrusion-color': [
-                'interpolate',
-                ['linear'],
-                ['to-number', ['get', initialField]],
-                parseFloat(document.getElementById('minvalue').value), 'red',
-                parseFloat(document.getElementById('maxvalue').value), 'green'
-              ],
-              'fill-extrusion-opacity': 1
-            }
-          });
-
-          // Update color mapping on control changes
-          select.addEventListener('change', updateColorMapping);
-          document.getElementById('minvalue').addEventListener('change', updateColorMapping);
-          document.getElementById('maxvalue').addEventListener('change', updateColorMapping);
-
-          // Show a popup with a table of all feature fields when an extrusion is clicked
-          map.on('click', '3d-extrusion', function(e) {
-            if (!e.features.length) return;
-            const feature = e.features[0];
-            const props = feature.properties;
-            let tableHtml = '<table border="1" style="border-collapse: collapse; font-size: 12px;">';
-            for (const key in props) {
-              tableHtml += `<tr><td style="padding: 4px;">${key}</td><td style="padding: 4px;">${props[key]}</td></tr>`;
-            }
-            tableHtml += '</table>';
-            new maplibregl.Popup({ offset: 25 })
-              .setLngLat(e.lngLat)
-              .setHTML(tableHtml)
-              .addTo(map);
-          });
-
-          // Change the cursor to a pointer when over the extrusion.
-          map.on('mouseenter', '3d-extrusion', function() {
-            map.getCanvas().style.cursor = 'pointer';
-          });
-          map.on('mouseleave', '3d-extrusion', function() {
-            map.getCanvas().style.cursor = '';
-          });
-        });
+        // Once data is fetched, add the extrusion layer (if the map is already loaded, style.load will trigger as well)
+        if (map.isStyleLoaded()) {
+          addExtrusionLayer();
+        }
       })
       .catch(error => console.error('Error loading GeoJSON data:', error));
   </script>
