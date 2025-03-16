@@ -40,7 +40,8 @@
     #info-box h2 { margin-top: 0; }
     
     /* Container für den Column Chart.
-       clip-path schneidet unten 30px ab, und translateY verschiebt den Inhalt nach unten. */
+       clip-path schneidet am unteren Rand 30px ab,
+       transform verschiebt den Chart-Inhalt nach unten, um das amCharts-Logo zu verdecken. */
     #pieChartDiv {
       width: 100%;
       height: 200px;
@@ -79,7 +80,7 @@
   <div id="map"></div>
   <!-- Infobox-Overlay -->
   <div id="info-box">
-    <!-- Bezirks-ID und Prozentwert -->
+    <!-- Bezirks-ID und Prozentwert (ID aus CSV) -->
     <h2 id="district-title">Wähle einen Wahlbezirk</h2>
     <div id="pieChartDiv"></div>
     <!-- Flowbite Dropdown für Party -->
@@ -135,12 +136,8 @@
       return params;
     }
 
-    /* 
-      Neue, einheitliche CSV-Header über beide Wahljahre:
-      ID, Wahlbeteiligung, SPD, Gruen, CDU, LINKE, AfD, FDP, PMUT, FW, Volt, MLPD, BSW  
-      (BSW nur in 2025)
-    */
-
+    // Verwende über beide Wahljahre hinweg folgende Header
+    // (Die Keys in den GeoJSON-Daten entsprechen den CSV-Headern)
     var partyDisplayNames = {
       "Wahlbeteiligung": "Wahlbeteiligung",
       "SPD": "SPD",
@@ -156,7 +153,7 @@
       "BSW": "BSW"
     };
 
-    // Extra-Texte für Tooltips (abweichend von den Tabellennamen)
+    // Für Tooltips (offizielle Namen, die von den Tabellennamen abweichen)
     var tooltipNames = {
       "SPD": "SPD Official",
       "Gruen": "Grüne Official",
@@ -186,6 +183,7 @@
       "BSW": { min: "#FFF7F5", max: "#571334" }
     };
 
+    // Extra-Farben für den Column Chart (Säulen)
     var extraPieColors = {
       "SPD": "#E60026",
       "Gruen": "#008000",
@@ -193,14 +191,14 @@
       "LINKE": "#8F0354",
       "AfD": "#002B9C",
       "FDP": "#5E4A00",
-      "PMUT": "#00454D",
+      "PMUT": "#AFEEEE",
       "FW": "#9C4900",
       "Volt": "#462270",
       "MLPD": "#8C142A",
-      "BSW": "#571334"
+      "BSW": "#E6E6FA"
     };
 
-    // Extra-Farben für die Popups (Tooltips)
+    // Extra-Farben für die Popups (Tooltips) – können abweichen von den Säulenfarben
     var popupColors = {
       "SPD": "#FFC0CB",
       "Gruen": "#90EE90",
@@ -212,12 +210,12 @@
       "FW": "#FFE4B5",
       "Volt": "#DDA0DD",
       "MLPD": "#98FB98",
-      "BSW": "#FFD700"
+      "BSW": "#E6E6FA"
     };
 
-    // Datensätze anpassen – Schlüssel in partyRanges und availableParties an die neuen CSV-Header
+    // Datensätze mit den neuen GeoJSON-URLs
     var dataset2025 = {
-      url: 'https://kxljxv.github.io/wahlergebnisse2025.json',
+      url: 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025nurID.json',
       partyRanges: {
         "Wahlbeteiligung": { min: 0.454105275, max: 0.98 },
         "SPD": { min: 0.06, max: 0.39984263 },
@@ -232,11 +230,13 @@
         "MLPD": { min: 0.0, max: 0.012658228 },
         "BSW": { min: 0.012, max: 0.16 }
       },
-      availableParties: ["Wahlbeteiligung", "SPD", "Gruen", "CDU", "LINKE", "AfD", "FDP", "PMUT", "FW", "Volt", "MLPD", "BSW"]
+      availableParties: [
+        "Wahlbeteiligung", "SPD", "Gruen", "CDU", "LINKE", "AfD", "FDP", "PMUT", "FW", "Volt", "MLPD", "BSW"
+      ]
     };
 
     var dataset2021 = {
-      url: 'https://kxljxv.github.io/wahlergebnisse2021.json',
+      url: 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2021nurID.json',
       partyRanges: {
         "Wahlbeteiligung": { min: 0.454105275, max: 0.98 },
         "SPD": { min: 0.06, max: 0.39984263 },
@@ -250,14 +250,16 @@
         "Volt": { min: 0.0, max: 0.029 },
         "MLPD": { min: 0.0, max: 0.012658228 }
       },
-      availableParties: ["Wahlbeteiligung", "SPD", "Gruen", "CDU", "LINKE", "AfD", "FDP", "PMUT", "FW", "Volt", "MLPD"]
+      availableParties: [
+        "Wahlbeteiligung", "SPD", "Gruen", "CDU", "LINKE", "AfD", "FDP", "PMUT", "FW", "Volt", "MLPD"
+      ]
     };
 
-    // Standardwerte: Startjahr 2025, Standardmetrik "Wahlbeteiligung"
+    // Standardwerte: Jahr 2025 und Wahlbeteiligung als Standardmetrik
     var currentDataset = dataset2025;
     var currentParty = "Wahlbeteiligung";
 
-    // Dropdown-Funktionen (Flowbite)
+    // Dropdown-Funktionen (Flowbite) – füllen die Menüs anhand der neuen Keys
     function populatePartyDropdown() {
       var list = document.getElementById("partyDropdownList");
       list.innerHTML = "";
@@ -319,9 +321,11 @@
       var bigint = parseInt(hex, 16);
       return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
     }
+    
     function rgbToHex(r, g, b) {
       return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
     }
+    
     function interpolateColors(color1Hex, color2Hex, value) {
       var color1 = hexToRgb(color1Hex);
       var color2 = hexToRgb(color2Hex);
@@ -331,7 +335,7 @@
       return rgbToHex(r, g, b);
     }
     
-    // Berechnet die Farbe basierend auf dem Rohwert (wird in updateGeojsonData genutzt)
+    // getColor wird in updateGeojsonData genutzt
     function getColor(rawValue, party) {
       var range = currentDataset.partyRanges[party];
       if (!range) return "#CCCCCC";
@@ -341,6 +345,7 @@
       return gradient ? interpolateColors(gradient.min, gradient.max, normalized) : "#CCCCCC";
     }
     
+    // Aktualisiert die GeoJSON-Daten, indem für jedes Feature die Eigenschaft fillColor gesetzt wird.
     function updateGeojsonData(data) {
       data.features.forEach(function(feature) {
         if(currentParty === "Gewinner") {
@@ -359,7 +364,7 @@
       return data;
     }
     
-    // Maplibre-Karte initialisieren
+    // Initialisiere die Maplibre-Karte
     var map = new maplibregl.Map({
       container: 'map',
       style: 'https://kxljxv.github.io/bm_web_gry_7.json',
@@ -368,6 +373,7 @@
       pitch: 0,
       bearing: 0
     });
+    
     map.dragRotate.disable();
     map.touchZoomRotate.disableRotation();
     map.keyboard.disable();
@@ -396,23 +402,32 @@
         })
         .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
     }
+    
     map.on('load', loadGeoJson);
     
-    // Beim Klick auf einen Wahlbezirk: Highlight und Aktualisierung der Infobox
     map.on('click', 'geojson-fill', function(e) {
       if (!e.features.length) return;
       var feature = e.features[0];
+      
       if (map.getLayer('highlight-layer')) {
         map.removeLayer('highlight-layer');
         map.removeSource('highlight-layer');
       }
-      map.addSource('highlight-layer', { type: 'geojson', data: feature });
+      
+      map.addSource('highlight-layer', {
+        type: 'geojson',
+        data: feature
+      });
       map.addLayer({
         id: 'highlight-layer',
         type: 'line',
         source: 'highlight-layer',
-        paint: { 'line-color': '#000000', 'line-width': 3 }
+        paint: {
+          'line-color': '#000000',
+          'line-width': 3
+        }
       });
+      
       var value;
       if(currentParty === "Gewinner") {
         var winnerValue = -Infinity;
@@ -424,7 +439,10 @@
       } else {
         value = parseFloat(feature.properties[currentParty].replace(',', '.'));
       }
-      document.getElementById('district-title').textContent = feature.properties.UWB + " - " + (value * 100).toFixed(2) + "%";
+      
+      // Verwende jetzt die Eigenschaft "ID" als Bezirkskennung
+      document.getElementById('district-title').textContent = feature.properties.ID + " - " + (value * 100).toFixed(2) + "%";
+      
       updatePieChart(feature);
     });
     
@@ -435,7 +453,8 @@
       map.getCanvas().style.cursor = '';
     });
     
-    // Ersetze den bisherigen Pie-Chart durch einen Column Chart (ohne Achsen, Legende etc.) mit Tooltip
+    // Ersetze den bisherigen Column Chart durch einen Column Chart (ohne Achsen, Legenden oder Beschriftungen)
+    // Mit Tooltip: Beim Hover zeigt der Tooltip (mit extra Popup-Farbe) den offiziellen Parteinamen und den Prozentwert.
     function updatePieChart(feature) {
       var chartData = [];
       currentDataset.availableParties.forEach(function(party) {
@@ -450,6 +469,7 @@
           });
         }
       });
+      
       chartData.sort(function(a, b) {
         return b.value - a.value;
       });
@@ -459,7 +479,9 @@
       }
       
       window.pieChartRoot = am5.Root.new("pieChartDiv");
-      window.pieChartRoot.setThemes([ am5themes_Animated.new(window.pieChartRoot) ]);
+      window.pieChartRoot.setThemes([
+        am5themes_Animated.new(window.pieChartRoot)
+      ]);
       
       var chart = window.pieChartRoot.container.children.push(
         am5xy.XYChart.new(window.pieChartRoot, {
@@ -486,7 +508,9 @@
       yRenderer.labels.template.setAll({ visible: false });
       yRenderer.grid.template.setAll({ visible: false });
       var yAxis = chart.yAxes.push(
-        am5xy.ValueAxis.new(window.pieChartRoot, { renderer: yRenderer })
+        am5xy.ValueAxis.new(window.pieChartRoot, {
+          renderer: yRenderer
+        })
       );
       
       var series = chart.series.push(
@@ -497,12 +521,12 @@
           categoryXField: "category"
         })
       );
+      
       series.columns.template.setAll({ strokeOpacity: 0 });
       series.columns.template.adapters.add("fill", function(fill, target) {
         return am5.color(target.dataItem.dataContext.fill);
       });
       
-      // Tooltip: Bei Hover den offiziellen Parteinamen (aus tooltipNames) und den Prozentwert anzeigen.
       series.columns.template.set("tooltipText", "{tooltipText}");
       series.columns.template.adapters.add("tooltipText", function(text, target) {
         var data = target.dataItem.dataContext;
@@ -510,7 +534,6 @@
         return tName + ": " + data.value + "%";
       });
       
-      // Beim Hover den Tooltip-Hintergrund anhand der extra Popup-Farbe setzen
       series.columns.template.events.on("pointerover", function(ev) {
         var data = ev.target.dataItem.dataContext;
         var tooltip = ev.target.get("tooltip");
@@ -520,6 +543,7 @@
       });
       
       series.data.setAll(chartData);
+      
       series.appear(1000, 100);
       chart.appear(1000, 100);
     }
