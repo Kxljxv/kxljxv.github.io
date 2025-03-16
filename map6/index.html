@@ -41,7 +41,7 @@
     
     /* Container für den Column Chart.
        clip-path schneidet die untersten 30px ab,
-       translateY verschiebt den Chart-Inhalt nach unten, um das amCharts-Logo auszublenden */
+       transform verschiebt den Chart-Inhalt nach unten, um das amCharts-Logo auszublenden */
     #pieChartDiv {
       width: 100%;
       height: 200px;
@@ -138,9 +138,9 @@
       return params;
     }
 
-    /* Verwendung der folgenden CSV-Header über beide Wahljahre hinweg:
+    /* Verwende über beide Wahljahre hinweg folgende CSV-Header:
        ID, Wahlbeteiligung, SPD, Gruen, CDU, LINKE, AfD, FDP, PMUT, FW, Volt, MLPD, BSW
-       (BSW existiert nur 2025) */
+       (BSW existiert nur in 2025) */
 
     var partyDisplayNames = {
       "Wahlbeteiligung": "Wahlbeteiligung",
@@ -217,10 +217,10 @@
       "BSW": "#E6E6FA"
     };
 
-    // Datensätze mit GeoJSON- und CSV-URLs
+    // Datensätze: GeoJSON und CSV-URLs (CSV jetzt über HTTPS)
     var dataset2025 = {
       url: 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025nurID.json',
-      csvUrl: 'http://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025(8).csv',
+      csvUrl: 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2025(8).csv',
       partyRanges: {
         "Wahlbeteiligung": { min: 0.454105275, max: 0.98 },
         "SPD": { min: 0.06, max: 0.39984263 },
@@ -242,7 +242,7 @@
 
     var dataset2021 = {
       url: 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2021nurID.json',
-      csvUrl: 'http://kxljxv.github.io/wahlergebnisse/wahlergebnisse2021(8).csv',
+      csvUrl: 'https://kxljxv.github.io/wahlergebnisse/wahlergebnisse2021(8).csv',
       partyRanges: {
         "Wahlbeteiligung": { min: 0.454105275, max: 0.98 },
         "SPD": { min: 0.06, max: 0.39984263 },
@@ -334,7 +334,6 @@
       return rgbToHex(r, g, b);
     }
     
-    // getColor wird in updateGeojsonData genutzt
     function getColor(rawValue, party) {
       var range = currentDataset.partyRanges[party];
       if (!range) return "#CCCCCC";
@@ -344,9 +343,13 @@
       return gradient ? interpolateColors(gradient.min, gradient.max, normalized) : "#CCCCCC";
     }
     
-    // Aktualisiert GeoJSON-Daten: CSV-Daten werden zuvor in die Eigenschaften gemergt.
+    // Merge CSV-Daten in GeoJSON
     function updateGeojsonData(data) {
       data.features.forEach(function(feature) {
+        // Merge CSV-Daten anhand der ID
+        var id = feature.properties.ID;
+        // Wir gehen davon aus, dass nach dem CSV-Merging alle nötigen Werte als Strings in feature.properties vorhanden sind.
+        if(currentParty === "Gewahlbeteiligung") { /* falls benötigt */ }
         if(currentParty === "Gewinner") {
           var winner = null, maxVal = -Infinity;
           var candidateParties = currentDataset.availableParties.filter(p => p !== "Wahlbeteiligung");
@@ -368,7 +371,7 @@
       return data;
     }
     
-    // Initialisiere Maplibre-Karte
+    // Maplibre-Karte initialisieren
     var map = new maplibregl.Map({
       container: 'map',
       style: 'https://kxljxv.github.io/bm_web_gry_7.json',
@@ -382,7 +385,7 @@
     map.touchZoomRotate.disableRotation();
     map.keyboard.disable();
     
-    // CSV- und GeoJSON-Daten laden, mergen und in die Karte einfügen
+    // CSV-Daten laden, mit GeoJSON mergen und in die Karte einfügen
     function loadGeoJson() {
       Papa.parse(currentDataset.csvUrl, {
         download: true,
@@ -392,7 +395,6 @@
           fetch(currentDataset.url)
             .then(response => response.json())
             .then(function(geojson) {
-              // Für jedes Feature: Suche den CSV-Eintrag anhand der ID und merge die Daten
               geojson.features.forEach(function(feature) {
                 var id = feature.properties.ID;
                 var row = csvData.find(r => r.ID === id);
@@ -466,7 +468,6 @@
         }
       }
       
-      // Nutze nun die Eigenschaft "ID" als Bezirkskennung
       document.getElementById('district-title').textContent = feature.properties.ID + " - " + (value * 100).toFixed(2) + "%";
       
       updatePieChart(feature);
@@ -480,7 +481,7 @@
     });
     
     // Ersetze den bisherigen Column Chart durch einen Column Chart (ohne Achsen oder Beschriftungen)
-    // Mit Tooltip: Beim Hover zeigt der Tooltip den offiziellen Parteinamen (aus popupNames) und den Prozentwert.
+    // Mit Tooltip: Beim Hover zeigt der Tooltip den offiziellen Parteinamen und den Prozentwert, Tooltip-Hintergrund wird mit extra Popup-Farbe gesetzt.
     function updatePieChart(feature) {
       var chartData = [];
       currentDataset.availableParties.forEach(function(party) {
@@ -553,7 +554,6 @@
         return am5.color(target.dataItem.dataContext.fill);
       });
       
-      // Tooltip: Beim Hover wird der offizielle Parteiname (aus popupNames) und der Prozentwert angezeigt.
       series.columns.template.set("tooltipText", "{tooltipText}");
       series.columns.template.adapters.add("tooltipText", function(text, target) {
         var data = target.dataItem.dataContext;
@@ -561,7 +561,6 @@
         return tName + ": " + data.value + "%";
       });
       
-      // Beim Hover den Tooltip-Hintergrund anhand der extra Popup-Farbe setzen
       series.columns.template.events.on("pointerover", function(ev) {
         var data = ev.target.dataItem.dataContext;
         var tooltip = ev.target.get("tooltip");
