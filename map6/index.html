@@ -480,8 +480,6 @@
       map.getCanvas().style.cursor = '';
     });
     
-    // Ersetze den bisherigen Column Chart durch einen Column Chart (ohne Achsen oder Beschriftungen)
-    // Mit Tooltip: Beim Hover zeigt der Tooltip den offiziellen Parteinamen und den Prozentwert, Tooltip-Hintergrund wird mit extra Popup-Farbe gesetzt.
     function updatePieChart(feature) {
       var chartData = [];
       currentDataset.availableParties.forEach(function(party) {
