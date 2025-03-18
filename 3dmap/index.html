@@ -76,17 +76,27 @@
     // Function to add the GeoJSON source and 3D extrusion layer
     function addExtrusionLayer() {
       if (!geojsonData) return;
-      // Add (or re-add) the source
+      // Add (or re-add) the source if not already present
       if (!map.getSource('geojson-data')) {
         map.addSource('geojson-data', {
           type: 'geojson',
           data: geojsonData
         });
       }
+      
       // Determine the field to use for the color gradient (default to first numerical field)
       const selectedField = document.getElementById('colorField').value || (numericalFields[0] || '');
       const minValue = parseFloat(document.getElementById('minvalue').value);
       const maxValue = parseFloat(document.getElementById('maxvalue').value);
+      
+      // Define allowed values for "funktion_t"
+      const allowedFunctions = [
+        "Wohnhaus",
+        "Wohngebäude mit Handel und Dienstleistungen",
+        "Wohngebäude mit Gemeinbedarf",
+        "Seniorenheim",
+        "Wohngebäude mit Gewerbe und Industrie"
+      ];
 
       // Add the 3D extrusion layer if it doesn't exist
       if (!map.getLayer('3d-extrusion')) {
@@ -97,16 +107,24 @@
           paint: {
             'fill-extrusion-height': ['to-number', ['get', 'hoehe']],
             'fill-extrusion-color': [
-              'interpolate',
-              ['linear'],
-              ['to-number', ['get', selectedField]],
-              minValue, 'red',
-              maxValue, 'green'
+              'case',
+              // If "funktion_t" is one of the allowed values, use the gradient color mapping.
+              ['in', ['get', 'funktion_t'], ['literal', allowedFunctions]],
+              [
+                'interpolate',
+                ['linear'],
+                ['to-number', ['get', selectedField]],
+                minValue, 'red',
+                maxValue, 'green'
+              ],
+              // Otherwise, color grey.
+              'grey'
             ],
             'fill-extrusion-opacity': 0.8
           }
         });
       }
+
       // Add click event to show popup with feature details
       map.on('click', '3d-extrusion', onExtrusionClick);
       map.on('mouseenter', '3d-extrusion', () => map.getCanvas().style.cursor = 'pointer');
@@ -118,13 +136,28 @@
       const selectedField = document.getElementById('colorField').value;
       const minValue = parseFloat(document.getElementById('minvalue').value);
       const maxValue = parseFloat(document.getElementById('maxvalue').value);
+      
+      // Define allowed values for "funktion_t"
+      const allowedFunctions = [
+        "Wohnhaus",
+        "Wohngebäude mit Handel und Dienstleistungen",
+        "Wohngebäude mit Gemeinbedarf",
+        "Seniorenheim",
+        "Wohngebäude mit Gewerbe und Industrie"
+      ];
+
       if (map.getLayer('3d-extrusion')) {
         map.setPaintProperty('3d-extrusion', 'fill-extrusion-color', [
-          'interpolate',
-          ['linear'],
-          ['to-number', ['get', selectedField]],
-          minValue, 'red',
-          maxValue, 'green'
+          'case',
+          ['in', ['get', 'funktion_t'], ['literal', allowedFunctions]],
+          [
+            'interpolate',
+            ['linear'],
+            ['to-number', ['get', selectedField]],
+            minValue, 'red',
+            maxValue, 'green'
+          ],
+          'grey'
         ]);
       }
     }
@@ -152,14 +185,13 @@
 
     // Listen for changes in the base map style
     mapStyleSelect.addEventListener('change', (e) => {
-      currentStyle = e.target.value;
-      map.setStyle(currentStyle);
+      const newStyle = e.target.value;
+      map.setStyle(newStyle);
     });
 
     // When the style is loaded (including after switching), set up lighting and re-add the extrusion layer
     map.on('style.load', () => {
       setupLighting();
-      // Re-add the extrusion layer if the geojsonData is loaded
       if (geojsonData) {
         addExtrusionLayer();
       }
