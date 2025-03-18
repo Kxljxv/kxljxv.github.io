@@ -22,11 +22,6 @@
 </head>
 <body>
   <div id="menu">
-    <label for="mapStyle">Base Map:</label>
-    <select id="mapStyle">
-      <option value="https://kxljxv.github.io/bm_web_gry_7.json">Grayscale</option>
-      <option value="https://basemaps.cartocdn.com/satellite-gl-style/style.json">Satellite</option>
-    </select>
     <label for="colorField">Color by:</label>
     <select id="colorField"></select>
     <label for="minvalue">Min Value:</label>
@@ -37,17 +32,14 @@
   <div id="map"></div>
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
   <script>
-    // Global variables to store the GeoJSON data and numerical fields list
+    // Global variables to store the GeoJSON data and list of numerical fields.
     let geojsonData = null;
     let numericalFields = [];
 
-    // Create the map using the initially selected style
-    const mapStyleSelect = document.getElementById('mapStyle');
-    let currentStyle = mapStyleSelect.value;
-
+    // Create the map using the Grayscale background style.
     const map = new maplibregl.Map({
       container: 'map',
-      style: currentStyle,
+      style: 'https://kxljxv.github.io/bm_web_gry_7.json',
       center: [13.405, 52.52], // Center on Berlin; adjust as needed.
       zoom: 10,
       pitch: 45,
@@ -55,7 +47,7 @@
       antialias: true
     });
 
-    // Add navigation control and geolocate (location) control
+    // Add navigation and geolocate controls.
     map.addControl(new maplibregl.NavigationControl());
     map.addControl(new maplibregl.GeolocateControl({
       positionOptions: { enableHighAccuracy: true },
@@ -63,42 +55,45 @@
       showUserLocation: true
     }));
 
-    // Set up lighting for realistic shadows
-    function setupLighting() {
+    // Set up ambient lighting for realistic shadows.
+    map.on('style.load', () => {
       map.setLight({
         anchor: 'viewport',
         color: 'white',
         intensity: 0.5,
         position: [1.15, 210, 30]
       });
-    }
+      if (geojsonData) {
+        addExtrusionLayer();
+      }
+    });
 
-    // Function to add the GeoJSON source and 3D extrusion layer
+    // Define allowed "funktion_t" values.
+    const allowedFunctions = [
+      "Wohnhaus",
+      "Wohngebäude mit Handel und Dienstleistungen",
+      "Wohngebäude mit Gemeinbedarf",
+      "Seniorenheim",
+      "Wohngebäude mit Gewerbe und Industrie"
+    ];
+
+    // Function to add the GeoJSON source and 3D extrusion layer.
     function addExtrusionLayer() {
       if (!geojsonData) return;
-      // Add (or re-add) the source if not already present
+      // Add the source if not already present.
       if (!map.getSource('geojson-data')) {
         map.addSource('geojson-data', {
           type: 'geojson',
           data: geojsonData
         });
       }
-      
-      // Determine the field to use for the color gradient (default to first numerical field)
+
+      // Determine the field to use for the gradient (default to the first numerical field).
       const selectedField = document.getElementById('colorField').value || (numericalFields[0] || '');
       const minValue = parseFloat(document.getElementById('minvalue').value);
       const maxValue = parseFloat(document.getElementById('maxvalue').value);
-      
-      // Define allowed values for "funktion_t"
-      const allowedFunctions = [
-        "Wohnhaus",
-        "Wohngebäude mit Handel und Dienstleistungen",
-        "Wohngebäude mit Gemeinbedarf",
-        "Seniorenheim",
-        "Wohngebäude mit Gewerbe und Industrie"
-      ];
 
-      // Add the 3D extrusion layer if it doesn't exist
+      // Add the 3D extrusion layer if it doesn't exist.
       if (!map.getLayer('3d-extrusion')) {
         map.addLayer({
           id: '3d-extrusion',
@@ -108,61 +103,56 @@
             'fill-extrusion-height': ['to-number', ['get', 'hoehe']],
             'fill-extrusion-color': [
               'case',
-              // If "funktion_t" is one of the allowed values, use the gradient color mapping.
+              // If "funktion_t" is one of the allowed types, apply the gradient.
               ['in', ['get', 'funktion_t'], ['literal', allowedFunctions]],
-              [
-                'interpolate',
-                ['linear'],
-                ['to-number', ['get', selectedField]],
-                minValue, 'red',
-                maxValue, 'green'
-              ],
-              // Otherwise, color grey.
+                [
+                  'interpolate',
+                  ['linear'],
+                  ['to-number', ['get', selectedField]],
+                  minValue, 'red',
+                  maxValue, 'green'
+                ],
+              // Otherwise, use grey.
               'grey'
             ],
-            'fill-extrusion-opacity': 0.8
+            'fill-extrusion-opacity': [
+              'case',
+              ['in', ['get', 'funktion_t'], ['literal', allowedFunctions]],
+                0.8,
+              0.3
+            ]
           }
         });
       }
 
-      // Add click event to show popup with feature details
+      // Add click event to show a popup with feature details.
       map.on('click', '3d-extrusion', onExtrusionClick);
       map.on('mouseenter', '3d-extrusion', () => map.getCanvas().style.cursor = 'pointer');
       map.on('mouseleave', '3d-extrusion', () => map.getCanvas().style.cursor = '');
     }
 
-    // Function to update the extrusion color based on user inputs
+    // Function to update the extrusion color based on user inputs.
     function updateColorMapping() {
       const selectedField = document.getElementById('colorField').value;
       const minValue = parseFloat(document.getElementById('minvalue').value);
       const maxValue = parseFloat(document.getElementById('maxvalue').value);
-      
-      // Define allowed values for "funktion_t"
-      const allowedFunctions = [
-        "Wohnhaus",
-        "Wohngebäude mit Handel und Dienstleistungen",
-        "Wohngebäude mit Gemeinbedarf",
-        "Seniorenheim",
-        "Wohngebäude mit Gewerbe und Industrie"
-      ];
-
       if (map.getLayer('3d-extrusion')) {
         map.setPaintProperty('3d-extrusion', 'fill-extrusion-color', [
           'case',
           ['in', ['get', 'funktion_t'], ['literal', allowedFunctions]],
-          [
-            'interpolate',
-            ['linear'],
-            ['to-number', ['get', selectedField]],
-            minValue, 'red',
-            maxValue, 'green'
-          ],
+            [
+              'interpolate',
+              ['linear'],
+              ['to-number', ['get', selectedField]],
+              minValue, 'red',
+              maxValue, 'green'
+            ],
           'grey'
         ]);
       }
     }
 
-    // Popup click event handler: show all feature properties in a table
+    // Popup click event handler: show all feature properties in a table.
     function onExtrusionClick(e) {
       if (!e.features.length) return;
       const feature = e.features[0];
@@ -178,32 +168,18 @@
         .addTo(map);
     }
 
-    // Listen for changes in the color field and min/max inputs
+    // Listen for changes in the color field and min/max inputs.
     document.getElementById('colorField').addEventListener('change', updateColorMapping);
     document.getElementById('minvalue').addEventListener('change', updateColorMapping);
     document.getElementById('maxvalue').addEventListener('change', updateColorMapping);
 
-    // Listen for changes in the base map style
-    mapStyleSelect.addEventListener('change', (e) => {
-      const newStyle = e.target.value;
-      map.setStyle(newStyle);
-    });
-
-    // When the style is loaded (including after switching), set up lighting and re-add the extrusion layer
-    map.on('style.load', () => {
-      setupLighting();
-      if (geojsonData) {
-        addExtrusionLayer();
-      }
-    });
-
-    // Fetch the GeoJSON data and set up the color field dropdown
+    // Fetch the GeoJSON data and set up the color field dropdown.
     const geojsonUrl = 'https://kxljxv.github.io/wahlergebnisse/pankow2025erg3d.json';
     fetch(geojsonUrl)
       .then(response => response.json())
       .then(data => {
         geojsonData = data;
-        // Use the first feature to determine available numerical fields
+        // Use the first feature to determine available numerical fields.
         const properties = data.features[0].properties;
         const excludedFields = ['UWB', 'hoehe', 'funktion_t'];
         numericalFields = Object.keys(properties).filter(key => {
@@ -212,7 +188,7 @@
           const num = Number(value);
           return !isNaN(num) && num >= 0 && num <= 1;
         });
-        // Populate the color field dropdown
+        // Populate the color field dropdown.
         const colorFieldSelect = document.getElementById('colorField');
         numericalFields.forEach(field => {
           const option = document.createElement('option');
@@ -220,7 +196,7 @@
           option.textContent = field;
           colorFieldSelect.appendChild(option);
         });
-        // Once data is fetched, add the extrusion layer (if the map is already loaded, style.load will trigger as well)
+        // If the map's style is already loaded, add the extrusion layer.
         if (map.isStyleLoaded()) {
           addExtrusionLayer();
         }
