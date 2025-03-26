@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Berlin Election Results Visualization</title>
+    
+    <!-- MapLibre GL JS Libraries -->
+    <script src='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js'></script>
+    <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
+    
+    <!-- Papa Parse for CSV Parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    
+    <!-- Chart.js for Bar Chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: sans-serif; 
+        }
+        #map-container {
+            display: flex;
+            height: 100vh;
+        }
+        #map { 
+            flex-grow: 1; 
+            position: relative; 
+        }
+        #chart-container {
+            width: 400px;
+            padding: 10px;
+            background-color: white;
+            border-left: 1px solid #ddd;
+        }
+        #district-info {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        /* Responsive layout */
+        body.landscape #map-container {
+            flex-direction: row;
+        }
+        body.portrait #map-container {
+            flex-direction: column;
+        }
+        body.portrait #chart-container {
+            width: 100%;
+            height: 300px;
+            border-left: none;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body class="landscape">
+    <div id="map-container">
+        <div id="map"></div>
+        <div id="chart-container">
+            <div id="district-info"></div>
+            <canvas id="election-chart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Party color configuration (pastel colors)
+        const partyColors = {
+            'AFD': '#FFC3A0',
+            'GRUENE': '#A0E7E5',
+            'LINKE': '#B4F8C8',
+            'SPD': '#FBE7C6',
+            'VOLT': '#E7DBFF',
+            'PMUT': '#FFD1DC',
+            'MLPD': '#FFFFE0',
+            'FW': '#E0FFFF',
+            'FDP': '#FFE4E1',
+            'CDU': '#F0FFF0',
+            'BSW': '#E6E6FA'
+        };
+
+        // Berlin overview results (to be manually provided by user)
+        const berlinOverallResults = {
+            '2021': {
+                'AFD': 8.5,
+                'GRUENE': 20.1,
+                'LINKE': 15.8,
+                'SPD': 25.3,
+                // ... other parties
+            },
+            '2025': {
+                // Placeholder for 2025 results
+            }
+        };
+
+        // MapLibre GL JS Map Initialization
+        maplibregl.accessToken = ''; // Investigate basemap.de API requirements
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://kxljxv.github.io/bm_web_gry_7.json',
+            center: [13.404954, 52.520008],
+            zoom: 10,
+            pitch: 0,
+            bearing: 0,
+            dragRotate: false,
+            touchPitch: false
+        });
+
+        // Add Geolocation Control
+        map.addControl(new maplibregl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+            showUserLocation: true
+        }), 'top-right');
+
+        // Data Loading and Processing
+        map.on('load', async () => {
+            try {
+                // Fetch GeoJSON
+                const geojsonData = await fetch('https://kxljxv.github.io/wahlergebnisse/map.json').then(res => res.json());
+                
+                // Fetch CSV
+                const csvData = await fetch('https://kxljxv.github.io/wahlergebnisse/ergebnisse.csv').then(res => res.text());
+                const parsedCsv = Papa.parse(csvData, { header: true, dynamicTyping: true }).data;
+
+                // Join Data Function
+                function joinData(geojsonFeatures, csvRows, idField) {
+                    const csvDataMap = new Map(csvRows.map(row => [String(row[idField]), row]));
+                    geojsonFeatures.forEach(feature => {
+                        const match = csvDataMap.get(String(feature.properties.ID));
+                        if (match) {
+                            feature.properties = { ...feature.properties, ...match };
+                        }
+                    });
+                    return geojsonFeatures;
+                }
+
+                const joinedFeatures = joinData(geojsonData.features, parsedCsv, 'ID');
+                geojsonData.features = joinedFeatures;
+
+                // Add GeoJSON Source
+                map.addSource('election-districts', {
+                    'type': 'geojson',
+                    'data': geojsonData
+                });
+
+                // Add Districts Layer
+                map.addLayer({
+                    'id': 'election-districts-layer',
+                    'type': 'fill',
+                    'source': 'election-districts',
+                    'paint': {
+                        'fill-color': 'lightgray',
+                        'fill-opacity': 0.7,
+                        'fill-outline-color': '#888'
+                    }
+                });
+
+                // Click Interaction
+                let selectedDistrictId = null;
+                map.on('click', 'election-districts-layer', (e) => {
+                    const features = map.queryRenderedFeatures(e.point);
+                    if (features.length > 0) {
+                        selectedDistrictId = features[0].properties.ID;
+                        updateDistrictChart(features[0]);
+                    }
+                });
+
+                // Chart Initialization
+                const ctx = document.getElementById('election-chart').getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(partyColors),
+                        datasets: [{
+                            data: Object.keys(berlinOverallResults['2021']).map(party => berlinOverallResults['2021'][party]),
+                            backgroundColor: Object.keys(partyColors).map(party => partyColors[party])
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.formattedValue}%`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                function updateDistrictChart(feature) {
+                    const districtInfo = document.getElementById('district-info');
+                    districtInfo.innerHTML = `District: ${feature.properties.BEZIRK} (${feature.properties.ID})`;
+
+                    chart.data.datasets[0].data = Object.keys(partyColors).map(party => {
+                        return feature.properties[`21${party}`] || 0;
+                    });
+                    chart.update();
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        });
+    </script>
+</body>
+</html>
