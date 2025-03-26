@@ -1,210 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Berlin Election Results Visualization</title>
-    
-    <!-- MapLibre GL JS Libraries -->
-    <script src='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js'></script>
-    <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
-    
-    <!-- Papa Parse for CSV Parsing -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    
-    <!-- Chart.js for Bar Chart -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Enhanced 3D GeoJSON Visualization</title>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css" />
     <style>
-        body { 
-            margin: 0; 
-            padding: 0; 
-            font-family: sans-serif; 
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
         }
-        #map-container {
-            display: flex;
-            height: 100vh;
-        }
-        #map { 
-            flex-grow: 1; 
-            position: relative; 
-        }
-        #chart-container {
-            width: 400px;
-            padding: 10px;
-            background-color: white;
-            border-left: 1px solid #ddd;
-        }
-        #district-info {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        
-        /* Responsive layout */
-        body.landscape #map-container {
-            flex-direction: row;
-        }
-        body.portrait #map-container {
-            flex-direction: column;
-        }
-        body.portrait #chart-container {
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
             width: 100%;
-            height: 300px;
-            border-left: none;
-            border-top: 1px solid #ddd;
+            height: 100%;
+        }
+        #control-panel {
+            position: absolute;
+            top: 1em;
+            left: 1em;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 1em;
+            border-radius: 5px;
+            z-index: 2;
+            font-family: sans-serif;
+        }
+        #control-panel label, 
+        #control-panel select {
+            display: block;
+            margin-bottom: 0.5em;
+        }
+        #legend {
+            margin-top: 1em;
+        }
+        #legend-gradient {
+            display: block;
+            margin-bottom: 0.3em;
+        }
+        .legend-labels {
+            font-size: 0.8em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
     </style>
 </head>
-<body class="landscape">
-    <div id="map-container">
-        <div id="map"></div>
-        <div id="chart-container">
-            <div id="district-info"></div>
-            <canvas id="election-chart"></canvas>
+<body>
+    <div id="map"></div>
+    <div id="control-panel">
+        <h2>Pankow 2025 Results</h2>
+        <label for="color-by">Color by:</label>
+        <select id="color-by"></select>
+        <div id="legend">
+            <canvas id="legend-gradient" width="200" height="20"></canvas>
+            <div class="legend-labels">
+                <span>0</span>
+                <span style="float: right;">1</span>
+            </div>
         </div>
     </div>
 
+    <script src="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js"></script>
     <script>
-        // Party color configuration (pastel colors)
-        const partyColors = {
-            'AFD': '#FFC3A0',
-            'GRUENE': '#A0E7E5',
-            'LINKE': '#B4F8C8',
-            'SPD': '#FBE7C6',
-            'VOLT': '#E7DBFF',
-            'PMUT': '#FFD1DC',
-            'MLPD': '#FFFFE0',
-            'FW': '#E0FFFF',
-            'FDP': '#FFE4E1',
-            'CDU': '#F0FFF0',
-            'BSW': '#E6E6FA'
-        };
+        let map;
+        let extrudedLayer;
 
-        // Berlin overview results (to be manually provided by user)
-        const berlinOverallResults = {
-            '2021': {
-                'AFD': 8.5,
-                'GRUENE': 20.1,
-                'LINKE': 15.8,
-                'SPD': 25.3,
-                // ... other parties
-            },
-            '2025': {
-                // Placeholder for 2025 results
-            }
-        };
+        // Fetch GeoJSON data
+        fetch('https://kxljxv.github.io/wahlergebnisse/pankow2025erg3d.json')
+        .then(response => response.json())
+        .then(data => {
+            const colorBySelect = document.getElementById('color-by');
+            const firstFeatureProperties = data.features[0].properties;
+            
+            // Filter out non-numerical attributes
+            const numericalAttributes = Object.keys(firstFeatureProperties)
+                .filter(key => !['UWB', 'hoehe', 'funktion_t'].includes(key) && 
+                        typeof firstFeatureProperties[key] === 'number');
+            
+            // Populate dropdown
+            numericalAttributes.forEach(attribute => {
+                const option = document.createElement('option');
+                option.value = attribute;
+                option.textContent = attribute;
+                colorBySelect.appendChild(option);
+            });
 
-        // MapLibre GL JS Map Initialization
-        maplibregl.accessToken = ''; // Investigate basemap.de API requirements
-        const map = new maplibregl.Map({
-            container: 'map',
-            style: 'https://kxljxv.github.io/bm_web_gry_7.json',
-            center: [13.404954, 52.520008],
-            zoom: 10,
-            pitch: 0,
-            bearing: 0,
-            dragRotate: false,
-            touchPitch: false
+            // Initialize map
+            initializeMap(data, numericalAttributes[0]);
+        })
+        .catch(error => {
+            console.error('Error loading GeoJSON:', error);
         });
 
-        // Add Geolocation Control
-        map.addControl(new maplibregl.GeolocateControl({
-            positionOptions: {
-                enableHighAccuracy: true
-            },
-            showUserLocation: true
-        }), 'top-right');
+        function initializeMap(geojsonData, initialColorAttribute) {
+            // Use OpenStreetMap as a free base map
+            map = new maplibregl.Map({
+                container: 'map',
+                style: 'https://demotiles.maplibre.org/style.json', // Open-source base map
+                center: [13.4050, 52.5200], // Approximate center of Berlin
+                zoom: 11,
+                pitch: 45, // Slight 3D angle
+                bearing: 0,
+                antialias: true
+            });
 
-        // Data Loading and Processing
-        map.on('load', async () => {
-            try {
-                // Fetch GeoJSON
-                const geojsonData = await fetch('https://kxljxv.github.io/wahlergebnisse/map.json').then(res => res.json());
-                
-                // Fetch CSV
-                const csvData = await fetch('https://kxljxv.github.io/wahlergebnisse/ergebnisse.csv').then(res => res.text());
-                const parsedCsv = Papa.parse(csvData, { header: true, dynamicTyping: true }).data;
+            map.on('load', () => {
+                map.addSource('pankow-data', {
+                    type: 'geojson',
+                    data: geojsonData
+                });
 
-                // Join Data Function
-                function joinData(geojsonFeatures, csvRows, idField) {
-                    const csvDataMap = new Map(csvRows.map(row => [String(row[idField]), row]));
-                    geojsonFeatures.forEach(feature => {
-                        const match = csvDataMap.get(String(feature.properties.ID));
-                        if (match) {
-                            feature.properties = { ...feature.properties, ...match };
-                        }
-                    });
-                    return geojsonFeatures;
+                add3DLayer(initialColorAttribute);
+
+                // Event listener for dropdown change
+                const colorBySelect = document.getElementById('color-by');
+                colorBySelect.addEventListener('change', (event) => {
+                    update3DLayerColor(event.target.value);
+                });
+
+                drawColorGradient();
+                map.scrollZoom.disable(); // Disable scroll zoom initially
+            });
+        }
+
+        function getColorExpression(attribute) {
+            return [
+                'interpolate',
+                ['linear'],
+                ['get', attribute],
+                0, 'rgb(0, 255, 0)', // Green for value 0
+                1, 'rgb(255, 0, 0)'  // Red for value 1
+            ];
+        }
+
+        function add3DLayer(colorAttribute) {
+            extrudedLayer = map.addLayer({
+                'id': 'pankow-buildings',
+                'type': 'fill-extrusion',
+                'source': 'pankow-data',
+                'paint': {
+                    'fill-extrusion-color': getColorExpression(colorAttribute),
+                    'fill-extrusion-height': ['get', 'hoehe'],
+                    'fill-extrusion-base': 0,
+                    'fill-extrusion-opacity': 0.7
                 }
+            });
+        }
 
-                const joinedFeatures = joinData(geojsonData.features, parsedCsv, 'ID');
-                geojsonData.features = joinedFeatures;
-
-                // Add GeoJSON Source
-                map.addSource('election-districts', {
-                    'type': 'geojson',
-                    'data': geojsonData
-                });
-
-                // Add Districts Layer
-                map.addLayer({
-                    'id': 'election-districts-layer',
-                    'type': 'fill',
-                    'source': 'election-districts',
-                    'paint': {
-                        'fill-color': 'lightgray',
-                        'fill-opacity': 0.7,
-                        'fill-outline-color': '#888'
-                    }
-                });
-
-                // Click Interaction
-                let selectedDistrictId = null;
-                map.on('click', 'election-districts-layer', (e) => {
-                    const features = map.queryRenderedFeatures(e.point);
-                    if (features.length > 0) {
-                        selectedDistrictId = features[0].properties.ID;
-                        updateDistrictChart(features[0]);
-                    }
-                });
-
-                // Chart Initialization
-                const ctx = document.getElementById('election-chart').getContext('2d');
-                const chart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: Object.keys(partyColors),
-                        datasets: [{
-                            data: Object.keys(berlinOverallResults['2021']).map(party => berlinOverallResults['2021'][party]),
-                            backgroundColor: Object.keys(partyColors).map(party => partyColors[party])
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return `${context.label}: ${context.formattedValue}%`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-
-                function updateDistrictChart(feature) {
-                    const districtInfo = document.getElementById('district-info');
-                    districtInfo.innerHTML = `District: ${feature.properties.BEZIRK} (${feature.properties.ID})`;
-
-                    chart.data.datasets[0].data = Object.keys(partyColors).map(party => {
-                        return feature.properties[`21${party}`] || 0;
-                    });
-                    chart.update();
-                }
-            } catch (error) {
-                console.error('Error loading data:', error);
+        function update3DLayerColor(selectedAttribute) {
+            if (extrudedLayer) {
+                map.setPaintProperty('pankow-buildings', 'fill-extrusion-color', 
+                    getColorExpression(selectedAttribute));
             }
-        });
+        }
+
+        function drawColorGradient() {
+            const canvas = document.getElementById('legend-gradient');
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+            
+            gradient.addColorStop(0, 'rgb(0, 255, 0)'); // Green at the start (value 0)
+            gradient.addColorStop(1, 'rgb(255, 0, 0)'); // Red at the end (value 1)
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
     </script>
 </body>
 </html>
