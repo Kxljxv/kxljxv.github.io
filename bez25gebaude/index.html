@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Berlin 3D Building Data Viewer</title>
+    <link href='https://unpkg.com/maplibre-gl@4.1.0/dist/maplibre-gl.css' rel='stylesheet' />
+    <script src="https://unpkg.com/topojson-client@3"></script>
+    <script src='https://unpkg.com/maplibre-gl@4.1.0/dist/maplibre-gl.js'></script>
+    <style>
+        /* Basic styling for the body and map container */
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        /* Simple loading indicator */
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-size: 1.2em;
+            z-index: 10; /* Ensure it's above the map */
+            display: none; /* Hidden by default */
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        /* Style for the info box */
+        #info-box {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            z-index: 5;
+            border: 1px solid #ccc;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+<div id="loading">Loading data...</div>
+<div id="info-box">Coloring by: <span id="color-field-name">Default</span></div>
+
+<script>
+    // --- Configuration ---
+    const TOPOJSON_URLS = [
+        'https://kxljxv.github.io/bez25gebaude/01.json',
+        'https://kxljxv.github.io/bez25gebaude/02.json',
+        'https://kxljxv.github.io/bez25gebaude/03.json',
+        'https://kxljxv.github.io/bez25gebaude/04.json',
+        'https://kxljxv.github.io/bez25gebaude/05.json',
+        'https://kxljxv.github.io/bez25gebaude/06.json',
+        'https://kxljxv.github.io/bez25gebaude/07.json',
+        'https://kxljxv.github.io/bez25gebaude/08.json',
+        'https://kxljxv.github.io/bez25gebaude/09.json',
+        'https://kxljxv.github.io/bez25gebaude/10.json',
+        'https://kxljxv.github.io/bez25gebaude/11.json',
+        'https://kxljxv.github.io/bez25gebaude/12.json'
+    ];
+    // The object name within the TopoJSON files that contains the features
+    const TOPOJSON_OBJECT_NAME = 'bez25gebaude';
+    // Allowed fields for coloring
+    const ALLOWED_COLOR_FIELDS = [
+        'Wahlbeteiligung', 'SPD', 'Gruen', 'CDU', 'LINKE', 'AfD',
+        'FDP', 'PMUT', 'FW', 'Volt', 'MLPD', 'BSW'
+    ];
+    // Default field if URL parameter is missing or invalid
+    const DEFAULT_COLOR_FIELD = 'Wahlbeteiligung';
+    // Color scale for the 0-1 values (adjust colors as needed)
+    const COLOR_SCALE = [
+        'interpolate',
+        ['linear'],
+        ['get', 'colorValue'], // Placeholder, will be replaced
+        0, '#ffffcc', // Light Yellow for 0
+        0.5, '#fd8d3c', // Orange for 0.5
+        1, '#800026'  // Dark Red for 1
+    ];
+    // MapLibre style URL (using a free OSM-based style)
+    const MAP_STYLE = 'https://demotiles.maplibre.org/style.json';
+    // Initial map view settings
+    const INITIAL_CENTER = [13.405, 52.52]; // Berlin coordinates [lng, lat]
+    const INITIAL_ZOOM = 10;
+    const INITIAL_PITCH = 45; // Angle for 3D view
+    const INITIAL_BEARING = -17.6; // Rotation
+
+    // --- Helper Functions ---
+
+    /**
+     * Gets the color field from the URL parameter.
+     * @returns {string} The validated color field name.
+     */
+    function getColorFieldFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const fieldParam = urlParams.get('colorField');
+        if (fieldParam && ALLOWED_COLOR_FIELDS.includes(fieldParam)) {
+            return fieldParam;
+        }
+        console.warn(`URL parameter 'colorField' is missing or invalid. Using default: ${DEFAULT_COLOR_FIELD}`);
+        return DEFAULT_COLOR_FIELD;
+    }
+
+    /**
+     * Fetches and parses a JSON file.
+     * @param {string} url - The URL of the JSON file.
+     * @returns {Promise<object>} A promise that resolves with the parsed JSON object.
+     */
+    async function fetchJson(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status} for URL: ${url}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Failed to fetch JSON:', error);
+            throw error; // Re-throw to be caught by Promise.all
+        }
+    }
+
+    // --- Main Logic ---
+
+    // Get the selected color field
+    const selectedColorField = getColorFieldFromURL();
+
+    // Update the info box
+    document.getElementById('color-field-name').textContent = selectedColorField;
+
+    // Show loading indicator
+    const loadingIndicator = document.getElementById('loading');
+    loadingIndicator.style.display = 'block';
+
+    // Initialize the map
+    const map = new maplibregl.Map({
+        container: 'map', // container id
+        style: MAP_STYLE,
+        center: INITIAL_CENTER,
+        zoom: INITIAL_ZOOM,
+        pitch: INITIAL_PITCH,
+        bearing: INITIAL_BEARING,
+        antialias: true // Improves rendering quality
+    });
+
+    // Add map controls (zoom, rotation)
+    map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    map.addControl(new maplibregl.FullscreenControl());
+
+    // Function to load and process all TopoJSON data
+    async function loadAndDisplayData() {
+        try {
+            // Fetch all TopoJSON files concurrently
+            const topojsonDataArray = await Promise.all(TOPOJSON_URLS.map(fetchJson));
+
+            console.log('All TopoJSON files fetched.');
+
+            // Convert each TopoJSON to GeoJSON and combine features
+            let allFeatures = [];
+            topojsonDataArray.forEach((topojson, index) => {
+                if (topojson.objects && topojson.objects[TOPOJSON_OBJECT_NAME]) {
+                    const geojson = topojson.feature(topojson, topojson.objects[TOPOJSON_OBJECT_NAME]);
+                    if (geojson && geojson.features) {
+                        // Add the selected color field value directly to properties for easier access
+                        // Also ensure 'hoehe' exists and is a number
+                        geojson.features.forEach(feature => {
+                            feature.properties.colorValue = feature.properties[selectedColorField] ?? 0; // Use 0 if undefined
+                            feature.properties.hoehe = Number(feature.properties.hoehe) || 0; // Ensure 'hoehe' is a number, default 0
+                        });
+                        allFeatures = allFeatures.concat(geojson.features);
+                        console.log(`Processed features from file ${index + 1}`);
+                    } else {
+                         console.warn(`Could not extract features from TopoJSON object '${TOPOJSON_OBJECT_NAME}' in file ${index + 1}. GeoJSON structure:`, geojson);
+                    }
+                } else {
+                    console.warn(`TopoJSON object '${TOPOJSON_OBJECT_NAME}' not found in file ${index + 1}. Available objects:`, topojson.objects ? Object.keys(topojson.objects) : 'None');
+                }
+            });
+
+            console.log(`Total features combined: ${allFeatures.length}`);
+
+            if (allFeatures.length === 0) {
+                 throw new Error("No features were processed. Check TopoJSON structure and object name.");
+            }
+
+            // Create a single GeoJSON FeatureCollection
+            const combinedGeoJson = {
+                type: 'FeatureCollection',
+                features: allFeatures
+            };
+
+            // Add the combined GeoJSON data as a source to the map
+            map.addSource('buildings-data', {
+                type: 'geojson',
+                data: combinedGeoJson
+            });
+
+            console.log('GeoJSON source added to map.');
+
+            // Add the 3D fill-extrusion layer
+            // Update the color scale expression to use the actual selected field name
+            const dynamicColorScale = [...COLOR_SCALE]; // Create a copy
+            dynamicColorScale[2] = ['get', 'colorValue']; // Set the 'get' expression correctly
+
+            map.addLayer({
+                id: 'buildings-layer',
+                type: 'fill-extrusion',
+                source: 'buildings-data',
+                paint: {
+                    // Extrusion height based on the 'hoehe' property
+                    'fill-extrusion-height': ['get', 'hoehe'],
+                    // Base of the extrusion (starts at ground level)
+                    'fill-extrusion-base': 0,
+                    // Color based on the selected field using the dynamic scale
+                    'fill-extrusion-color': dynamicColorScale,
+                    // Opacity of the extrusion
+                    'fill-extrusion-opacity': 0.85
+                }
+            });
+
+            console.log('Fill-extrusion layer added.');
+
+            // Add a simple popup on click (optional, but helpful)
+            map.on('click', 'buildings-layer', (e) => {
+                if (e.features.length > 0) {
+                    const feature = e.features[0];
+                    const props = feature.properties;
+                    let popupContent = `<strong>Properties:</strong><br>Height (hoehe): ${props.hoehe}<br>`;
+                    popupContent += `${selectedColorField}: ${props.colorValue.toFixed(3)}<br><hr>`;
+                    // Add other relevant properties if needed
+                    ALLOWED_COLOR_FIELDS.forEach(field => {
+                        if (field !== selectedColorField && props.hasOwnProperty(field)) {
+                             popupContent += `${field}: ${Number(props[field]).toFixed(3)}<br>`;
+                        }
+                    });
+
+
+                    new maplibregl.Popup()
+                        .setLngLat(e.lngLat)
+                        .setHTML(popupContent)
+                        .addTo(map);
+                }
+            });
+
+            // Change the cursor to a pointer when hovering over the extruded features
+            map.on('mouseenter', 'buildings-layer', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+            map.on('mouseleave', 'buildings-layer', () => {
+                map.getCanvas().style.cursor = '';
+            });
+
+
+        } catch (error) {
+            console.error('Error loading or processing data:', error);
+            alert(`Failed to load or display map data. Check console for details. Error: ${error.message}`);
+        } finally {
+            // Hide loading indicator regardless of success or failure
+            loadingIndicator.style.display = 'none';
+        }
+    }
+
+    // Wait for the map style to load before adding data
+    map.on('load', () => {
+        console.log('Map style loaded.');
+        // Add a light source for better 3D appearance
+        map.setLight({anchor: 'map', color: '#ffffff', intensity: 0.4});
+        loadAndDisplayData();
+    });
+
+    // Handle potential map loading errors
+     map.on('error', (e) => {
+        console.error('MapLibre error:', e.error?.message || e);
+        alert('A MapLibre error occurred. Please check the console.');
+        loadingIndicator.style.display = 'none';
+    });
+
+</script>
+
+</body>
+</html>
