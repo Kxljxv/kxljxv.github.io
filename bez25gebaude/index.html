@@ -63,8 +63,6 @@
         'https://kxljxv.github.io/bez25gebaude/11.json',
         'https://kxljxv.github.io/bez25gebaude/12.json'
     ];
-    // The object name within the TopoJSON files that contains the features
-    const TOPOJSON_OBJECT_NAME = 'bez25gebaude';
     // Allowed fields for coloring
     const ALLOWED_COLOR_FIELDS = [
         'Wahlbeteiligung', 'SPD', 'Gruen', 'CDU', 'LINKE', 'AfD',
@@ -76,7 +74,7 @@
     const COLOR_SCALE = [
         'interpolate',
         ['linear'],
-        ['get', 'colorValue'], // Placeholder, will be replaced
+        ['get', 'colorValue'], // Placeholder, will be replaced dynamically
         0, '#ffffcc', // Light Yellow for 0
         0.5, '#fd8d3c', // Orange for 0.5
         1, '#800026'  // Dark Red for 1
@@ -161,29 +159,41 @@
             // Convert each TopoJSON to GeoJSON and combine features
             let allFeatures = [];
             topojsonDataArray.forEach((topojson, index) => {
-                if (topojson.objects && topojson.objects[TOPOJSON_OBJECT_NAME]) {
-                    const geojson = topojson.feature(topojson, topojson.objects[TOPOJSON_OBJECT_NAME]);
+                // *** FIX: Determine the object name dynamically based on the file index ***
+                // Assumes files are named 01.json, 02.json, ..., 12.json
+                const objectName = String(index + 1).padStart(2, '0'); // Generates '01', '02', ... '12'
+
+                if (topojson.objects && topojson.objects[objectName]) {
+                    // Convert the correct object to GeoJSON
+                    const geojson = topojson.feature(topojson, topojson.objects[objectName]);
+
                     if (geojson && geojson.features) {
                         // Add the selected color field value directly to properties for easier access
                         // Also ensure 'hoehe' exists and is a number
                         geojson.features.forEach(feature => {
-                            feature.properties.colorValue = feature.properties[selectedColorField] ?? 0; // Use 0 if undefined
-                            feature.properties.hoehe = Number(feature.properties.hoehe) || 0; // Ensure 'hoehe' is a number, default 0
+                            // Ensure properties object exists
+                            feature.properties = feature.properties || {};
+                            // Assign colorValue, defaulting to 0 if the field is missing or null/undefined
+                            feature.properties.colorValue = feature.properties[selectedColorField] ?? 0;
+                            // Ensure 'hoehe' is a number, default to 0 if missing or not a number
+                            feature.properties.hoehe = Number(feature.properties.hoehe) || 0;
                         });
                         allFeatures = allFeatures.concat(geojson.features);
-                        console.log(`Processed features from file ${index + 1}`);
+                        console.log(`Processed features from file ${index + 1} using object '${objectName}'`);
                     } else {
-                         console.warn(`Could not extract features from TopoJSON object '${TOPOJSON_OBJECT_NAME}' in file ${index + 1}. GeoJSON structure:`, geojson);
+                         console.warn(`Could not extract features from TopoJSON object '${objectName}' in file ${index + 1}. GeoJSON structure:`, geojson);
                     }
                 } else {
-                    console.warn(`TopoJSON object '${TOPOJSON_OBJECT_NAME}' not found in file ${index + 1}. Available objects:`, topojson.objects ? Object.keys(topojson.objects) : 'None');
+                    // Log a warning if the expected object name is not found
+                    console.warn(`TopoJSON object '${objectName}' not found in file ${index + 1}. Available objects:`, topojson.objects ? Object.keys(topojson.objects) : 'None');
                 }
             });
 
             console.log(`Total features combined: ${allFeatures.length}`);
 
+            // Check if any features were actually processed
             if (allFeatures.length === 0) {
-                 throw new Error("No features were processed. Check TopoJSON structure and object name.");
+                 throw new Error("No features were processed. Check TopoJSON structure and object names in files.");
             }
 
             // Create a single GeoJSON FeatureCollection
@@ -196,6 +206,8 @@
             map.addSource('buildings-data', {
                 type: 'geojson',
                 data: combinedGeoJson
+                // Consider adding 'promoteId: "id_field"' if your features have a unique ID field
+                // This can improve performance for feature querying and updates.
             });
 
             console.log('GeoJSON source added to map.');
@@ -217,28 +229,34 @@
                     // Color based on the selected field using the dynamic scale
                     'fill-extrusion-color': dynamicColorScale,
                     // Opacity of the extrusion
-                    'fill-extrusion-opacity': 0.85
+                    'fill-extrusion-opacity': 0.85,
+                     // Add slight line width for better definition (optional)
+                    'fill-extrusion-vertical-gradient': false // Can improve performance slightly
                 }
             });
 
             console.log('Fill-extrusion layer added.');
 
-            // Add a simple popup on click (optional, but helpful)
+            // Add a simple popup on click
             map.on('click', 'buildings-layer', (e) => {
                 if (e.features.length > 0) {
                     const feature = e.features[0];
                     const props = feature.properties;
-                    let popupContent = `<strong>Properties:</strong><br>Height (hoehe): ${props.hoehe}<br>`;
-                    popupContent += `${selectedColorField}: ${props.colorValue.toFixed(3)}<br><hr>`;
-                    // Add other relevant properties if needed
+                    // Format popup content nicely
+                    let popupContent = `<div style="max-height: 200px; overflow-y: auto; padding-right: 5px;"><strong>Properties:</strong><br>`;
+                    popupContent += `Height (hoehe): ${props.hoehe?.toFixed(2) ?? 'N/A'}<br>`; // Use optional chaining and nullish coalescing
+                    popupContent += `<strong>${selectedColorField}: ${props.colorValue?.toFixed(3) ?? 'N/A'}</strong><br><hr>`;
+
+                    // Display all allowed fields present in the properties
                     ALLOWED_COLOR_FIELDS.forEach(field => {
-                        if (field !== selectedColorField && props.hasOwnProperty(field)) {
-                             popupContent += `${field}: ${Number(props[field]).toFixed(3)}<br>`;
+                        if (props.hasOwnProperty(field) && field !== selectedColorField) {
+                             popupContent += `${field}: ${Number(props[field])?.toFixed(3) ?? 'N/A'}<br>`;
                         }
                     });
+                    popupContent += `</div>`;
 
 
-                    new maplibregl.Popup()
+                    new maplibregl.Popup({ maxWidth: '300px' })
                         .setLngLat(e.lngLat)
                         .setHTML(popupContent)
                         .addTo(map);
@@ -256,6 +274,7 @@
 
         } catch (error) {
             console.error('Error loading or processing data:', error);
+            // Display error in a more user-friendly way if possible
             alert(`Failed to load or display map data. Check console for details. Error: ${error.message}`);
         } finally {
             // Hide loading indicator regardless of success or failure
@@ -267,7 +286,7 @@
     map.on('load', () => {
         console.log('Map style loaded.');
         // Add a light source for better 3D appearance
-        map.setLight({anchor: 'map', color: '#ffffff', intensity: 0.4});
+        map.setLight({anchor: 'viewport', color: '#ffffff', intensity: 0.5}); // Changed anchor to viewport for potentially better lighting
         loadAndDisplayData();
     });
 
