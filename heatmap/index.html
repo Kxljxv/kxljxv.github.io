@@ -1,1 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>MapLibre Heatmap</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <script src="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/geojson-vt@3.2.0/geojson-vt.js"></script>
+  <script src="https://unpkg.com/@mapbox/geojson-vt-canvas@0.4.1/index.js"></script>
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    let tileIndex = null;
 
+    // Load GeoJSON and create tiles
+    fetch('https://kxljxv.github.io/heatmap/GRUENp.json')
+      .then(res => res.json())
+      .then(geojson => {
+        tileIndex = geojsonvt(geojson, {
+          maxZoom: 14,
+          tolerance: 3,
+          extent: 4096,
+          buffer: 64,
+          debug: 0,
+        });
+
+        map.addSource('heatmap-source', {
+          type: 'vector',
+          tiles: ['local://heatmap/{z}/{x}/{y}.pbf'],
+          minzoom: 0,
+          maxzoom: 14,
+        });
+
+        map.addLayer({
+          id: 'heatmap-layer',
+          type: 'heatmap',
+          source: 'heatmap-source',
+          'source-layer': 'points',
+          paint: {
+            'heatmap-weight': 1,
+            'heatmap-intensity': 1,
+            'heatmap-color': [
+              'interpolate',
+              ['linear'],
+              ['heatmap-density'],
+              0, 'rgba(0, 0, 255, 0)',
+              0.2, 'blue',
+              0.4, 'cyan',
+              0.6, 'lime',
+              0.8, 'yellow',
+              1, 'red'
+            ],
+            'heatmap-radius': 15,
+            'heatmap-opacity': 0.8
+          }
+        });
+      });
+
+    // Setup MapLibre
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: {
+        version: 8,
+        sources: {
+          'openmaptiles': {
+            type: 'raster',
+            tiles: [
+              'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+            ],
+            tileSize: 256,
+            attribution:
+              '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          }
+        },
+        layers: [
+          {
+            id: 'osm',
+            type: 'raster',
+            source: 'openmaptiles'
+          }
+        ]
+      },
+      center: [13.4, 52.52], // Berlin, change as needed
+      zoom: 10
+    });
+
+    // Register custom protocol
+    maplibregl.addProtocol('local', (params, callback) => {
+      if (!tileIndex) {
+        return callback(new Error('Tiles not yet loaded'));
+      }
+
+      const z = parseInt(params.z, 10);
+      const x = parseInt(params.x, 10);
+      const y = parseInt(params.y, 10);
+
+      const tile = tileIndex.getTile(z, x, y);
+      if (!tile) {
+        return callback(null, new ArrayBuffer(0), null, null);
+      }
+
+      const features = tile.features.map(f => ({
+        type: 1, // Point
+        geometry: f.geometry,
+        tags: {},
+      }));
+
+      const vectorTile = {
+        layers: {
+          points: {
+            version: 2,
+            name: 'points',
+            features: features,
+            extent: 4096
+          }
+        }
+      };
+
+      const pbf = geojsonvt.canvas.encode(vectorTile);
+      callback(null, pbf.buffer, null, null);
+    });
+  </script>
+</body>
+</html>
