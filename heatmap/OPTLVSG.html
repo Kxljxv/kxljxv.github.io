@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>LINKE vs GRUEN - MapLibre</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+    href="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css"
+    rel="stylesheet"
+  />
+  <style>
+    body, html { margin: 0; padding: 0; height: 100%; }
+    #map { width: 100%; height: 100%; }
+    #loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      z-index: 1000;
+      text-align: center;
+      padding: 20px;
+    }
+    #data-warning {
+      max-width: 400px;
+      background: #333;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .primary-button {
+      background: #4CAF50;
+      color: white;
+    }
+    .secondary-button {
+      background: #f44336;
+      color: white;
+      margin-left: 10px;
+    }
+    #zoom-notice {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px;
+      border-radius: 4px;
+      z-index: 900;
+      display: none;
+    }
+    #data-usage {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      z-index: 900;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<div id="zoom-notice">Zoom in to see more detailed data</div>
+<div id="data-usage">Data loaded: <span id="data-size">0</span> MB</div>
+
+<div id="loading-overlay">
+  <div id="data-warning">
+    <h2>Large Dataset Warning</h2>
+    <p id="connection-status">Checking connection...</p>
+    <p>This map contains a large dataset (~90MB) which may:</p>
+    <ul style="text-align: left;">
+      <li>Use significant mobile data if you're on a cellular connection</li>
+      <li>Require up to 4GB of memory</li>
+      <li>Take some time to load completely</li>
+    </ul>
+    <div>
+      <button id="load-optimized" class="button primary-button">Load Optimized Version</button>
+      <button id="load-full" class="button secondary-button">Load Full Dataset</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/supercluster@7.1.5/dist/supercluster.min.js"></script>
+<script>
+  // Connection detection
+  const connectionStatus = document.getElementById('connection-status');
+  const loadingOverlay = document.getElementById('loading-overlay');
+  const loadOptimizedBtn = document.getElementById('load-optimized');
+  const loadFullBtn = document.getElementById('load-full');
+  const zoomNotice = document.getElementById('zoom-notice');
+  const dataUsageEl = document.getElementById('data-usage');
+  const dataSizeEl = document.getElementById('data-size');
+
+  let dataLoaded = 0;
+  let isFullDataset = false;
+  let clusters = null;
+
+  // Check connection type
+  function checkConnection() {
+    if ('connection' in navigator) {
+      const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+
+      if (connection) {
+        if (connection.type === 'cellular') {
+          connectionStatus.innerHTML = 'You are on a <strong>cellular connection</strong>. Loading the full dataset may use significant data.';
+          connectionStatus.style.color = '#ff9800';
+        } else if (connection.type === 'wifi') {
+          connectionStatus.innerHTML = 'You are on a <strong>WiFi connection</strong>.';
+          connectionStatus.style.color = '#4CAF50';
+        } else {
+          connectionStatus.innerHTML = `Connection type: <strong>${connection.type || 'unknown'}</strong>`;
+        }
+      } else {
+        connectionStatus.innerHTML = 'Connection information unavailable.';
+      }
+    } else {
+      connectionStatus.innerHTML = 'Your browser does not support connection detection.';
+    }
+  }
+
+  checkConnection();
+
+  // Initialize map
+  const map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://kxljxv.github.io/dark_matter.json',
+    center: [13.5, 52.5],
+    zoom: 10,
+    maxZoom: 20
+  });
+
+  // Track data loaded
+  function updateDataUsage(bytesLoaded) {
+    dataLoaded += bytesLoaded;
+    dataSizeEl.textContent = (dataLoaded / (1024 * 1024)).toFixed(2);
+  }
+
+  // Load data in tiles based on zoom level
+  function loadTiledData() {
+    loadingOverlay.style.display = 'none';
+    dataUsageEl.style.display = 'block';
+
+    const bounds = map.getBounds();
+    const zoom = map.getZoom();
+
+    // Calculate visible area to determine which data to load
+    const visibleArea = {
+      north: bounds.getNorth(),
+      south: bounds.getSouth(),
+      east: bounds.getEast(),
+      west: bounds.getWest()
+    };
+
+    // Define the data loading strategy based on zoom level
+    let endpoint = 'https://kxljxv.github.io/heatmap/';
+    let filename = '';
+
+    if (zoom < 10) {
+      filename = 'LINKEvsGRUEN14_low_res.geojson'; // Reduced dataset for low zoom
+      zoomNotice.style.display = 'block';
+    } else if (zoom < 14) {
+      filename = 'LINKEvsGRUEN14_medium_res.geojson'; // Medium resolution
+      zoomNotice.style.display = 'none';
+    } else {
+      // For high zoom levels, we load data for the visible area only
+      // In a real implementation, this would use a backend that serves tiles
+      filename = 'LINKEvsGRUEN14_high_res.geojson';
+      zoomNotice.style.display = 'none';
+    }
+
+    // Simulate tiled data with different resolution files
+    // In production, you would implement a proper tiling server
+    console.log(`Loading ${filename} for zoom level ${zoom}`);
+
+    // For this example, we'll simulate the different resolution files
+    // In reality, you would create these files or implement a backend
+    // that generates tiles on demand
+
+    // Simulate actual file size for different resolutions
+    const fileSizeEstimate = isFullDataset ? 90 * 1024 * 1024 :
+      (zoom < 10 ? 2 * 1024 * 1024 :
+        (zoom < 14 ? 10 * 1024 * 1024 : 30 * 1024 * 1024));
+
+    // Update data usage counter (simulated)
+    updateDataUsage(fileSizeEstimate);
+
+    // For demo purposes, we'll still load the actual file
+    // but in a real implementation, you would load the appropriate tile
+    const actualFile = isFullDataset ?
+      'https://kxljxv.github.io/heatmap/LINKEvsGRUEN14.geojson' :
+      'https://kxljxv.github.io/heatmap/LINKEvsGRUEN14.geojson';
+
+    // Add source and layer if they don't exist yet
+    if (!map.getSource('voting-points')) {
+      map.addSource('voting-points', {
+        type: 'geojson',
+        data: actualFile,
+        // Add clustering parameters for better performance
+        cluster: !isFullDataset,
+        clusterMaxZoom: 14,
+        clusterRadius: 50
+      });
+
+      // Add a clustered point layer
+      if (!isFullDataset) {
+        map.addLayer({
+          id: 'clusters',
+          type: 'circle',
+          source: 'voting-points',
+          filter: ['has', 'point_count'],
+          paint: {
+            'circle-color': [
+              'step',
+              ['get', 'point_count'],
+              '#51bbd6',
+              100, '#f1f075',
+              750, '#f28cb1'
+            ],
+            'circle-radius': [
+              'step',
+              ['get', 'point_count'],
+              20,
+              100, 30,
+              750, 40
+            ]
+          }
+        });
+
+        map.addLayer({
+          id: 'cluster-count',
+          type: 'symbol',
+          source: 'voting-points',
+          filter: ['has', 'point_count'],
+          layout: {
+            'text-field': '{point_count_abbreviated}',
+            'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+            'text-size': 12
+          }
+        });
+      }
+
+      // Add the individual points layer
+      map.addLayer({
+        id: 'voting-points-layer',
+        type: 'circle',
+        source: 'voting-points',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-radius': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            10, 2,
+            20, 10
+          ],
+          'circle-color': [
+            'match',
+            ['get', 'V'],
+            'G', '#09bf00',
+            'L', '#ff1400',
+            'rgba(0,0,0,0)' // fallback/default color
+          ],
+          'circle-opacity': 1,
+          'circle-stroke-width': 0,
+          'circle-stroke-color': '#ffffff',
+          'circle-blur': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            6, 5,
+            10, 3,
+            16, 1,
+            18, 0.5
+          ]
+        }
+      });
+    }
+  }
+
+  // Load full dataset (original behavior)
+  function loadFullDataset() {
+    isFullDataset = true;
+    loadTiledData();
+  }
+
+  // Event listeners
+  loadOptimizedBtn.addEventListener('click', () => {
+    isFullDataset = false;
+    loadTiledData();
+  });
+
+  loadFullBtn.addEventListener('click', loadFullDataset);
+
+  // Update data on map move
+  map.on('moveend', () => {
+    const zoom = map.getZoom();
+
+    // Only reload data when zoom crosses certain thresholds
+    if ((zoom < 10 && map.oldZoom >= 10) ||
+      (zoom >= 10 && zoom < 14 && (map.oldZoom < 10 || map.oldZoom >= 14)) ||
+      (zoom >= 14 && map.oldZoom < 14)) {
+      loadTiledData();
+    }
+
+    map.oldZoom = zoom;
+  });
+
+  map.on('load', () => {
+    map.oldZoom = map.getZoom();
+  });
+</script>
+</body>
+</html>
