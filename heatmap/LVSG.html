@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>LINKE vs GRUEN - MapLibre</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+    href="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css"
+    rel="stylesheet"
+  />
+  <style>
+    body, html { margin: 0; padding: 0; height: 100%; }
+    #map { width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+
+<script src="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js"></script>
+<script>
+  const map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://kxljxv.github.io/dark_matter.json',
+    center: [13.5, 52.5],
+    zoom: 10
+  });
+
+  map.on('load', () => {
+    map.addSource('voting-points', {
+      type: 'geojson',
+      data: 'https://kxljxv.github.io/heatmap/LINKEvsGRUEN14.geojson'
+    });
+
+    map.addLayer({
+      id: 'voting-points-layer',
+      type: 'circle',
+      source: 'voting-points',
+      paint: {
+        'circle-radius': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          10,
+          2,
+          20,
+          10
+
+        ],
+        'circle-color': [
+          'match',
+          ['get', 'V'],
+          'G', '#09bf00',
+          'L', '#ff1400',
+          'rgba(0,0,0,0)' // fallback/default color
+        ],
+        'circle-opacity': 1,
+        'circle-stroke-width': 0,
+        'circle-stroke-color': '#ffffff',
+        'circle-blur': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          6,
+          10,
+          10,
+          5,
+          16,
+          2,
+          18,
+          0.5
+        ]
+      }
+    });
+  });
+</script>
+</body>
+</html>
