@@ -1,125 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>MapLibre Heatmap with Basemap.de</title>
-  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <script src="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.js"></script>
-  <link href="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.css" rel="stylesheet" />
-  <script src="https://unpkg.com/geojson-vt@3.2.0/geojson-vt.js"></script>
-  <script src="https://unpkg.com/@mapbox/geojson-vt-canvas@0.4.1/index.js"></script>
-  <style>
-    body { margin: 0; padding: 0; }
-    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-  </style>
+    <title>Create a heatmap layer</title>
+    <meta property="og:description" content="Visualize earthquake frequency by location using a heatmap layer." />
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@5.3.0/dist/maplibre-gl.css' />
+    <script src='https://unpkg.com/maplibre-gl@5.3.0/dist/maplibre-gl.js'></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        html, body, #map { height: 100%; }
+    </style>
 </head>
 <body>
-  <div id="map"></div>
+<div id="map"></div>
 
-  <script>
-    let map;
-    let tileIndex = null;
+<script>
+    const map = new maplibregl.Map({
+        container: 'map',
+        style:
+            'https://api.maptiler.com/maps/basic/style.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL',
+        center: [13.5, 52.5],
+        zoom: 10
+    });
 
-    // First load the basemap style
-    fetch('https://kxljxv.github.io/bm_web_gry_7.json')
-      .then(res => res.json())
-      .then(style => {
-        map = new maplibregl.Map({
-          container: 'map',
-          style: style,
-          center: [13.4, 52.52], // Berlin
-          zoom: 10
+    map.on('load', () => {
+        // Add a geojson point source.
+        // Heatmap layers also work with a vector tile source.
+        map.addSource('earthquakes', {
+            'type': 'geojson',
+            'data':
+                'https://maplibre.org/maplibre-gl-js/docs/assets/earthquakes.geojson'
         });
 
-        map.on('load', () => {
-          // Fetch GeoJSON after map is ready
-          fetch('https://kxljxv.github.io/heatmap/GRUENp.json')
-            .then(response => {
-              if (!response.ok) throw new Error("GeoJSON failed to load");
-              return response.json();
-            })
-            .then(geojson => {
-              tileIndex = geojsonvt(geojson, {
-                maxZoom: 14,
-                tolerance: 3,
-                extent: 4096,
-                buffer: 64
-              });
 
-              maplibregl.addProtocol('local', (params, callback) => {
-                if (!tileIndex) return callback(new Error("Tiles not ready"));
-
-                const z = parseInt(params.z);
-                const x = parseInt(params.x);
-                const y = parseInt(params.y);
-
-                const tile = tileIndex.getTile(z, x, y);
-                if (!tile) {
-                  return callback(null, new ArrayBuffer(0), null, null);
+        map.addLayer(
+            {
+                'id': 'earthquakes-point',
+                'type': 'circle',
+                'source': 'earthquakes',
+                'minzoom': 9,
+                'paint': {
+                    // Size circle radius by earthquake magnitude and zoom level
+                    'circle-radius': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        10,
+                        1,
+                        20,
+                        3
+                    ],
+                    // Color circle by earthquake magnitude
+                    'circle-color': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        1,
+                        'rgba(33,102,172,0)',
+                        2,
+                        'rgb(103,169,207)',
+                        3,
+                        'rgb(209,229,240)',
+                        4,
+                        'rgb(253,219,199)',
+                        5,
+                        'rgb(239,138,98)',
+                        6,
+                        'rgb(178,24,43)'
+                    ],
+                  
+                    'circle-blur': [
+                      'interpolate': [
+                      ['linear'],
+                      ['zoom'],
+                      10,
+                      4,
+                      16,
+                      2
+                      18,
+                      1
+                    ],
+                      
+                    'circle-opacity': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        7,
+                        0,
+                        8,
+                        1
+                    ]
                 }
-
-                const features = tile.features.map(f => ({
-                  type: 1, // point
-                  geometry: f.geometry,
-                  tags: {}
-                }));
-
-                const vectorTile = {
-                  layers: {
-                    points: {
-                      version: 2,
-                      name: 'points',
-                      features: features,
-                      extent: 4096
-                    }
-                  }
-                };
-
-                const pbf = geojsonvt.canvas.encode(vectorTile);
-                callback(null, pbf.buffer, null, null);
-              });
-
-              map.addSource('heatmap-source', {
-                type: 'vector',
-                tiles: ['local://heatmap/{z}/{x}/{y}.pbf'],
-                minzoom: 0,
-                maxzoom: 14
-              });
-
-              map.addLayer({
-                id: 'heatmap-layer',
-                type: 'heatmap',
-                source: 'heatmap-source',
-                'source-layer': 'points',
-                paint: {
-                  'heatmap-weight': 1,
-                  'heatmap-intensity': 1,
-                  'heatmap-color': [
-                    'interpolate',
-                    ['linear'],
-                    ['heatmap-density'],
-                    0, 'rgba(0, 0, 255, 0)',
-                    0.2, 'blue',
-                    0.4, 'cyan',
-                    0.6, 'lime',
-                    0.8, 'yellow',
-                    1, 'red'
-                  ],
-                  'heatmap-radius': 15,
-                  'heatmap-opacity': 0.8
-                }
-              });
-            })
-            .catch(err => {
-              console.error("Failed to load GeoJSON:", err);
-              alert("Failed to load GeoJSON data.");
-            });
-        });
-      })
-      .catch(err => {
-        console.error("Failed to load basemap style:", err);
-        alert("Could not load base map style.");
-      });
-  </script>
+            },
+            'waterway'
+        );
+    });
+</script>
 </body>
 </html>
