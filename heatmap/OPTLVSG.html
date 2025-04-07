@@ -173,15 +173,15 @@
     let filename = '';
 
     if (zoom < 10) {
-      filename = 'LINKEvsGRUEN14_low_res.geojson'; // Reduced dataset for low zoom
+      filename = 'LINKEvsGRUEN13.geojson'; // Reduced dataset for low zoom
       zoomNotice.style.display = 'block';
     } else if (zoom < 14) {
-      filename = 'LINKEvsGRUEN14_medium_res.geojson'; // Medium resolution
+      filename = 'LINKEvsGRUEN13.geojson'; // Medium resolution
       zoomNotice.style.display = 'none';
     } else {
       // For high zoom levels, we load data for the visible area only
       // In a real implementation, this would use a backend that serves tiles
-      filename = 'LINKEvsGRUEN14_high_res.geojson';
+      filename = 'LINKEvsGRUEN13.geojson';
       zoomNotice.style.display = 'none';
     }
 
