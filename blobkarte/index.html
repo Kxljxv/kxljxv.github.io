@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta property="og:description" content="Visualize election results." />
     <title>Grüne Wahlanalyse</title>
-    <link rel="icon" type="image/x-icon" href="./favicon.png">
+    <link rel="icon" type="image/x-icon" href="./img/favicon.png">
 
     <!-- MapLibre GL -->
     <link href="https://unpkg.com/maplibre-gl@5.4.0/dist/maplibre-gl.css" rel="stylesheet" />
@@ -48,11 +48,18 @@
 
 <!-- Map logic -->
 <script>
+
+    const bounds = [
+        [11.6027304, 51.9550436], // Southwest coordinates
+        [15.1127362, 53.0824468] // Northeast coordinates
+    ];
+
     const map = new maplibregl.Map({
         container: 'map',
         style: './positron6.json',
         center: [13.4160485, 52.5221728],
-        zoom: 10
+        zoom: 10,
+        maxBounds: bounds,
     });
 
     map.dragRotate.disable();
