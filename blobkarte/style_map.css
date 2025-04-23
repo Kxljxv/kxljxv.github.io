@@ -1,0 +1,52 @@
+/* Ensure the map container fills the viewport */
+html, body, #map {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    border: 0px solid #ccc;
+    border-radius: 2rem;
+}
+
+/* Shared UI styles (both search + radio controls) */
+.ui-panel {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.75);
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+    z-index: 10;
+    filter: drop-shadow(0 0 0.75rem gray);
+}
+
+/* Layer selector overlay */
+#layer-selector {
+    bottom: 1.5rem;
+}
+
+/* Search box */
+#search-container {
+    top: 1.5rem;
+}
+
+/* Adjust spacing between radio groups */
+#layer-selector > div {
+    margin-right: 0.5rem;
+}
+
+#layer-selector > div:last-child {
+    margin-right: 0;
+}
+
+/* Input style */
+#search-input {
+    border: 0px solid #ccc;
+    border-radius: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    width: 18rem;
+    font-size: 1rem;
+    outline: none;
+    background: rgba(255, 255, 255, 0);
+}
