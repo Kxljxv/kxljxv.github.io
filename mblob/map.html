@@ -7,54 +7,45 @@
     <title>Create a heatmap layer</title>
 
     <!-- MapLibre GL -->
-    <link
-            href="https://unpkg.com/maplibre-gl@5.4.0/dist/maplibre-gl.css"
-            rel="stylesheet"
-    />
+    <link href="https://unpkg.com/maplibre-gl@5.4.0/dist/maplibre-gl.css" rel="stylesheet" />
     <script src="https://unpkg.com/maplibre-gl@5.4.0/dist/maplibre-gl.js"></script>
 
-    <!-- Flowbite CSS for styling radios -->
-    <link
-            href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.css"
-            rel="stylesheet"
-    />
+    <!-- Flowbite CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.css" rel="stylesheet" />
 
-    <!-- Your custom styles -->
+    <!-- Custom styles -->
     <link rel="stylesheet" href="style_map.css" />
 </head>
 <body class="h-full m-0">
 <div id="map" class="h-full w-full relative"></div>
 
-<!-- Layer selector UI -->
-<fieldset id="layer-selector" class="flex items-center" aria-label="Map layer">
-    <legend class="sr-only">Choose layer</legend>
+<!-- Search Field -->
+<div id="search-container" class="ui-panel">
+    <input id="search-input" type="text" placeholder="Suche…" />
+</div>
 
+<!-- Layer selector UI -->
+<fieldset id="layer-selector" class="ui-panel flex items-center" aria-label="Map layer">
+    <legend class="sr-only">Choose layer</legend>
     <div class="flex items-center">
-        <input id="radio-GvL" name="layer" type="radio" value="GvL" checked
-               class="w-4 h-4 text-gray-600 bg-gray-100 border-gray-300 focus:ring-gray-500" />
+        <input id="radio-GvL" name="layer" type="radio" value="GvL" checked class="w-4 h-4 text-gray-600 bg-gray-100 border-gray-300 focus:ring-gray-500" />
         <label for="radio-GvL" class="ml-2 text-sm font-medium text-gray-900">Grüne vs Linke</label>
     </div>
-
     <div class="flex items-center">
-        <input id="radio-GvS" name="layer" type="radio" value="GvS"
-               class="w-4 h-4 text-gray-600 bg-gray-100 border-gray-300 focus:ring-gray-500 ml-4" />
+        <input id="radio-GvS" name="layer" type="radio" value="GvS" class="w-4 h-4 text-gray-600 bg-gray-100 border-gray-300 focus:ring-gray-500 ml-4" />
         <label for="radio-GvS" class="ml-2 text-sm font-medium text-gray-900">Grüne vs SPD</label>
     </div>
-
     <div class="flex items-center">
-        <input id="radio-GvC" name="layer" type="radio" value="GvC"
-               class="w-4 h-4 text-gray-600 bg-gray-100 border-gray-300 focus:ring-gray-500 ml-4" />
+        <input id="radio-GvC" name="layer" type="radio" value="GvC" class="w-4 h-4 text-gray-600 bg-gray-100 border-gray-300 focus:ring-gray-500 ml-4" />
         <label for="radio-GvC" class="ml-2 text-sm font-medium text-gray-900">Grüne vs CDU</label>
     </div>
-
     <div class="flex items-center">
-        <input id="radio-GvA" name="layer" type="radio" value="GvA"
-               class="w-4 h-4 text-gray-600 bg-gray-100 border-gray-300 focus:ring-gray-500 ml-4" />
+        <input id="radio-GvA" name="layer" type="radio" value="GvA" class="w-4 h-4 text-gray-600 bg-gray-100 border-gray-300 focus:ring-gray-500 ml-4" />
         <label for="radio-GvA" class="ml-2 text-sm font-medium text-gray-900">Grüne vs AfD</label>
     </div>
 </fieldset>
 
-<!-- Your map + toggle logic -->
+<!-- Map logic -->
 <script>
     const map = new maplibregl.Map({
         container: 'map',
@@ -63,69 +54,88 @@
         zoom: 10
     });
 
+    map.dragRotate.disable();
+    map.keyboard.disable();
+    map.touchZoomRotate.disableRotation();
+
     map.on('load', () => {
-        // add your source
         map.addSource('Map', {
             type: 'geojson',
             data: 'https://kxljxv.github.io/heatmap/Glolallepinnerpoint.json'
         });
 
-        // helper to add each layer without modification
-        const layers = ['GvL','GvS','GvC','GvA'];
+        const layers = ['GvL', 'GvS', 'GvC', 'GvA'];
         layers.forEach(id => {
             const def = {
                 id,
                 type: 'circle',
                 source: 'Map',
                 minzoom: 7,
-                paint: {} // we'll override below
+                paint: {}
             };
-            // copy your existing paint blocks by ID:
-            switch(id) {
+            switch (id) {
                 case 'GvL': def.paint = {
-                    'circle-radius': ['interpolate',['linear'],['zoom'],7,['interpolate',['linear'],['get','GpL'],0,0,500,14],15,['interpolate',['linear'],['get','GpL'],0,0,500,30],18,['interpolate',['linear'],['get','GpL'],0,0,500,60]],
-                    'circle-color': ['interpolate',['linear'],['get','GlolL'],-0.8,'rgb(219,0,255)',-0.001,'rgba(219,0,255,0)',0.001,'rgba(19,174,0,0)',0.8,'rgb(19,174,0)'],
+                    'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, ['interpolate', ['linear'], ['get', 'GpL'], 0, 0, 500, 14], 15, ['interpolate', ['linear'], ['get', 'GpL'], 0, 0, 500, 30], 18, ['interpolate', ['linear'], ['get', 'GpL'], 0, 0, 500, 60]],
+                    'circle-color': ['interpolate', ['linear'], ['get', 'GlolL'], -0.8, 'rgb(219,0,255)', -0.001, 'rgba(219,0,255,0)', 0.001, 'rgba(19,174,0,0)', 0.8, 'rgb(19,174,0)'],
                     'circle-blur': 0.2,
-                    'circle-opacity': ['interpolate',['linear'],['zoom'],7,0,8,1]
+                    'circle-opacity': ['interpolate', ['linear'], ['zoom'], 7, 0, 8, 1]
                 }; break;
                 case 'GvS': def.paint = {
-                    'circle-radius': ['interpolate',['linear'],['zoom'],7,['interpolate',['linear'],['get','GpS'],0,0,500,14],15,['interpolate',['linear'],['get','GpS'],0,0,500,30],18,['interpolate',['linear'],['get','GpS'],0,0,500,60]],
-                    'circle-color': ['interpolate',['linear'],['get','GlolS'],-0.8,'rgb(239,0,0)',-0.001,'rgba(239,0,0,0)',0.001,'rgba(19,174,0,0)',0.8,'rgb(19,174,0)'],
+                    'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, ['interpolate', ['linear'], ['get', 'GpS'], 0, 0, 500, 14], 15, ['interpolate', ['linear'], ['get', 'GpS'], 0, 0, 500, 30], 18, ['interpolate', ['linear'], ['get', 'GpS'], 0, 0, 500, 60]],
+                    'circle-color': ['interpolate', ['linear'], ['get', 'GlolS'], -0.8, 'rgb(239,0,0)', -0.001, 'rgba(239,0,0,0)', 0.001, 'rgba(19,174,0,0)', 0.8, 'rgb(19,174,0)'],
                     'circle-blur': 0.2,
-                    'circle-opacity': ['interpolate',['linear'],['zoom'],7,0,8,1]
+                    'circle-opacity': ['interpolate', ['linear'], ['zoom'], 7, 0, 8, 1]
                 }; break;
                 case 'GvC': def.paint = {
-                    'circle-radius': ['interpolate',['linear'],['zoom'],7,['interpolate',['linear'],['get','GpC'],0,0,500,14],15,['interpolate',['linear'],['get','GpC'],0,0,500,30],18,['interpolate',['linear'],['get','GpC'],0,0,500,60]],
-                    'circle-color': ['interpolate',['linear'],['get','GlolC'],-0.8,'rgb(53,53,53)',-0.001,'rgba(53,53,53,0)',0.001,'rgba(19,174,0,0)',0.8,'rgb(19,174,0)'],
+                    'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, ['interpolate', ['linear'], ['get', 'GpC'], 0, 0, 500, 14], 15, ['interpolate', ['linear'], ['get', 'GpC'], 0, 0, 500, 30], 18, ['interpolate', ['linear'], ['get', 'GpC'], 0, 0, 500, 60]],
+                    'circle-color': ['interpolate', ['linear'], ['get', 'GlolC'], -0.8, 'rgb(53,53,53)', -0.001, 'rgba(53,53,53,0)', 0.001, 'rgba(19,174,0,0)', 0.8, 'rgb(19,174,0)'],
                     'circle-blur': 0.2,
-                    'circle-opacity': ['interpolate',['linear'],['zoom'],7,0,8,1]
+                    'circle-opacity': ['interpolate', ['linear'], ['zoom'], 7, 0, 8, 1]
                 }; break;
                 case 'GvA': def.paint = {
-                    'circle-radius': ['interpolate',['linear'],['zoom'],7,['interpolate',['linear'],['get','GpA'],0,0,500,14],15,['interpolate',['linear'],['get','GpA'],0,0,500,30],18,['interpolate',['linear'],['get','GpA'],0,0,500,60]],
-                    'circle-color': ['interpolate',['linear'],['get','GlolA'],-0.8,'rgb(30,110,255)',-0.001,'rgba(30,110,255,0)',0.001,'rgba(19,174,0,0)',0.8,'rgb(19,174,0)'],
+                    'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, ['interpolate', ['linear'], ['get', 'GpA'], 0, 0, 500, 14], 15, ['interpolate', ['linear'], ['get', 'GpA'], 0, 0, 500, 30], 18, ['interpolate', ['linear'], ['get', 'GpA'], 0, 0, 500, 60]],
+                    'circle-color': ['interpolate', ['linear'], ['get', 'GlolA'], -0.8, 'rgb(30,110,255)', -0.001, 'rgba(30,110,255,0)', 0.001, 'rgba(19,174,0,0)', 0.8, 'rgb(19,174,0)'],
                     'circle-blur': 0.2,
-                    'circle-opacity': ['interpolate',['linear'],['zoom'],7,0,8,1]
+                    'circle-opacity': ['interpolate', ['linear'], ['zoom'], 7, 0, 8, 1]
                 }; break;
             }
             map.addLayer(def, 'waterway');
         });
 
-        // initially hide all but the checked one
         const showLayer = (id) => {
             layers.forEach(l => {
                 map.setLayoutProperty(l, 'visibility', l === id ? 'visible' : 'none');
             });
         };
+
         showLayer(document.querySelector('input[name="layer"]:checked').value);
 
-        // wire up radios
         document.querySelectorAll('input[name="layer"]').forEach(el => {
             el.addEventListener('change', () => showLayer(el.value));
         });
     });
+
+    // Search logic (limited to Berlin)
+    document.getElementById('search-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const query = e.target.value;
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ' Berlin')}&limit=1`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        const { lat, lon } = data[0];
+                        map.flyTo({
+                            center: [parseFloat(lon), parseFloat(lat)],
+                            zoom: 14
+                        });
+                    } else {
+                        alert('No results found in Berlin.');
+                    }
+                });
+        }
+    });
 </script>
 
-<!-- Flowbite JS (optional if you need advanced components) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.js"></script>
 </body>
 </html>
