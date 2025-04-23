@@ -4,7 +4,10 @@ html, body, #map {
     padding: 0;
     height: 100%;
     width: 100%;
+    border: 0px solid #ccc;
+    border-radius: 2rem;
 }
+
 
 /* Shared UI styles (both search + radio controls) */
 .ui-panel {
