@@ -6,10 +6,9 @@ html, body, #map {
     width: 100%;
 }
 
-/* Layer selector overlay */
-#layer-selector {
+/* Shared UI styles (both search + radio controls) */
+.ui-panel {
     position: absolute;
-    bottom: 1.5rem;
     left: 50%;
     transform: translateX(-50%);
     backdrop-filter: blur(10px);
@@ -20,6 +19,16 @@ html, body, #map {
     filter: drop-shadow(0 0 0.75rem gray);
 }
 
+/* Layer selector overlay */
+#layer-selector {
+    bottom: 1.5rem;
+}
+
+/* Search box */
+#search-container {
+    top: 1.5rem;
+}
+
 /* Adjust spacing between radio groups */
 #layer-selector > div {
     margin-right: 0.5rem;
@@ -27,4 +36,15 @@ html, body, #map {
 
 #layer-selector > div:last-child {
     margin-right: 0;
+}
+
+/* Input style */
+#search-input {
+    border: 0px solid #ccc;
+    border-radius: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    width: 18rem;
+    font-size: 1rem;
+    outline: none;
+    background: rgba(255, 255, 255, 0);
 }
