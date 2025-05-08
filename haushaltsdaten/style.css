@@ -4,8 +4,8 @@ body, html {
     width: 100vw;
     height: 100vh;
     font-family: Arial, sans-serif;
+    overflow: hidden;
 }
-
 #back-btn {
     position: absolute;
     right: 24px;
@@ -22,19 +22,16 @@ body, html {
 #back-btn:hover {
     background: #cbd5e1;
 }
-
 #treemap {
     width: 100vw;
     height: 100vh;
     box-sizing: border-box;
-    overflow: auto;
     position: relative;
 }
-
 .treemap-rect {
     position: absolute;
     box-sizing: border-box;
-    border: 0;
+    border: none;
     background: #e0e7ff;
     display: flex;
     align-items: center;
@@ -42,17 +39,17 @@ body, html {
     font-size: 13px;
     color: #222;
     cursor: pointer;
-    transition: background 0.2s;
     overflow: hidden;
     text-align: center;
+    user-select: none;
+    transition: background 0.2s;
 }
-
-.treemap-rect:hover {
-    background: #cbd5e1;
-    z-index: 2;
+.treemap-rect:active {
+    background: #b6c8ef;
 }
-
-/* Tooltip styling */
+.treemap-rect.no-folder {
+    cursor: default;
+}
 .treemap-tooltip {
     pointer-events: none;
     position: fixed;
