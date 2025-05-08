@@ -1,3 +1,16 @@
+// Utility function to fetch JSON files
+async function fetchJSON(path) {
+    try {
+        console.log(`Fetching JSON file: ${path}`);
+        const response = await fetch(path);
+        if (!response.ok) throw new Error(`Failed to fetch ${path}`);
+        return await response.json();
+    } catch (error) {
+        console.error(`Error fetching JSON file (${path}):`, error);
+        return null;
+    }
+}
+
 // Utility function to fetch and parse YAML files
 async function fetchYAML(path) {
     try {
@@ -12,39 +25,21 @@ async function fetchYAML(path) {
     }
 }
 
-// Function to get the list of YAML files and corresponding folders
-async function getDirectoryData(path) {
-    try {
-        console.log(`Fetching directory data: ${path}`);
-        const response = await fetch(path);
-        if (!response.ok) throw new Error(`Failed to fetch directory listing at ${path}`);
-        const text = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(text, 'text/html');
-        const links = Array.from(doc.querySelectorAll('a'))
-            .map(link => link.getAttribute('href'))
-            .filter(href => href && href !== '../');
-
-        const yamlFiles = links.filter(name => name.endsWith('.yaml'));
-        const folders = links.filter(name => !name.endsWith('.yaml') && name.endsWith('/'));
-
-        console.log(`Found YAML files:`, yamlFiles);
-        console.log(`Found folders:`, folders);
-
-        return { yamlFiles, folders };
-    } catch (error) {
-        console.error(`Error fetching directory data (${path}):`, error);
-        return { yamlFiles: [], folders: [] };
-    }
-}
-
 // Function to render the treemap
 async function renderTreemap(path = '') {
     const treemapContainer = document.getElementById('treemap');
     treemapContainer.innerHTML = '';
     console.log(`Rendering treemap for path: ${path}`);
 
-    const { yamlFiles, folders } = await getDirectoryData(path);
+    const directoryData = await fetchJSON(`${path}directory.json`);
+    if (!directoryData) {
+        console.warn('Failed to fetch directory data.');
+        treemapContainer.textContent = 'Failed to load data.';
+        return;
+    }
+
+    const { files, subdirectories } = directoryData;
+    const yamlFiles = files.filter(file => file.endsWith('.yaml'));
     const data = [];
 
     for (const file of yamlFiles) {
@@ -53,7 +48,7 @@ async function renderTreemap(path = '') {
             data.push({
                 name: file.replace('.yaml', ''),
                 betrag: yamlData.Betrag,
-                hasFolder: folders.includes(`${file.replace('.yaml', '')}/`)
+                hasFolder: subdirectories.includes(file.replace('.yaml', ''))
             });
         }
     }
@@ -69,8 +64,6 @@ async function renderTreemap(path = '') {
     const totalBetrag = data.reduce((sum, item) => sum + item.betrag, 0);
     const containerWidth = treemapContainer.clientWidth;
     const containerHeight = treemapContainer.clientHeight;
-
-    let rowHeight = 0;
 
     for (const item of data) {
         const areaRatio = item.betrag / totalBetrag;
