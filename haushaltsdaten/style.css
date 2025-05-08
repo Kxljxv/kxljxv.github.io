@@ -31,7 +31,7 @@ body, html {
 .treemap-rect {
     position: absolute;
     box-sizing: border-box;
-    border: none;
+    border: 1px;
     background: #e0e7ff;
     display: flex;
     align-items: center;
