@@ -33,6 +33,11 @@ async function renderTreemap(path = '') {
     treemapContainer.innerHTML = '';
     console.log(`Rendering treemap for path: ${path}`);
 
+    // Ensure the path ends with a slash for consistent directory structure
+    if (path && !path.endsWith('/')) {
+        path += '/';
+    }
+
     const directoryData = await fetchJSON(`${path}directory.json`);
     if (!directoryData) {
         console.warn('Failed to fetch directory data.');
@@ -87,7 +92,7 @@ async function renderTreemap(path = '') {
         if (item.hasFolder) {
             div.addEventListener('click', () => {
                 console.log(`Navigating into folder: ${item.name}`);
-                renderTreemap(`${path}${item.name}/`);
+                renderTreemap(`${path}${item.name}`); // Use correct path for subdirectory
             });
         } else {
             div.style.cursor = 'default';
