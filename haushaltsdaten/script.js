@@ -33,11 +33,6 @@ async function renderTreemap(path = '') {
     treemapContainer.innerHTML = '';
     console.log(`Rendering treemap for path: ${path}`);
 
-    // Ensure the path ends with a slash for consistent directory structure
-    if (path && !path.endsWith('/')) {
-        path += '/';
-    }
-
     const directoryData = await fetchJSON(`${path}directory.json`);
     if (!directoryData) {
         console.warn('Failed to fetch directory data.');
@@ -49,17 +44,20 @@ async function renderTreemap(path = '') {
     const yamlFiles = files.filter(file => file.endsWith('.yaml'));
     const data = [];
 
+    // Map display name and folder name
     for (const file of yamlFiles) {
         const yamlData = await fetchYAML(`${path}${file}`);
         if (yamlData) {
-            const betrag = parseFloat(yamlData.Betrag); // Convert 'Betrag' to a number
+            const betrag = parseFloat(yamlData.Betrag);
             if (!isNaN(betrag)) {
-                // Use the YAML file name without .yaml for navigation
-                const folderName = file.replace('.yaml', '');
+                // Find matching subdirectory: "36.yaml" -> "36"
+                const baseName = file.replace('.yaml', '');
+                const hasFolder = subdirectories.includes(baseName);
                 data.push({
-                    name: yamlData.Bereichsbezeichnung || folderName,
+                    displayName: yamlData.Bereichsbezeichnung || baseName,
+                    folderName: baseName,
                     betrag: betrag,
-                    folderName: folderName, // Store the folder name for navigation
+                    hasFolder: hasFolder
                 });
             } else {
                 console.warn(`YAML file ${file} has an invalid 'Betrag' field:`, yamlData.Betrag);
@@ -89,13 +87,16 @@ async function renderTreemap(path = '') {
         div.className = 'treemap-item';
         div.style.width = `${width}px`;
         div.style.height = `${height}px`;
-        div.textContent = item.name;
+        div.textContent = item.displayName;
 
-        // Use the folderName to navigate to its corresponding folder
-        div.addEventListener('click', () => {
-            console.log(`Navigating into folder: ${item.folderName}`);
-            renderTreemap(`${path}${item.folderName}`); // Navigate using folderName
-        });
+        if (item.hasFolder) {
+            div.addEventListener('click', () => {
+                console.log(`Navigating into folder: ${item.folderName}`);
+                renderTreemap(`${path}${item.folderName}/`);
+            });
+        } else {
+            div.style.cursor = 'default';
+        }
 
         treemapContainer.appendChild(div);
     }
