@@ -37,7 +37,6 @@ async function fetchYAML(path) {
     }
 }
 
-// Keep navigation stack for back button
 const navStack = [];
 
 function showBackButton() {
@@ -51,21 +50,31 @@ function formatYamlAttributes(yaml) {
         .join('<br/>');
 }
 
-function createTooltip() {
-    let tooltip = document.getElementById('treemap-tooltip');
-    if (!tooltip) {
-        tooltip = document.createElement('div');
-        tooltip.id = 'treemap-tooltip';
-        tooltip.className = 'treemap-tooltip';
-        document.body.appendChild(tooltip);
-    }
-    return tooltip;
+function showTooltip(html, x, y) {
+    const tooltip = document.getElementById('treemap-tooltip');
+    tooltip.innerHTML = html;
+    tooltip.style.opacity = 1;
+    // Place tooltip, prevent overflow
+    const pad = 12;
+    tooltip.style.left = x + pad + "px";
+    tooltip.style.top = y + pad + "px";
+    setTimeout(() => { // adjust if needed after rendering
+        const rect = tooltip.getBoundingClientRect();
+        let left = x + pad, top = y + pad;
+        if (left + rect.width > window.innerWidth) left = x - rect.width - pad;
+        if (top + rect.height > window.innerHeight) top = y - rect.height - pad;
+        tooltip.style.left = Math.max(left, 0) + "px";
+        tooltip.style.top = Math.max(top, 0) + "px";
+    }, 0);
+}
+function hideTooltip() {
+    const tooltip = document.getElementById('treemap-tooltip');
+    tooltip.style.opacity = 0;
 }
 
 async function renderTreemap(path = "") {
     const container = document.getElementById("treemap");
     container.innerHTML = "";
-
     showBackButton();
 
     const dirData = await fetchJSON(`${path}directory.json`);
@@ -76,7 +85,6 @@ async function renderTreemap(path = "") {
 
     // Gather data
     const entries = [];
-    const yamlCache = {};
     for (const file of dirData.files.filter(f => f.endsWith(".yaml"))) {
         const yaml = await fetchYAML(`${path}${file}`);
         if (yaml && yaml.Betrag) {
@@ -89,7 +97,6 @@ async function renderTreemap(path = "") {
                     hasFolder: dirData.subdirectories.includes(file.replace(".yaml", "")),
                     yaml: yaml
                 });
-                yamlCache[file] = yaml;
             }
         }
     }
@@ -110,7 +117,7 @@ async function renderTreemap(path = "") {
     const width = container.clientWidth || 800;
     const height = container.clientHeight || 600;
 
-    // Treemap layout: NO outer/inner padding for gapless
+    // NO paddings for gapless layout
     d3.treemap()
         .size([width, height])
         .paddingOuter(0)
@@ -126,7 +133,7 @@ async function renderTreemap(path = "") {
         const h = node.y1 - node.y0;
 
         const div = document.createElement("div");
-        div.className = "treemap-rect";
+        div.className = "treemap-rect" + (d.hasFolder ? "" : " no-folder");
         div.style.left = `${x}px`;
         div.style.top = `${y}px`;
         div.style.width = `${w}px`;
@@ -134,39 +141,13 @@ async function renderTreemap(path = "") {
         div.textContent = d.name;
 
         // Tooltip logic
-        div.onmouseenter = (e) => {
-            const tooltip = createTooltip();
-            tooltip.innerHTML = formatYamlAttributes(d.yaml);
-            tooltip.style.opacity = 1;
-            // Position tooltip near mouse, but stay on screen
-            const mouseX = e.clientX;
-            const mouseY = e.clientY;
-            const pad = 12;
-            const tipRect = tooltip.getBoundingClientRect();
-            let left = mouseX + pad;
-            let top = mouseY + pad;
-            if (left + tipRect.width > window.innerWidth) left = mouseX - tipRect.width - pad;
-            if (top + tipRect.height > window.innerHeight) top = mouseY - tipRect.height - pad;
-            tooltip.style.left = `${Math.max(left,0)}px`;
-            tooltip.style.top = `${Math.max(top,0)}px`;
-        };
-        div.onmousemove = (e) => {
-            const tooltip = createTooltip();
-            const mouseX = e.clientX;
-            const mouseY = e.clientY;
-            const pad = 12;
-            const tipRect = tooltip.getBoundingClientRect();
-            let left = mouseX + pad;
-            let top = mouseY + pad;
-            if (left + tipRect.width > window.innerWidth) left = mouseX - tipRect.width - pad;
-            if (top + tipRect.height > window.innerHeight) top = mouseY - tipRect.height - pad;
-            tooltip.style.left = `${Math.max(left,0)}px`;
-            tooltip.style.top = `${Math.max(top,0)}px`;
-        };
-        div.onmouseleave = () => {
-            const tooltip = createTooltip();
-            tooltip.style.opacity = 0;
-        };
+        div.addEventListener('mouseenter', (e) => {
+            showTooltip(formatYamlAttributes(d.yaml), e.clientX, e.clientY);
+        });
+        div.addEventListener('mousemove', (e) => {
+            showTooltip(formatYamlAttributes(d.yaml), e.clientX, e.clientY);
+        });
+        div.addEventListener('mouseleave', hideTooltip);
 
         if (d.hasFolder) {
             div.addEventListener('click', (e) => {
@@ -174,8 +155,6 @@ async function renderTreemap(path = "") {
                 navStack.push(path);
                 renderTreemap(`${path}${d.folderName}/`);
             });
-        } else {
-            div.style.cursor = "default";
         }
 
         container.appendChild(div);
@@ -193,3 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     renderTreemap();
 });
+
+// Hide tooltip when scrolling/resizing
+window.addEventListener('scroll', hideTooltip);
+window.addEventListener('resize', hideTooltip);
