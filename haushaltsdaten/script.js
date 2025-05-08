@@ -54,12 +54,12 @@ async function renderTreemap(path = '') {
         if (yamlData) {
             const betrag = parseFloat(yamlData.Betrag); // Convert 'Betrag' to a number
             if (!isNaN(betrag)) {
-                // Use the actual folder name (e.g., `30`, `31`) instead of Bereichsbezeichnung
+                // Use the YAML file name without .yaml for navigation
                 const folderName = file.replace('.yaml', '');
                 data.push({
                     name: yamlData.Bereichsbezeichnung || folderName,
                     betrag: betrag,
-                    hasFolder: subdirectories.includes(folderName)
+                    folderName: folderName, // Store the folder name for navigation
                 });
             } else {
                 console.warn(`YAML file ${file} has an invalid 'Betrag' field:`, yamlData.Betrag);
@@ -91,14 +91,11 @@ async function renderTreemap(path = '') {
         div.style.height = `${height}px`;
         div.textContent = item.name;
 
-        if (item.hasFolder) {
-            div.addEventListener('click', () => {
-                console.log(`Navigating into folder: ${item.name}`);
-                renderTreemap(`${path}${item.name}`); // Use correct folder name for navigation
-            });
-        } else {
-            div.style.cursor = 'default';
-        }
+        // Use the folderName to navigate to its corresponding folder
+        div.addEventListener('click', () => {
+            console.log(`Navigating into folder: ${item.folderName}`);
+            renderTreemap(`${path}${item.folderName}`); // Navigate using folderName
+        });
 
         treemapContainer.appendChild(div);
     }
