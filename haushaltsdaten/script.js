@@ -1,7 +1,24 @@
-// Utility function to fetch JSON files
+// Priority list for label selection
+const LABEL_PRIORITY = [
+    "Titelbezeichnung",
+    "Gruppenbezeichnung",
+    "Obergruppenbezeichnung",
+    "Kapitelbezeichnung",
+    "Einzelplanbezeichnung",
+    "Bereichsbezeichnung"
+];
+
+// Helper: Pick highest-priority label from YAML object
+function pickLabel(yamlObj) {
+    for (const key of LABEL_PRIORITY) {
+        if (yamlObj[key]) return yamlObj[key];
+    }
+    return "Unbenannt";
+}
+
+// Fetch JSON file (directory listing)
 async function fetchJSON(path) {
     try {
-        console.log(`Fetching JSON file: ${path}`);
         const response = await fetch(path);
         if (!response.ok) throw new Error(`Failed to fetch ${path}`);
         return await response.json();
@@ -11,97 +28,100 @@ async function fetchJSON(path) {
     }
 }
 
-// Utility function to fetch and parse YAML files
+// Fetch and parse YAML file
 async function fetchYAML(path) {
     try {
-        console.log(`Fetching YAML file: ${path}`);
         const response = await fetch(path);
         if (!response.ok) throw new Error(`Failed to fetch ${path}`);
         const text = await response.text();
-        const yamlData = jsyaml.load(text);
-        console.log(`Parsed YAML data from ${path}:`, yamlData);
-        return yamlData;
+        return jsyaml.load(text);
     } catch (error) {
         console.error(`Error fetching or parsing YAML file (${path}):`, error);
         return null;
     }
 }
 
-// Function to render the treemap
-async function renderTreemap(path = '') {
-    const treemapContainer = document.getElementById('treemap');
-    treemapContainer.innerHTML = '';
-    console.log(`Rendering treemap for path: ${path}`);
+// Main rendering function
+async function renderTreemap(path = "") {
+    const container = document.getElementById("treemap");
+    container.innerHTML = ""; // Remove old SVGs/divs
 
-    const directoryData = await fetchJSON(`${path}directory.json`);
-    if (!directoryData) {
-        console.warn('Failed to fetch directory data.');
-        treemapContainer.textContent = 'Failed to load data.';
+    const dirData = await fetchJSON(`${path}directory.json`);
+    if (!dirData) {
+        container.textContent = "Fehler beim Laden der Daten.";
         return;
     }
 
-    const { files, subdirectories } = directoryData;
-    const yamlFiles = files.filter(file => file.endsWith('.yaml'));
-    const data = [];
-
-    // Map display name and folder name
-    for (const file of yamlFiles) {
-        const yamlData = await fetchYAML(`${path}${file}`);
-        if (yamlData) {
-            const betrag = parseFloat(yamlData.Betrag);
+    // Gather data
+    const entries = [];
+    for (const file of dirData.files.filter(f => f.endsWith(".yaml"))) {
+        const yaml = await fetchYAML(`${path}${file}`);
+        if (yaml && yaml.Betrag) {
+            const betrag = parseFloat(yaml.Betrag);
             if (!isNaN(betrag)) {
-                // Find matching subdirectory: "36.yaml" -> "36"
-                const baseName = file.replace('.yaml', '');
-                const hasFolder = subdirectories.includes(baseName);
-                data.push({
-                    displayName: yamlData.Bereichsbezeichnung || baseName,
-                    folderName: baseName,
+                entries.push({
+                    name: pickLabel(yaml),
                     betrag: betrag,
-                    hasFolder: hasFolder
+                    folderName: file.replace(".yaml", ""),
+                    hasFolder: dirData.subdirectories.includes(file.replace(".yaml", ""))
                 });
-            } else {
-                console.warn(`YAML file ${file} has an invalid 'Betrag' field:`, yamlData.Betrag);
             }
         }
     }
 
-    if (data.length === 0) {
-        console.warn('No valid data found to render the treemap.');
-        treemapContainer.textContent = 'No valid data available to display.';
+    if (entries.length === 0) {
+        container.textContent = "Keine gültigen Daten gefunden.";
         return;
     }
 
-    console.log('Processed data for treemap:', data);
+    // Sort descending by betrag (largest first)
+    entries.sort((a, b) => b.betrag - a.betrag);
 
-    const totalBetrag = data.reduce((sum, item) => sum + item.betrag, 0);
-    const containerWidth = treemapContainer.clientWidth;
-    const containerHeight = treemapContainer.clientHeight;
+    // D3 Treemap: Build hierarchy
+    const root = d3.hierarchy({children: entries})
+        .sum(d => d.betrag);
 
-    for (const item of data) {
-        const areaRatio = item.betrag / totalBetrag;
-        const area = containerWidth * containerHeight * areaRatio;
-        const width = Math.sqrt(area * (containerWidth / containerHeight));
-        const height = area / width;
+    // Get container size
+    const width = container.clientWidth || 800;
+    const height = container.clientHeight || 600;
 
-        const div = document.createElement('div');
-        div.className = 'treemap-item';
-        div.style.width = `${width}px`;
-        div.style.height = `${height}px`;
-        div.textContent = item.displayName;
+    // Treemap layout
+    d3.treemap()
+        .size([width, height])
+        .paddingOuter(2)
+        .paddingInner(2)
+        (root);
 
-        if (item.hasFolder) {
-            div.addEventListener('click', () => {
-                console.log(`Navigating into folder: ${item.folderName}`);
-                renderTreemap(`${path}${item.folderName}/`);
+    // To get the biggest in the upper-right, smallest in lower-left,
+    // mirror horizontally and vertically
+    // (d3 fills from top-left, so we flip by subtracting positions from width/height)
+    for (const node of root.leaves()) {
+        const d = node.data;
+        const x = width - node.x1; // horizontal mirror
+        const y = height - node.y1; // vertical mirror
+        const w = node.x1 - node.x0;
+        const h = node.y1 - node.y0;
+
+        const div = document.createElement("div");
+        div.className = "treemap-rect";
+        div.style.left = `${x}px`;
+        div.style.top = `${y}px`;
+        div.style.width = `${w}px`;
+        div.style.height = `${h}px`;
+        div.textContent = d.name;
+
+        if (d.hasFolder) {
+            div.addEventListener('click', (e) => {
+                e.stopPropagation();
+                renderTreemap(`${path}${d.folderName}/`);
             });
         } else {
-            div.style.cursor = 'default';
+            div.style.cursor = "default";
         }
 
-        treemapContainer.appendChild(div);
+        container.appendChild(div);
     }
 }
 
-// Initialize the treemap
-console.log('Initializing treemap visualization...');
+// Init
 renderTreemap();
