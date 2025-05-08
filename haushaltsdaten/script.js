@@ -1,12 +1,13 @@
 // Utility function to fetch and parse YAML files
 async function fetchYAML(path) {
     try {
+        console.log(`Fetching YAML file: ${path}`);
         const response = await fetch(path);
         if (!response.ok) throw new Error(`Failed to fetch ${path}`);
         const text = await response.text();
         return jsyaml.load(text);
     } catch (error) {
-        console.error(error);
+        console.error(`Error fetching YAML file (${path}):`, error);
         return null;
     }
 }
@@ -14,6 +15,7 @@ async function fetchYAML(path) {
 // Function to get the list of YAML files and corresponding folders
 async function getDirectoryData(path) {
     try {
+        console.log(`Fetching directory data: ${path}`);
         const response = await fetch(path);
         if (!response.ok) throw new Error(`Failed to fetch directory listing at ${path}`);
         const text = await response.text();
@@ -26,9 +28,12 @@ async function getDirectoryData(path) {
         const yamlFiles = links.filter(name => name.endsWith('.yaml'));
         const folders = links.filter(name => !name.endsWith('.yaml') && name.endsWith('/'));
 
+        console.log(`Found YAML files:`, yamlFiles);
+        console.log(`Found folders:`, folders);
+
         return { yamlFiles, folders };
     } catch (error) {
-        console.error(error);
+        console.error(`Error fetching directory data (${path}):`, error);
         return { yamlFiles: [], folders: [] };
     }
 }
@@ -37,6 +42,7 @@ async function getDirectoryData(path) {
 async function renderTreemap(path = '') {
     const treemapContainer = document.getElementById('treemap');
     treemapContainer.innerHTML = '';
+    console.log(`Rendering treemap for path: ${path}`);
 
     const { yamlFiles, folders } = await getDirectoryData(path);
     const data = [];
@@ -52,12 +58,18 @@ async function renderTreemap(path = '') {
         }
     }
 
+    if (data.length === 0) {
+        console.warn('No valid data found to render the treemap.');
+        treemapContainer.textContent = 'No data available to display.';
+        return;
+    }
+
+    console.log('Processed data for treemap:', data);
+
     const totalBetrag = data.reduce((sum, item) => sum + item.betrag, 0);
     const containerWidth = treemapContainer.clientWidth;
     const containerHeight = treemapContainer.clientHeight;
 
-    let x = 0;
-    let y = 0;
     let rowHeight = 0;
 
     for (const item of data) {
@@ -74,6 +86,7 @@ async function renderTreemap(path = '') {
 
         if (item.hasFolder) {
             div.addEventListener('click', () => {
+                console.log(`Navigating into folder: ${item.name}`);
                 renderTreemap(`${path}${item.name}/`);
             });
         } else {
@@ -85,4 +98,5 @@ async function renderTreemap(path = '') {
 }
 
 // Initialize the treemap
+console.log('Initializing treemap visualization...');
 renderTreemap();
