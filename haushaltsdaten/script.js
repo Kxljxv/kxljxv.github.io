@@ -47,14 +47,15 @@ async function renderTreemap(path = '') {
     for (const file of yamlFiles) {
         const yamlData = await fetchYAML(`${path}${file}`);
         if (yamlData) {
-            if (typeof yamlData.Betrag === 'number') {
+            const betrag = parseFloat(yamlData.Betrag); // Convert 'Betrag' to a number
+            if (!isNaN(betrag)) {
                 data.push({
-                    name: file.replace('.yaml', ''),
-                    betrag: yamlData.Betrag,
+                    name: yamlData.Bereichsbezeichnung || file.replace('.yaml', ''),
+                    betrag: betrag,
                     hasFolder: subdirectories.includes(file.replace('.yaml', ''))
                 });
             } else {
-                console.warn(`YAML file ${file} does not have a valid 'Betrag' field.`);
+                console.warn(`YAML file ${file} has an invalid 'Betrag' field:`, yamlData.Betrag);
             }
         }
     }
