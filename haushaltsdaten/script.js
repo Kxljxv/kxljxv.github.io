@@ -18,9 +18,11 @@ async function fetchYAML(path) {
         const response = await fetch(path);
         if (!response.ok) throw new Error(`Failed to fetch ${path}`);
         const text = await response.text();
-        return jsyaml.load(text);
+        const yamlData = jsyaml.load(text);
+        console.log(`Parsed YAML data from ${path}:`, yamlData);
+        return yamlData;
     } catch (error) {
-        console.error(`Error fetching YAML file (${path}):`, error);
+        console.error(`Error fetching or parsing YAML file (${path}):`, error);
         return null;
     }
 }
@@ -44,18 +46,22 @@ async function renderTreemap(path = '') {
 
     for (const file of yamlFiles) {
         const yamlData = await fetchYAML(`${path}${file}`);
-        if (yamlData && typeof yamlData.Betrag === 'number') {
-            data.push({
-                name: file.replace('.yaml', ''),
-                betrag: yamlData.Betrag,
-                hasFolder: subdirectories.includes(file.replace('.yaml', ''))
-            });
+        if (yamlData) {
+            if (typeof yamlData.Betrag === 'number') {
+                data.push({
+                    name: file.replace('.yaml', ''),
+                    betrag: yamlData.Betrag,
+                    hasFolder: subdirectories.includes(file.replace('.yaml', ''))
+                });
+            } else {
+                console.warn(`YAML file ${file} does not have a valid 'Betrag' field.`);
+            }
         }
     }
 
     if (data.length === 0) {
         console.warn('No valid data found to render the treemap.');
-        treemapContainer.textContent = 'No data available to display.';
+        treemapContainer.textContent = 'No valid data available to display.';
         return;
     }
 
