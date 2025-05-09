@@ -54,19 +54,10 @@ function showTooltip(html, x, y) {
     const tooltip = document.getElementById('treemap-tooltip');
     tooltip.innerHTML = html;
     tooltip.style.opacity = 1;
-    // Place tooltip, prevent overflow
-    const pad = 12;
-    tooltip.style.left = x + pad + "px";
-    tooltip.style.top = y + pad + "px";
-    setTimeout(() => { // adjust if needed after rendering
-        const rect = tooltip.getBoundingClientRect();
-        let left = x + pad, top = y + pad;
-        if (left + rect.width > window.innerWidth) left = x - rect.width - pad;
-        if (top + rect.height > window.innerHeight) top = y - rect.height - pad;
-        tooltip.style.left = Math.max(left, 0) + "px";
-        tooltip.style.top = Math.max(top, 0) + "px";
-    }, 0);
+    tooltip.style.left = x + 12 + "px"; // Add padding
+    tooltip.style.top = y + 12 + "px";
 }
+
 function hideTooltip() {
     const tooltip = document.getElementById('treemap-tooltip');
     tooltip.style.opacity = 0;
@@ -83,7 +74,6 @@ async function renderTreemap(path = "") {
         return;
     }
 
-    // Gather data
     const entries = [];
     for (const file of dirData.files.filter(f => f.endsWith(".yaml"))) {
         const yaml = await fetchYAML(`${path}${file}`);
@@ -106,41 +96,29 @@ async function renderTreemap(path = "") {
         return;
     }
 
-    // Sort descending by betrag (largest first)
     entries.sort((a, b) => b.betrag - a.betrag);
 
-    // D3 Treemap: Build hierarchy
-    const root = d3.hierarchy({children: entries})
-        .sum(d => d.betrag);
+    const root = d3.hierarchy({children: entries}).sum(d => d.betrag);
 
-    // Get container size
     const width = container.clientWidth || 800;
     const height = container.clientHeight || 600;
 
-    // NO paddings for gapless layout
     d3.treemap()
         .size([width, height])
-        .paddingOuter(0)
-        .paddingInner(0)
+        .paddingOuter(0) // No gaps
+        .paddingInner(0) // No gaps
         (root);
 
-    // Mirror horizontally and vertically for biggest upper-right
     for (const node of root.leaves()) {
         const d = node.data;
-        const x = width - node.x1;
-        const y = height - node.y1;
-        const w = node.x1 - node.x0;
-        const h = node.y1 - node.y0;
-
         const div = document.createElement("div");
         div.className = "treemap-rect" + (d.hasFolder ? "" : " no-folder");
-        div.style.left = `${x}px`;
-        div.style.top = `${y}px`;
-        div.style.width = `${w}px`;
-        div.style.height = `${h}px`;
+        div.style.left = `${node.x0}px`;
+        div.style.top = `${node.y0}px`;
+        div.style.width = `${node.x1 - node.x0}px`;
+        div.style.height = `${node.y1 - node.y0}px`;
         div.textContent = d.name;
 
-        // Tooltip logic
         div.addEventListener('mouseenter', (e) => {
             showTooltip(formatYamlAttributes(d.yaml), e.clientX, e.clientY);
         });
@@ -150,8 +128,7 @@ async function renderTreemap(path = "") {
         div.addEventListener('mouseleave', hideTooltip);
 
         if (d.hasFolder) {
-            div.addEventListener('click', (e) => {
-                e.stopPropagation();
+            div.addEventListener('click', () => {
                 navStack.push(path);
                 renderTreemap(`${path}${d.folderName}/`);
             });
@@ -161,7 +138,6 @@ async function renderTreemap(path = "") {
     }
 }
 
-// Back button logic
 document.addEventListener("DOMContentLoaded", () => {
     const btn = document.getElementById("back-btn");
     btn.onclick = () => {
@@ -172,7 +148,3 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     renderTreemap();
 });
-
-// Hide tooltip when scrolling/resizing
-window.addEventListener('scroll', hideTooltip);
-window.addEventListener('resize', hideTooltip);
