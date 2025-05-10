@@ -1,82 +1,33 @@
 body, html {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
 }
 
 #back-btn {
-    position: absolute;
-    right: 24px;
-    top: 24px;
-    z-index: 10;
-    padding: 8px 16px;
-    font-size: 16px;
-    background: #e0e7ff;
-    border: 1px solid #333;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background .2s;
+  position: absolute;
+  right: 24px;
+  top: 24px;
+  z-index: 10;
+  padding: 8px 16px;
+  font-size: 16px;
+  background: #e0e7ff;
+  border: 1px solid #333;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background .2s;
 }
 
 #back-btn:hover {
-    background: #cbd5e1;
+  background: #cbd5e1;
 }
 
-#treemap {
-    width: 100vw;
-    height: 100vh;
-    box-sizing: border-box;
-    position: relative;
-}
-
-.treemap-rect {
-    position: absolute;
-    box-sizing: border-box;
-    border: 1px solid #333; /* Add visible border */
-    background: #e0e7ff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    color: #222;
-    cursor: pointer;
-    overflow: hidden;
-    text-align: center;
-    user-select: none;
-    transition: background 0.2s, border-color 0.2s;
-}
-
-.treemap-rect:hover {
-    background: #cbd5e1;
-    z-index: 2;
-    border-color: #666; /* Highlight border on hover */
-}
-
-.treemap-rect.no-folder {
-    cursor: default;
-}
-
-.treemap-tooltip {
-    pointer-events: none;
-    position: fixed;
-    z-index: 9999;
-    background: #222;
-    color: #fff;
-    padding: 10px 14px;
-    border-radius: 5px;
-    font-size: 13px;
-    max-width: 350px;
-    max-height: 350px;
-    overflow: auto;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-    white-space: pre-line;
-    opacity: 0;
-    transition: opacity .1s;
-}
-
-.treemap-tooltip p {
-    margin: 0;
+#chartdiv {
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  position: relative;
 }
