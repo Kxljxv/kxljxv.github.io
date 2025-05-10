@@ -38,39 +38,17 @@ async function fetchYAML(path) {
 }
 
 const navStack = [];
+let chart;
 
 function showBackButton() {
     const btn = document.getElementById("back-btn");
     btn.style.display = navStack.length > 0 ? "block" : "none";
 }
 
-function formatYamlAttributes(yaml) {
-    return Object.entries(yaml)
-        .map(([k, v]) => `<b>${k}</b>: ${v}`)
-        .join('<br/>');
-}
-
-function showTooltip(html, x, y) {
-    const tooltip = document.getElementById('treemap-tooltip');
-    tooltip.innerHTML = html;
-    tooltip.style.opacity = 1;
-    tooltip.style.left = x + 12 + "px"; // Add padding
-    tooltip.style.top = y + 12 + "px";
-}
-
-function hideTooltip() {
-    const tooltip = document.getElementById('treemap-tooltip');
-    tooltip.style.opacity = 0;
-}
-
 async function renderTreemap(path = "") {
-    const container = document.getElementById("treemap");
-    container.innerHTML = "";
-    showBackButton();
-
     const dirData = await fetchJSON(`${path}directory.json`);
     if (!dirData) {
-        container.textContent = "Fehler beim Laden der Daten.";
+        alert("Failed to load data.");
         return;
     }
 
@@ -82,62 +60,79 @@ async function renderTreemap(path = "") {
             if (!isNaN(betrag)) {
                 entries.push({
                     name: pickLabel(yaml),
-                    betrag: betrag,
+                    value: betrag,
+                    yaml: yaml,
                     folderName: file.replace(".yaml", ""),
-                    hasFolder: dirData.subdirectories.includes(file.replace(".yaml", "")),
-                    yaml: yaml
+                    hasFolder: dirData.subdirectories.includes(file.replace(".yaml", ""))
                 });
             }
         }
     }
 
     if (entries.length === 0) {
-        container.textContent = "Keine gültigen Daten gefunden.";
+        alert("No valid data found.");
         return;
     }
 
-    entries.sort((a, b) => b.betrag - a.betrag);
+    // Map data for amCharts
+    const chartData = entries.map(entry => ({
+        name: entry.name,
+        value: entry.value,
+        yaml: entry.yaml,
+        folderName: entry.folderName,
+        hasFolder: entry.hasFolder
+    }));
 
-    const root = d3.hierarchy({children: entries}).sum(d => d.betrag);
-
-    const width = container.clientWidth || 800;
-    const height = container.clientHeight || 600;
-
-    d3.treemap()
-        .size([width, height])
-        .paddingOuter(0) // No gaps
-        .paddingInner(0) // No gaps
-        (root);
-
-    for (const node of root.leaves()) {
-        const d = node.data;
-        const div = document.createElement("div");
-        div.className = "treemap-rect" + (d.hasFolder ? "" : " no-folder");
-        div.style.left = `${node.x0}px`;
-        div.style.top = `${node.y0}px`;
-        div.style.width = `${node.x1 - node.x0}px`;
-        div.style.height = `${node.y1 - node.y0}px`;
-        div.textContent = d.name;
-
-        div.addEventListener('mouseenter', (e) => {
-            showTooltip(formatYamlAttributes(d.yaml), e.clientX, e.clientY);
-        });
-        div.addEventListener('mousemove', (e) => {
-            showTooltip(formatYamlAttributes(d.yaml), e.clientX, e.clientY);
-        });
-        div.addEventListener('mouseleave', hideTooltip);
-
-        if (d.hasFolder) {
-            div.addEventListener('click', () => {
-                navStack.push(path);
-                renderTreemap(`${path}${d.folderName}/`);
-            });
-        }
-
-        container.appendChild(div);
-    }
+    // Render the treemap
+    renderChart(chartData, path);
 }
 
+function renderChart(data, path) {
+    if (chart) {
+        chart.dispose(); // Dispose existing chart
+    }
+
+    showBackButton();
+
+    am5.ready(() => {
+        const root = am5.Root.new("chartdiv");
+        chart = root.container.children.push(
+            am5hierarchy.Treemap.new(root, {
+                singleBranchOnly: false,
+                downDepth: 1,
+                initialDepth: 1,
+                valueField: "value",
+                categoryField: "name",
+                childDataField: "children",
+                tooltip: am5.Tooltip.new(root, {
+                    labelText: "{name}\n{yaml}"
+                })
+            })
+        );
+
+        chart.data.setAll(data);
+
+        // Tooltip customization
+        chart.get("tooltip").label.setAll({
+            html: true,
+            text: ""
+        });
+
+        // Add click events for navigation
+        chart.children.each((series) => {
+            series.data.each((node) => {
+                if (node.dataItem.dataContext.hasFolder) {
+                    series.dataItem.events.on("click", () => {
+                        navStack.push(path);
+                        renderTreemap(`${path}${node.dataItem.dataContext.folderName}/`);
+                    });
+                }
+            });
+        });
+    });
+}
+
+// Back button logic
 document.addEventListener("DOMContentLoaded", () => {
     const btn = document.getElementById("back-btn");
     btn.onclick = () => {
