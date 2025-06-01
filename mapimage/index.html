@@ -48,20 +48,42 @@
   <div id="preview">
     <img id="result-img" style="display:none;" />
     <a id="download-link" href="#" download="image.png" style="display:none;">Download PNG</a>
+    <div id="actual-size"></div>
   </div>
-  <!-- The map container is hidden; it's only used for rendering -->
   <div id="map"></div>
   <script>
+    // Utility to get browser max canvas size
+    function getMaxCanvasSize() {
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d');
+      var max = 32767; // spec limit, but browsers are often much lower
+      // Try powers of two up to max
+      let test = 4096;
+      while (test <= max) {
+        try {
+          canvas.width = test;
+          canvas.height = test;
+          ctx.fillRect(0, 0, 1, 1);
+          test *= 2;
+        } catch (e) {
+          break;
+        }
+      }
+      return canvas.width;
+    }
+
     const form = document.getElementById('map-form');
     const progress = document.getElementById('progress');
     const resultImg = document.getElementById('result-img');
     const downloadLink = document.getElementById('download-link');
     const mapDiv = document.getElementById('map');
+    const actualSizeDiv = document.getElementById('actual-size');
 
     form.onsubmit = async function(e) {
       e.preventDefault();
       resultImg.style.display = 'none';
       downloadLink.style.display = 'none';
+      actualSizeDiv.textContent = '';
 
       const width = parseInt(document.getElementById('width').value, 10);
       const height = parseInt(document.getElementById('height').value, 10);
@@ -73,6 +95,18 @@
       if (!styleFile) {
         progress.textContent = "Please select a style.json file.";
         return;
+      }
+
+      // Browser max canvas size
+      const maxSize = getMaxCanvasSize();
+      // If requested size is too large, warn and clamp
+      let w = width, h = height;
+      if (width > maxSize || height > maxSize) {
+        progress.textContent = `Warning: Your browser's max canvas size is ${maxSize}x${maxSize}. Image will be clamped.`;
+        w = Math.min(width, maxSize);
+        h = Math.min(height, maxSize);
+      } else {
+        progress.textContent = '';
       }
 
       // Read style.json
@@ -87,11 +121,15 @@
 
       // Prepare hidden map container
       mapDiv.style.display = 'block';
-      mapDiv.style.width = width + "px";
-      mapDiv.style.height = height + "px";
+      mapDiv.style.width = w + "px";
+      mapDiv.style.height = h + "px";
       mapDiv.innerHTML = ""; // Clear previous map
 
-      progress.textContent = "Rendering map... (this may take a while for very large images)";
+      // Set devicePixelRatio to 1 for consistent scaling (optional)
+      const oldDpr = window.devicePixelRatio;
+      Object.defineProperty(window, 'devicePixelRatio', {
+        get: () => 1
+      });
 
       // Create MapLibre map
       const map = new maplibregl.Map({
@@ -99,7 +137,7 @@
         style: styleJson,
         center: [lon, lat],
         zoom: zoom,
-        preserveDrawingBuffer: true, // Required for getCanvas().toDataURL()
+        preserveDrawingBuffer: true,
         interactive: false,
         attributionControl: false,
         boxZoom: false,
@@ -115,8 +153,10 @@
       map.once('idle', function () {
         setTimeout(() => {
           try {
-            // Get image data
             const canvas = map.getCanvas();
+            const actualW = canvas.width;
+            const actualH = canvas.height;
+            actualSizeDiv.textContent = `Actual output image size: ${actualW} x ${actualH} pixels`;
             canvas.toBlob(function(blob) {
               if (blob) {
                 const url = URL.createObjectURL(blob);
@@ -131,13 +171,22 @@
               }
               map.remove();
               mapDiv.style.display = 'none';
+
+              // Restore devicePixelRatio
+              Object.defineProperty(window, 'devicePixelRatio', {
+                get: () => oldDpr
+              });
             }, "image/png");
           } catch (err) {
             progress.textContent = "Error exporting image: " + err;
             map.remove();
             mapDiv.style.display = 'none';
+            // Restore devicePixelRatio
+            Object.defineProperty(window, 'devicePixelRatio', {
+              get: () => oldDpr
+            });
           }
-        }, 500); // Wait an extra half second for all tiles to settle
+        }, 1000); // Wait an extra second for all tiles to settle
       });
 
       map.on('error', function(e) {
