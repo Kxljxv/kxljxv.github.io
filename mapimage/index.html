@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>High-Resolution Map Export with MapLibre GL JS</title>
+  <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    #map { display: none; }
+    #result-img { max-width: 100%; border: 1px solid #ccc; margin-top: 1em; }
+  </style>
+</head>
+<body>
+  <h2>High-Resolution Map Export (MapLibre GL JS)</h2>
+  <form id="map-form">
+    <label>
+      Width (px):
+      <input type="number" id="width" value="12000" required>
+    </label>
+    <label>
+      Height (px):
+      <input type="number" id="height" value="8000" required>
+    </label>
+    <br><br>
+    <label>
+      Center Latitude:
+      <input type="number" id="lat" step="any" value="52.52" required>
+    </label>
+    <label>
+      Center Longitude:
+      <input type="number" id="lon" step="any" value="13.405" required>
+    </label>
+    <br><br>
+    <label>
+      Zoom:
+      <input type="number" id="zoom" value="14" step="any" required>
+    </label>
+    <br><br>
+    <label>
+      style.json:
+      <input type="file" id="stylefile" accept=".json" required>
+    </label>
+    <br><br>
+    <button type="submit">Render &amp; Export Map</button>
+  </form>
+  <div id="progress"></div>
+  <div id="preview">
+    <img id="result-img" style="display:none;" />
+    <a id="download-link" href="#" download="image.png" style="display:none;">Download PNG</a>
+  </div>
+  <!-- The map container is hidden; it's only used for rendering -->
+  <div id="map"></div>
+  <script>
+    const form = document.getElementById('map-form');
+    const progress = document.getElementById('progress');
+    const resultImg = document.getElementById('result-img');
+    const downloadLink = document.getElementById('download-link');
+    const mapDiv = document.getElementById('map');
+
+    form.onsubmit = async function(e) {
+      e.preventDefault();
+      resultImg.style.display = 'none';
+      downloadLink.style.display = 'none';
+
+      const width = parseInt(document.getElementById('width').value, 10);
+      const height = parseInt(document.getElementById('height').value, 10);
+      const lat = parseFloat(document.getElementById('lat').value);
+      const lon = parseFloat(document.getElementById('lon').value);
+      const zoom = parseFloat(document.getElementById('zoom').value);
+      const styleFile = document.getElementById('stylefile').files[0];
+
+      if (!styleFile) {
+        progress.textContent = "Please select a style.json file.";
+        return;
+      }
+
+      // Read style.json
+      const styleText = await styleFile.text();
+      let styleJson;
+      try {
+        styleJson = JSON.parse(styleText);
+      } catch (err) {
+        progress.textContent = "Invalid style.json file!";
+        return;
+      }
+
+      // Prepare hidden map container
+      mapDiv.style.display = 'block';
+      mapDiv.style.width = width + "px";
+      mapDiv.style.height = height + "px";
+      mapDiv.innerHTML = ""; // Clear previous map
+
+      progress.textContent = "Rendering map... (this may take a while for very large images)";
+
+      // Create MapLibre map
+      const map = new maplibregl.Map({
+        container: mapDiv,
+        style: styleJson,
+        center: [lon, lat],
+        zoom: zoom,
+        preserveDrawingBuffer: true, // Required for getCanvas().toDataURL()
+        interactive: false,
+        attributionControl: false,
+        boxZoom: false,
+        doubleClickZoom: false,
+        dragPan: false,
+        dragRotate: false,
+        keyboard: false,
+        scrollZoom: false,
+        touchZoomRotate: false
+      });
+
+      // Wait for style to load and tiles to render
+      map.once('idle', function () {
+        setTimeout(() => {
+          try {
+            // Get image data
+            const canvas = map.getCanvas();
+            canvas.toBlob(function(blob) {
+              if (blob) {
+                const url = URL.createObjectURL(blob);
+                resultImg.src = url;
+                resultImg.style.display = "block";
+                downloadLink.href = url;
+                downloadLink.style.display = "inline-block";
+                downloadLink.textContent = "Download PNG";
+                progress.textContent = "Done. Preview below:";
+              } else {
+                progress.textContent = "Failed to export image.";
+              }
+              map.remove();
+              mapDiv.style.display = 'none';
+            }, "image/png");
+          } catch (err) {
+            progress.textContent = "Error exporting image: " + err;
+            map.remove();
+            mapDiv.style.display = 'none';
+          }
+        }, 500); // Wait an extra half second for all tiles to settle
+      });
+
+      map.on('error', function(e) {
+        progress.textContent = "MapLibre error: " + e.error.message;
+      });
+    };
+  </script>
+</body>
+</html>
