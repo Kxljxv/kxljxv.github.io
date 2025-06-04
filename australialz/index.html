@@ -4,431 +4,1035 @@
   <meta charset="UTF-8">
   <title>The Australian System of Government – Interactive Guide</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!--
-    Copilot-generated interactive guide to the Australian System of Government
-    v2: Per user request
-    - Overview: More detailed intro, more text, no diagram.
-    - Interactive Map: Embed and more textual explanation for each state/territory.
-    - Layers of Government: Much more text explaining differences, necessity, and roles of each layer, plus diagram embed.
-    - Separation of Powers: Detailed text and diagram embed.
-    - New: "Elections" section with comprehensive text on how elections work at all levels, replacing Parliament/Cabinet and Executive Table.
-    - All sections use more exposition, contextualization, and explanation.
-    - No diagram at Overview, no Parliament/Cabinet or Executive Table sections.
-  -->
+  <meta name="description" content="Explore Australia's system of government: constitutional monarchy, federalism, and parliamentary democracy explained in an interactive guide.">
 
   <style>
     :root {
-      --main-bg: #f4f6fa;
-      --primary: #2e5ebc;
-      --accent: #8ecae6;
-      --surface: #fff;
-      --shadow: 0 4px 18px 0 rgba(30,60,90,0.09);
-      --border-radius: 16px;
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --accent: #0ea5e9;
+      --accent-light: #38bdf8;
+      --surface: #ffffff;
+      --surface-elevated: #f8fafc;
+      --surface-hover: #f1f5f9;
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      --gradient-accent: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+      --radius-sm: 0.375rem;
+      --radius-md: 0.5rem;
+      --radius-lg: 0.75rem;
+      --radius-xl: 1rem;
     }
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
-      background: linear-gradient(120deg, #c9e0fb 0%, #e4f1fb 100%);
-      color: #253040;
-      font-size: 15px;
-    }
-    body {
-      min-height: 100vh;
-      margin: 0;
-      overflow-x: hidden;
-    }
-    .container {
-      max-width: 940px;
-      margin: 36px auto 36px auto;
-      padding: 28px 22px 24px 22px;
-      background: var(--surface);
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow);
+
+    * {
       box-sizing: border-box;
     }
-    header {
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      color: var(--text-primary);
+      line-height: 1.6;
+      font-size: 16px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    /* Header Styles */
+    .header {
       text-align: center;
-      margin-bottom: 18px;
-    }
-    header h1 {
-      font-size: 2rem;
-      margin: 0 0 6px 0;
-      letter-spacing: 0.5px;
-      font-weight: 800;
-      color: var(--primary);
-      text-shadow: 0 1px 8px #b6d5f7;
-    }
-    header p {
-      font-size: 1.03rem;
-      color: #4b6382;
-      margin-bottom: 0;
-      margin-top: 0.8em;
-    }
-    nav {
-      margin-bottom: 18px;
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    nav button {
-      background: linear-gradient(120deg, var(--primary), #7fa9e4);
-      color: #fff;
-      border: none;
-      border-radius: 22px;
-      padding: 5px 18px;
-      font-size: 1rem;
-      font-weight: 500;
-      margin: 0 2px;
-      box-shadow: 0 1px 8px 0 rgba(80,120,200,0.08);
-      cursor: pointer;
-      outline: none;
-      transition: background .13s, color .11s, transform .1s;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    nav button.active, nav button:hover, nav button:focus {
-      background: linear-gradient(120deg, #4573d5 70%, #a7d5fc 100%);
-      color: #fff;
-      transform: translateY(-1px) scale(1.03);
-    }
-    section {
-      display: none;
-      animation: fadein .32s;
-      min-height: 220px;
-    }
-    section.active {
-      display: block;
-    }
-    .card {
-      background: rgba(255,255,255,0.94);
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow);
-      margin: 18px 0;
-      padding: 18px 18px 10px 18px;
+      margin-bottom: 3rem;
+      padding: 2rem;
+      background: var(--surface);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
       position: relative;
       overflow: hidden;
     }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-primary);
+    }
+
+    .header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      margin: 0 0 1rem 0;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.025em;
+    }
+
+    .header p {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      margin: 0;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Navigation Styles */
+    .nav {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+    }
+
+    .nav-button {
+      background: var(--surface-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      outline: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-button:hover {
+      background: var(--surface-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .nav-button.active {
+      background: var(--gradient-primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .nav-button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Section Styles */
+    .section {
+      display: none;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Card Styles */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      margin-bottom: 2rem;
+      overflow: hidden;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-xl);
+    }
+
+    .card-content {
+      padding: 2rem;
+    }
+
     .card h2 {
-      margin-top: 0;
       color: var(--primary);
+      font-size: 1.5rem;
       font-weight: 700;
-      font-size: 1.14rem;
-      margin-bottom: 13px;
+      margin: 0 0 1.5rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
+
+    .card h3 {
+      color: var(--primary-light);
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 2rem 0 1rem 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .card p {
+      margin-bottom: 1rem;
+      color: var(--text-secondary);
+    }
+
     .card ul, .card ol {
-      margin-top: 0;
-      margin-bottom: 0.7em;
-      padding-left: 1.2em;
+      margin: 1rem 0;
+      padding-left: 1.5rem;
     }
-    .card strong {
-      color: #1a3963;
+
+    .card li {
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
     }
-    .state-details-list {
-      margin: 1.3em 0 0.7em 0;
-      background: #f5f8fc;
-      border-radius: 8px;
-      padding: 10px 18px;
-      font-size: 0.97em;
-      box-shadow: 0 1px 3px 0 #e3eaf5;
+
+    .card li strong {
+      color: var(--text-primary);
+      font-weight: 600;
     }
-    .state-details-list dt {
-      font-weight: bold;
-      color: #2e5ebc;
-      margin-top: 0.4em;
+
+    /* Enhanced State Details */
+    .state-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
     }
-    .state-details-list dd {
-      margin-left: 0;
-      margin-bottom: 0.2em;
-      margin-top: 0;
-      color: #253040;
+
+    .state-card {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      transition: all 0.2s ease;
     }
-    /* Diagram embed styling */
+
+    .state-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--accent);
+    }
+
+    .state-title {
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 1.125rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .state-info {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .state-info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .state-info-label {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 0.875rem;
+    }
+
+    .state-info-value {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    /* Enhanced Diagram Embed */
+    .diagram-container {
+      background: var(--surface-elevated);
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+      margin: 2rem 0;
+      border: 1px solid var(--border);
+    }
+
     .diagram-embed {
       position: relative;
       width: 100%;
       height: 0;
-      padding-top: 100.0000%;
-      box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16);
-      margin-top: 1.6em;
-      margin-bottom: 0.9em;
+      padding-top: 75%;
+      border-radius: var(--radius-md);
       overflow: hidden;
-      border-radius: 8px;
-      will-change: transform;
+      box-shadow: var(--shadow-md);
     }
+
     .diagram-embed iframe {
       position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      top: 0; left: 0;
       border: none;
+    }
+
+    /* Interactive Elements */
+    .interactive-element {
+      background: var(--gradient-accent);
+      color: white;
+      padding: 1.5rem;
+      border-radius: var(--radius-lg);
+      margin: 1.5rem 0;
+    }
+
+    .interactive-element h4 {
+      margin: 0 0 1rem 0;
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    /* Accessibility Improvements */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
       padding: 0;
-      margin: 0;
-      background: #fff;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
-    @media (max-width: 700px) {
+
+    /* Skip Link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 6px;
+      background: var(--primary);
+      color: white;
+      padding: 8px;
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      z-index: 1000;
+    }
+
+    .skip-link:focus {
+      top: 6px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
       .container {
-        padding: 8px 2vw;
+        padding: 1rem;
       }
-      .card {
-        padding: 12px 5px;
+
+      .header {
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .card-content {
+        padding: 1.5rem;
+      }
+
+      .nav {
+        padding: 0.75rem;
+      }
+
+      .nav-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+      }
+
+      .state-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
       }
     }
-    @keyframes fadein {
-      from { opacity: 0;}
-      to { opacity: 1;}
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: white;
+      }
+      
+      .nav, .skip-link {
+        display: none;
+      }
+      
+      .section {
+        display: block !important;
+        page-break-inside: avoid;
+      }
+      
+      .card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ccc;
+      }
+    }
+
+    /* Enhanced Focus Styles */
+    *:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* Loading Animation */
+    .loading {
+      opacity: 0;
+      animation: fadeIn 0.5s ease-out forwards;
     }
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  
   <div class="container">
-    <!-- Header and Navigation -->
-    <header>
+    <header class="header">
       <h1>The Australian System of Government</h1>
       <p>
-        Discover how Australia is governed: explore the unique blend of constitutional monarchy, federalism, and parliamentary democracy that shapes the nation.
+        Explore Australia's unique blend of constitutional monarchy, federalism, and parliamentary democracy through this comprehensive interactive guide.
       </p>
     </header>
-    <nav>
-      <button class="active" data-section="overview">Overview</button>
-      <button data-section="map">States & Territories</button>
-      <button data-section="layers">Layers of Government</button>
-      <button data-section="powers">Separation of Powers</button>
-      <button data-section="elections">Elections</button>
+
+    <nav class="nav" role="navigation" aria-label="Main navigation">
+      <button class="nav-button active" data-section="overview" aria-pressed="true">
+        <span>Overview</span>
+      </button>
+      <button class="nav-button" data-section="map" aria-pressed="false">
+        <span>States & Territories</span>
+      </button>
+      <button class="nav-button" data-section="layers" aria-pressed="false">
+        <span>Layers of Government</span>
+      </button>
+      <button class="nav-button" data-section="powers" aria-pressed="false">
+        <span>Separation of Powers</span>
+      </button>
+      <button class="nav-button" data-section="elections" aria-pressed="false">
+        <span>Elections & Democracy</span>
+      </button>
     </nav>
 
-    <!-- Overview Section -->
-    <section id="overview" class="active">
-      <div class="card">
-        <h2>Australia at a Glance</h2>
-        <p>
-          Australia's system of government is founded on <b>liberal democratic principles</b>, such as religious freedom, freedom of speech, and the rule of law. It draws from British and North American influences, but has evolved its own distinctive practices and institutions.<br><br>
-          The <b>Commonwealth of Australia</b> was established in 1901, uniting six former British colonies into a federal nation. Today, Australia is made up of <b>six states</b> and <b>two self-governing territories</b>. Each state and territory has its own constitution, parliament, government, and laws, but all are united under the Australian Constitution.
-        </p>
-        <ul>
-          <li>
-            <b>Federation:</b> Australia is a federation, meaning power is shared between a <b>national government</b> and <b>state/territory governments</b>. Other federations include Canada, India, and Germany.
-          </li>
-          <li>
-            <b>Parliamentary Government:</b> The Executive Government—ministers and Prime Minister—must be drawn from the Parliament and is responsible to it.
-          </li>
-          <li>
-            <b>Constitutional Monarchy:</b> The King is the formal head of state, represented in Australia by the Governor-General, but holds mainly ceremonial powers.
-          </li>
-        </ul>
-        <p>
-          The <b>Australian Constitution</b> (effective 1901) is the supreme law that sets out the structure of government, powers of each branch, and how they interact. Some important features of government are based on tradition and political practice, not just the written Constitution.
-        </p>
-        <p>
-          The system is designed with <b>checks and balances</b> to prevent any one part of government from holding too much power, and to ensure accountability to the people.
-        </p>
-      </div>
-    </section>
+    <main id="main-content">
+      <!-- Overview Section -->
+      <section id="overview" class="section active" aria-labelledby="overview-heading">
+        <div class="card loading">
+          <div class="card-content">
+            <h2 id="overview-heading">🇦🇺 Understanding Australia's Government</h2>
+            
+            <p>
+              Australia's system of government is built on <strong>democratic principles</strong> including the rule of law, individual freedoms, and representative government. Established in 1901 with Federation, Australia created a unique system that combines British Westminster traditions with American federal principles.
+            </p>
 
-    <!-- Interactive Map and States Section -->
-    <section id="map">
-      <div class="card">
-        <h2>Australia's States & Territories</h2>
-        <p>
-          Australia consists of six states and two self-governing territories, each with its own parliament, government, and unique responsibilities. The <b>federal capital</b> is Canberra, in the Australian Capital Territory. Each state and territory is responsible for a range of services, such as health, education, police, and local government regulation.
-        </p>
-        <iframe src="https://app.atlas.co/embeds/9EkViselQJHDEU9xp6U7"
-          frameborder="0" width="100%" height="600"
-          style="max-width: 100%; border: 1px solid #EAEAEA; border-radius: 4px;">
-        </iframe>
-        <p style="margin-bottom:0.5em;">
-          <b>Below are the capitals and key responsibilities of each state and territory:</b>
-        </p>
-        <dl class="state-details-list">
-          <dt>New South Wales (NSW)</dt>
-          <dd><b>Capital:</b> Sydney<br>
-            <b>Parliament:</b> Bicameral<br>
-            <b>Responsibilities:</b> Health, education, police, transport, local government within the state and more.
-          </dd>
-          <dt>Victoria (VIC)</dt>
-          <dd><b>Capital:</b> Melbourne<br>
-            <b>Parliament:</b> Bicameral<br>
-            <b>Responsibilities:</b> Health, education, roads, emergency services, public land use, regulation of local councils.
-          </dd>
-          <dt>Queensland (QLD)</dt>
-          <dd><b>Capital:</b> Brisbane<br>
-            <b>Parliament:</b> Unicameral (only one house)<br>
-            <b>Responsibilities:</b> Similar to other states, including health, police, fire, and ambulance services.
-          </dd>
-          <dt>Western Australia (WA)</dt>
-          <dd><b>Capital:</b> Perth<br>
-            <b>Parliament:</b> Bicameral<br>
-            <b>Responsibilities:</b> Health, mining regulation, education, and local government oversight.
-          </dd>
-          <dt>South Australia (SA)</dt>
-          <dd><b>Capital:</b> Adelaide<br>
-            <b>Parliament:</b> Bicameral<br>
-            <b>Responsibilities:</b> Health, education, state development, and emergency services.
-          </dd>
-          <dt>Tasmania (TAS)</dt>
-          <dd><b>Capital:</b> Hobart<br>
-            <b>Parliament:</b> Bicameral<br>
-            <b>Responsibilities:</b> Local government, public health, education, and environmental management.
-          </dd>
-          <dt>Northern Territory (NT)</dt>
-          <dd><b>Capital:</b> Darwin<br>
-            <b>Parliament:</b> Unicameral<br>
-            <b>Responsibilities:</b> Health, education, police, and land management. The NT has powers delegated by the federal government.
-          </dd>
-          <dt>Australian Capital Territory (ACT)</dt>
-          <dd><b>Capital:</b> Canberra (also the national capital)<br>
-            <b>Parliament:</b> Unicameral<br>
-            <b>Responsibilities:</b> Local services, education, health, and regulation of the national capital area.
-          </dd>
-        </dl>
-        <p>
-          Each state and territory maintains its own legal system, and differences in their responsibilities reflect their unique histories and needs.
-        </p>
-      </div>
-    </section>
+            <div class="interactive-element">
+              <h4>🏛️ Key Foundations</h4>
+              <p>Australia operates as a <strong>constitutional monarchy</strong>, <strong>parliamentary democracy</strong>, and <strong>federation</strong> – making it one of the world's most stable democracies.</p>
+            </div>
 
-    <!-- Layers of Government Section -->
-    <section id="layers">
-      <div class="card">
-        <h2>The Three Layers of Government in Australia</h2>
-        <p>
-          Australia’s system of government is organised into <b>three interdependent layers</b>: the federal (national) government, state/territory governments, and local governments. Each layer has its own powers, responsibilities, and institutions, and each plays a crucial role in governing the country.
-        </p>
-        <div class="diagram-embed">
-          <iframe loading="lazy" src="https://www.canva.com/design/DAGpaBVAFzI/k74h1fW0LkkiO1ec9PJzyw/view?embed" allowfullscreen="allowfullscreen"></iframe>
+            <h3>Core Principles</h3>
+            <ul>
+              <li>
+                <strong>Constitutional Monarchy:</strong> King Charles III is the head of state, represented by the Governor-General, but executive power rests with elected officials
+              </li>
+              <li>
+                <strong>Parliamentary Democracy:</strong> The government is formed by the party (or coalition) that can command majority support in the House of Representatives
+              </li>
+              <li>
+                <strong>Federalism:</strong> Power is divided between national and state/territory governments, with each having distinct responsibilities
+              </li>
+              <li>
+                <strong>Rule of Law:</strong> All people and institutions are subject to and accountable under the law
+              </li>
+            </ul>
+
+            <h3>The Australian Constitution</h3>
+            <p>
+              The <strong>Australian Constitution</strong>, which came into effect on 1 January 1901, is the supreme law that establishes the framework of government. It defines the powers of the federal government, protects state rights, and establishes the High Court as the final interpreter of constitutional law.
+            </p>
+
+            <p>
+              Importantly, many aspects of Australia's system rely on <strong>conventions</strong> – unwritten rules and practices that have developed over time. These conventions ensure the system works smoothly while maintaining democratic accountability.
+            </p>
+          </div>
         </div>
-        <h3 style="margin-top:1.1em;">Federal (Commonwealth) Government</h3>
-        <p>
-          The <b>federal government</b> is responsible for matters that affect the entire nation. Its powers are set out in the Constitution and include:
-          <ul>
-            <li>Defence and military</li>
-            <li>Foreign affairs and trade</li>
-            <li>Immigration and citizenship</li>
-            <li>Currency and banking</li>
-            <li>Social security and national welfare</li>
-            <li>National taxation and customs</li>
-          </ul>
-          The seat of the federal government is in Canberra, ACT.
-        </p>
-        <h3>State and Territory Governments</h3>
-        <p>
-          <b>State and territory governments</b> are responsible for areas not managed by the federal government, including:
-          <ul>
-            <li>Public hospitals and health services</li>
-            <li>Public education (schools and TAFEs)</li>
-            <li>Police, fire, ambulance, and emergency services</li>
-            <li>Roads, public transport, and land use</li>
-            <li>Regulation and funding of local government</li>
-          </ul>
-          Each state and territory has its own constitution, parliament, and courts. States have more autonomy; territories have powers delegated by the federal parliament.
-        </p>
-        <h3>Local Governments</h3>
-        <p>
-          <b>Local governments</b> (councils or shires) are created by state governments and are responsible for:
-          <ul>
-            <li>Town planning and zoning</li>
-            <li>Building codes and permits</li>
-            <li>Local roads, parks, and community facilities</li>
-            <li>Waste collection and recycling</li>
-            <li>Water, sewerage, and drainage (in some areas)</li>
-            <li>Local events and recreational services</li>
-          </ul>
-          There are about 900 local governments in Australia. Their powers differ by state, and they are funded by local rates as well as state and federal grants.
-        </p>
-        <h3>Why Three Layers?</h3>
-        <p>
-          Australia’s three-layer system allows for both <b>national consistency</b> (through the federal government) and <b>local flexibility</b> (through states, territories, and councils). States reflect Australia’s colonial history and regional diversity, while local governments provide services tailored to the needs of specific communities.
-        </p>
-      </div>
-    </section>
+      </section>
 
-    <!-- Separation of Powers Section -->
-    <section id="powers">
-      <div class="card">
-        <h2>Separation of Powers</h2>
-        <p>
-          The <b>Australian Constitution</b> establishes a system of government based on the separation of powers. This means that the responsibilities of governing are divided among three branches, each with its own area of authority:
-        </p>
-        <div class="diagram-embed">
-          <iframe loading="lazy" src="https://www.canva.com/design/DAGpaUn3ZLw/umVPNIJoRDkfM3HvTr4hdg/view?embed" allowfullscreen="allowfullscreen"></iframe>
+      <!-- States and Territories Section -->
+      <section id="map" class="section" aria-labelledby="map-heading">
+        <div class="card loading">
+          <div class="card-content">
+            <h2 id="map-heading">🗺️ Australia's States & Territories</h2>
+            
+            <p>
+              Australia comprises <strong>six states</strong> and <strong>two self-governing territories</strong>. Each has its own constitution, parliament, and government, reflecting Australia's federal system where power is shared between different levels of government.
+            </p>
+
+            <div class="diagram-container">
+              <iframe src="https://app.atlas.co/embeds/9EkViselQJHDEU9xp6U7"
+                frameborder="0" width="100%" height="500"
+                title="Interactive map of Australian states and territories"
+                style="border-radius: 8px;">
+              </iframe>
+            </div>
+
+            <h3>States and Territories Overview</h3>
+            <div class="state-grid">
+              <div class="state-card">
+                <div class="state-title">🏙️ New South Wales</div>
+                <div class="state-info">
+                  <div class="state-info-item">
+                    <span class="state-info-label">Capital</span>
+                    <span class="state-info-value">Sydney</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Parliament</span>
+                    <span class="state-info-value">Bicameral (two houses)</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Key Responsibilities</span>
+                    <span class="state-info-value">Health, education, police, transport, local government regulation</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="state-card">
+                <div class="state-title">🏛️ Victoria</div>
+                <div class="state-info">
+                  <div class="state-info-item">
+                    <span class="state-info-label">Capital</span>
+                    <span class="state-info-value">Melbourne</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Parliament</span>
+                    <span class="state-info-value">Bicameral (two houses)</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Key Responsibilities</span>
+                    <span class="state-info-value">Health, education, roads, emergency services, public land management</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="state-card">
+                <div class="state-title">🌴 Queensland</div>
+                <div class="state-info">
+                  <div class="state-info-item">
+                    <span class="state-info-label">Capital</span>
+                    <span class="state-info-value">Brisbane</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Parliament</span>
+                    <span class="state-info-value">Unicameral (one house only)</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Key Responsibilities</span>
+                    <span class="state-info-value">Health, police, fire, ambulance, education, mining regulation</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="state-card">
+                <div class="state-title">🏜️ Western Australia</div>
+                <div class="state-info">
+                  <div class="state-info-item">
+                    <span class="state-info-label">Capital</span>
+                    <span class="state-info-value">Perth</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Parliament</span>
+                    <span class="state-info-value">Bicameral (two houses)</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Key Responsibilities</span>
+                    <span class="state-info-value">Health, mining regulation, education, local government oversight</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="state-card">
+                <div class="state-title">🍷 South Australia</div>
+                <div class="state-info">
+                  <div class="state-info-item">
+                    <span class="state-info-label">Capital</span>
+                    <span class="state-info-value">Adelaide</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Parliament</span>
+                    <span class="state-info-value">Bicameral (two houses)</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Key Responsibilities</span>
+                    <span class="state-info-value">Health, education, state development, emergency services</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="state-card">
+                <div class="state-title">🏔️ Tasmania</div>
+                <div class="state-info">
+                  <div class="state-info-item">
+                    <span class="state-info-label">Capital</span>
+                    <span class="state-info-value">Hobart</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Parliament</span>
+                    <span class="state-info-value">Bicameral (two houses)</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Key Responsibilities</span>
+                    <span class="state-info-value">Local government, public health, education, environmental management</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="state-card">
+                <div class="state-title">🏕️ Northern Territory</div>
+                <div class="state-info">
+                  <div class="state-info-item">
+                    <span class="state-info-label">Capital</span>
+                    <span class="state-info-value">Darwin</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Parliament</span>
+                    <span class="state-info-value">Unicameral (one house)</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Key Responsibilities</span>
+                    <span class="state-info-value">Health, education, police, land management (powers delegated by federal government)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="state-card">
+                <div class="state-title">🏛️ Australian Capital Territory</div>
+                <div class="state-info">
+                  <div class="state-info-item">
+                    <span class="state-info-label">Capital</span>
+                    <span class="state-info-value">Canberra (national capital)</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Parliament</span>
+                    <span class="state-info-value">Unicameral (one house)</span>
+                  </div>
+                  <div class="state-info-item">
+                    <span class="state-info-label">Key Responsibilities</span>
+                    <span class="state-info-value">Local services, education, health, regulation of the national capital</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="interactive-element">
+              <h4>💡 Did You Know?</h4>
+              <p>The difference between states and territories is that states have constitutional powers in their own right, while territories exercise powers delegated by the federal government. This means the federal parliament can override territory laws, but not state laws (unless the federal government has constitutional authority).</p>
+            </div>
+          </div>
         </div>
-        <ul>
-          <li>
-            <b>Legislative:</b> The Parliament makes and changes the laws. This includes the House of Representatives and the Senate at the federal level, and similar bodies in each state and territory.
-          </li>
-          <li>
-            <b>Executive:</b> The Prime Minister, Cabinet, and government departments put the laws into action. The Governor-General (representing the King) formally approves laws and appoints ministers, but acts on the advice of the elected government.
-          </li>
-          <li>
-            <b>Judiciary:</b> The High Court and other federal courts interpret the laws and ensure they are applied fairly. Courts have the power to rule on the validity of laws and to settle disputes.
-          </li>
-        </ul>
-        <p>
-          <b>Why is this important?</b> The separation of powers is designed to prevent any one branch from becoming too powerful and to provide checks and balances. For example, the courts can rule a law invalid if it goes against the Constitution, and Parliament can scrutinise the actions of the Executive.
-        </p>
-        <p>
-          In practice, there is some <b>overlap</b>, especially between the Parliament and the Executive. Ministers must be members of Parliament, meaning the legislative and executive roles are not entirely separate. However, Australia’s system still maintains vital checks and balances—especially through the independence of the judiciary and the existence of an official opposition in Parliament.
-        </p>
-      </div>
-    </section>
+      </section>
 
-    <!-- Elections Section -->
-    <section id="elections">
-      <div class="card">
-        <h2>How Elections Work in Australia</h2>
-        <p>
-          Elections are a cornerstone of Australian democracy, ensuring that government at every level is accountable to the people. Australians regularly vote to choose representatives at the federal, state/territory, and local levels. Each level of government has its own electoral system and cycle.
-        </p>
-        <h3>Federal Elections</h3>
-        <p>
-          <b>Federal Parliament</b> consists of two houses: the House of Representatives (lower house) and the Senate (upper house). Federal elections are held at least every three years.
-        </p>
-        <ul>
-          <li><b>House of Representatives:</b> Each of the 151 electorates elects one member, using a system called preferential voting. The party (or coalition) with a majority of members forms the government, and its leader becomes Prime Minister.</li>
-          <li><b>Senate:</b> Each state elects 12 senators, and each territory elects two, using proportional representation. This system gives all states equal representation and often allows minor parties to win seats.</li>
-          <li>All Australian citizens aged 18 and over are required to vote. Voting is by secret ballot.</li>
-        </ul>
-        <h3>State and Territory Elections</h3>
-        <p>
-          Each state and territory has its own parliament and electoral system. Most states have two houses (lower and upper), but Queensland, the Northern Territory, and the ACT have only one. Voting is compulsory in all states and territories except Western Australia local councils.
-        </p>
-        <ul>
-          <li><b>Lower houses:</b> Elect government, usually using preferential voting.</li>
-          <li><b>Upper houses:</b> Where they exist, use proportional or preferential systems.</li>
-          <li>State and territory elections are usually held every four years.</li>
-        </ul>
-        <h3>Local Government Elections</h3>
-        <p>
-          Local government (council) elections are run by state electoral commissions. Councillors and, in some places, mayors are elected to represent their local communities. Voting rules vary between states—compulsory in some (e.g., Victoria, NSW), voluntary in others (e.g., WA).
-        </p>
-        <ul>
-          <li>Local councils decide on community issues like planning, local roads, parks, and waste.</li>
-          <li>Voting systems vary: often preferential or proportional voting.</li>
-        </ul>
-        <h3>Referendums</h3>
-        <p>
-          The <b>Australian Constitution</b> can only be changed by referendum. This means a proposed change must be approved by a majority of voters nationally and a majority in at least four of the six states. Referendums are rare and require extensive public debate.
-        </p>
-        <h3>Why Are Elections Important?</h3>
-        <p>
-          Elections ensure that government is responsible to the people and reflect the will of the community. Compulsory voting helps achieve high turnouts and broad representation. Australia's robust electoral system is designed to maintain fairness, transparency, and public confidence at every level of government.
-        </p>
-      </div>
-    </section>
+      <!-- Layers of Government Section -->
+      <section id="layers" class="section" aria-labelledby="layers-heading">
+        <div class="card loading">
+          <div class="card-content">
+            <h2 id="layers-heading">🏗️ Three Layers of Government</h2>
+            
+            <p>
+              Australia's federal system distributes governmental power across <strong>three interconnected layers</strong>. This structure ensures that different levels of government can focus on their areas of expertise while maintaining democratic accountability at every level.
+            </p>
+
+            <div class="diagram-container">
+              <div class="diagram-embed">
+                <iframe loading="lazy" src="https://www.canva.com/design/DAGpaBVAFzI/k74h1fW0LkkiO1ec9PJzyw/view?embed" 
+                  allowfullscreen="allowfullscreen" 
+                  title="Diagram showing the three layers of government in Australia">
+                </iframe>
+              </div>
+            </div>
+
+            <h3>🏛️ Federal (Commonwealth) Government</h3>
+            <p>
+              The federal government handles matters of <strong>national importance</strong> and has specific powers outlined in the Constitution. It operates from Canberra and represents Australia's interests both domestically and internationally.
+            </p>
+            
+            <strong>Key Responsibilities:</strong>
+            <ul>
+              <li><strong>Defence and National Security:</strong> Military forces, intelligence, border protection</li>
+              <li><strong>Foreign Affairs:</strong> Diplomatic relations, international treaties, trade agreements</li>
+              <li><strong>Immigration:</strong> Citizenship, visas, refugee and migration policies</li>
+              <li><strong>Economic Management:</strong> Currency, banking, national taxation, trade and commerce</li>
+              <li><strong>Social Services:</strong> Welfare payments, aged care, family support</li>
+              <li><strong>Communications:</strong> Postal services, telecommunications, broadcasting</li>
+            </ul>
+
+            <h3>🏘️ State and Territory Governments</h3>
+            <p>
+              State and territory governments manage services that directly affect citizens' daily lives. They have <strong>residual powers</strong> – meaning they can legislate on any matter not specifically given to the federal government or prohibited by the Constitution.
+            </p>
+            
+            <strong>Key Responsibilities:</strong>
+            <ul>
+              <li><strong>Health Services:</strong> Public hospitals, community health, mental health services</li>
+              <li><strong>Education:</strong> Primary and secondary schools, vocational training (TAFE)</li>
+              <li><strong>Emergency Services:</strong> Police, fire brigades, ambulance services, disaster response</li>
+              <li><strong>Transport:</strong> Roads, public transport, vehicle registration, driver licensing</li>
+              <li><strong>Justice System:</strong> Courts, corrective services, legal aid</li>
+              <li><strong>Environment:</strong> Parks, wildlife, water resources, land use planning</li>
+            </ul>
+
+            <h3>🏙️ Local Government</h3>
+            <p>
+              Local governments (councils) are the level of government <strong>closest to the community</strong>. They are established by state governments and focus on services and facilities that directly impact local communities.
+            </p>
+            
+            <strong>Key Responsibilities:</strong>
+            <ul>
+              <li><strong>Community Infrastructure:</strong> Local roads, footpaths, parks, playgrounds</li>
+              <li><strong>Planning and Development:</strong> Building approvals, zoning, town planning</li>
+              <li><strong>Community Services:</strong> Libraries, community centers, recreational facilities</li>
+              <li><strong>Environmental Services:</strong> Waste collection, recycling, local environmental protection</li>
+              <li><strong>Local Regulation:</strong> Parking, noise control, animal control, local business licensing</li>
+            </ul>
+
+            <div class="interactive-element">
+              <h4>🤝 Working Together</h4>
+              <p>While each layer has distinct responsibilities, they often work together on complex issues. For example, responding to natural disasters involves federal coordination and funding, state emergency services, and local community support and recovery efforts.</p>
+            </div>
+
+            <h3>Why Three Layers Work</h3>
+            <p>
+              This three-tier system balances <strong>national unity</strong> with <strong>local diversity</strong>. The federal government ensures consistent national standards and policies, states can tailor services to regional needs and preferences, and local governments can respond quickly to community-specific issues. This structure allows Australia to maintain both national coherence and local responsiveness.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Separation of Powers Section -->
+      <section id="powers" class="section" aria-labelledby="powers-heading">
+        <div class="card loading">
+          <div class="card-content">
+            <h2 id="powers-heading">⚖️ Separation of Powers</h2>
+            
+            <p>
+              The <strong>separation of powers</strong> is a fundamental principle that divides government authority among three distinct branches. This system prevents any single branch from accumulating too much power and provides essential checks and balances in Australia's democracy.
+            </p>
+
+            <div class="diagram-container">
+              <div class="diagram-embed">
+                <iframe loading="lazy" src="https://www.canva.com/design/DAGpaUn3ZLw/umVPNIJoRDkfM3HvTr4hdg/view?embed" 
+                  allowfullscreen="allowfullscreen"
+                  title="Diagram illustrating the separation of powers in Australian government">
+                </iframe>
+              </div>
+            </div>
+
+            <h3>🏛️ Legislative Branch (Parliament)</h3>
+            <p>
+              The <strong>Parliament</strong> has the power to make, amend, and repeal laws. It consists of two houses at the federal level, and similar structures exist in most states and territories.
+            </p>
+            
+            <strong>Key Functions:</strong>
+            <ul>
+              <li><strong>Law-making:</strong> Debating, amending, and passing legislation</li>
+              <li><strong>Representation:</strong> Representing the interests of constituents</li>
+              <li><strong>Scrutiny:</strong> Examining government actions and spending through committees</li>
+              <li><strong>Budget Approval:</strong> Authorizing government expenditure and taxation</li>
+            </ul>
+
+            <h3>👔 Executive Branch (Government)</h3>
+            <p>
+              The <strong>Executive</strong> implements and administers the laws passed by Parliament. It includes the Prime Minister, Cabinet ministers, and the public service departments that carry out government policy.
+            </p>
+            
+            <strong>Key Functions:</strong>
+            <ul>
+              <li><strong>Policy Implementation:</strong> Putting laws and policies into practice</li>
+              <li><strong>Administration:</strong> Running government departments and services</li>
+              <li><strong>Decision-making:</strong> Making day-to-day governing decisions</li>
+              <li><strong>International Relations:</strong> Conducting foreign policy and diplomacy</li>
+            </ul>
+
+            <h3>⚖️ Judicial Branch (Courts)</h3>
+            <p>
+              The <strong>Judiciary</strong> interprets and applies the law, ensuring justice is served fairly and impartially. Courts have the crucial role of being independent from political influence.
+            </p>
+            
+            <strong>Key Functions:</strong>
+            <ul>
+              <li><strong>Law Interpretation:</strong> Determining what laws mean in specific cases</li>
+              <li><strong>Constitutional Review:</strong> Ensuring laws comply with the Constitution</li>
+              <li><strong>Dispute Resolution:</strong> Settling legal disputes between parties</li>
+              <li><strong>Justice Delivery:</strong> Ensuring fair trials and appropriate sentences</li>
+            </ul>
+
+            <div class="interactive-element">
+              <h4>🔄 Checks and Balances in Action</h4>
+              <p><strong>Parliament</strong> can question ministers and investigate government actions. <strong>Courts</strong> can rule that laws are invalid if they conflict with the Constitution. The <strong>Executive</strong> cannot function without Parliament's approval of budgets and legislation.</p>
+            </div>
+
+            <h3>The Westminster System Adaptation</h3>
+            <p>
+              Australia's system adapts the <strong>Westminster model</strong> where there is some overlap between the legislative and executive branches – ministers must be members of Parliament. However, the <strong>judiciary remains completely independent</strong>, and the system still provides effective checks and balances through:
+            </p>
+            <ul>
+              <li>Parliamentary committees scrutinizing government actions</li>
+              <li>Question Time where ministers are held accountable</li>
+              <li>Senate review of House of Representatives legislation</li>
+              <li>Independent judicial review of laws and government decisions</li>
+              <li>Free press and civil society oversight</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Elections Section -->
+      <section id="elections" class="section" aria-labelledby="elections-heading">
+        <div class="card loading">
+          <div class="card-content">
+            <h2 id="elections-heading">🗳️ Elections & Democratic Participation</h2>
+            
+            <p>
+              Elections are the cornerstone of Australian democracy, ensuring government accountability and citizen participation. Australia has a <strong>robust electoral system</strong> with compulsory voting, independent electoral commissions, and transparent processes at all levels of government.
+            </p>
+
+            <h3>🏛️ Federal Elections</h3>
+            <p>
+              Federal elections determine the composition of Australia's national Parliament and, consequently, which party or coalition forms the government.
+            </p>
+
+            <div class="interactive-element">
+              <h4>📊 Federal Parliament Structure</h4>
+              <p><strong>House of Representatives:</strong> 150 members (one per electorate)<br>
+              <strong>Senate:</strong> 76 members (12 per state, 2 per territory)</p>
+            </div>
+
+            <strong>House of Representatives (Lower House):</strong>
+            <ul>
+              <li><strong>Electoral System:</strong> Preferential voting (ranked choice) in single-member electorates</li>
+              <li><strong>Term:</strong> Maximum 3 years</li>
+              <li><strong>Role:</strong> Forms government; the party/coalition with majority support chooses the Prime Minister</li>
+              <li><strong>Representation:</strong> Based on population – electorates contain roughly equal numbers of voters</li>
+            </ul>
+
+            <strong>Senate (Upper House):</strong>
+            <ul>
+              <li><strong>Electoral System:</strong> Proportional representation using Single Transferable Vote</li>
+              <li><strong>Term:</strong> 6 years (half-Senate elections every 3 years)</li>
+              <li><strong>Role:</strong> Reviews legislation, represents state interests, often holds balance of power</li>
+              <li><strong>Representation:</strong> Equal representation for all states regardless of population size</li>
+            </ul>
+
+            <h3>🏘️ State and Territory Elections</h3>
+            <p>
+              Each state and territory conducts its own elections with varying systems and terms, but all follow democratic principles of fair representation and regular elections.
+            </p>
+
+            <strong>Common Features:</strong>
+            <ul>
+              <li><strong>Lower Houses:</strong> Usually elected via preferential voting, form the government</li>
+              <li><strong>Upper Houses:</strong> Where they exist (not in QLD, NT, ACT), often use proportional representation</li>
+              <li><strong>Terms:</strong> Typically 4 years, with some variation between jurisdictions</li>
+              <li><strong>Compulsory Voting:</strong> Required in all states and territories</li>
+            </ul>
+
+            <h3>🏙️ Local Government Elections</h3>
+            <p>
+              Local council elections vary significantly between states but share the common goal of ensuring community representation in local decision-making.
+            </p>
+
+            <strong>Key Features:</strong>
+            <ul>
+              <li><strong>Voting Systems:</strong> Varies by state – preferential, proportional, or first-past-the-post</li>
+              <li><strong>Compulsory Voting:</strong> Required in some states (NSW, VIC, TAS, SA, WA), voluntary in others</li>
+              <li><strong>Terms:</strong> Usually 4 years</li>
+              <li><strong>Representatives:</strong> Councillors and sometimes directly elected mayors</li>
+            </ul>
+
+            <h3>🔄 Referendums and Constitutional Change</h3>
+            <p>
+              The Australian Constitution can only be changed through a <strong>referendum</strong> – a direct vote by all eligible citizens on a proposed constitutional amendment.
+            </p>
+
+            <strong>Referendum Requirements:</strong>
+            <ul>
+              <li><strong>Double Majority:</strong> Must be approved by a majority of voters nationally AND a majority of voters in at least 4 of the 6 states</li>
+              <li><strong>Initiation:</strong> Proposed by Parliament (both houses must pass the proposal)</li>
+              <li><strong>Information:</strong> Official 'Yes' and 'No' cases are distributed to all voters</li>
+              <li><strong>Success Rate:</strong> Only 8 of 44 proposed changes have been successful since 1901</li>
+            </ul>
+
+            <div class="interactive-element">
+              <h4>🎯 Why Compulsory Voting?</h4>
+              <p>Australia introduced compulsory voting in 1924 to ensure high turnout and broad representation. This means election results reflect the will of the entire community, not just the most politically engaged citizens. Turnout consistently exceeds 90%.</p>
+            </div>
+
+            <h3>Electoral Integrity and Administration</h3>
+            <p>
+              Australia's elections are administered by <strong>independent electoral commissions</strong> at federal, state, and territory levels. These bodies ensure elections are fair, transparent, and accessible.
+            </p>
+
+            <strong>Key Features:</strong>
+            <ul>
+              <li><strong>Independence:</strong> Electoral commissions operate independently from government</li>
+              <li><strong>Transparency:</strong> Open counting processes with scrutineers from all parties</li>
+              <li><strong>Accessibility:</strong> Postal voting, early voting, and mobile polling for remote areas</li>
+              <li><strong>Regulation:</strong> Strict rules on campaign financing and political advertising</li>
+            </ul>
+
+            <h3>Democratic Participation Beyond Voting</h3>
+            <p>
+              While voting is the most direct form of democratic participation, Australian democracy thrives on broader citizen engagement through various channels.
+            </p>
+
+            <strong>Other Forms of Participation:</strong>
+            <ul>
+              <li><strong>Political Parties:</strong> Joining parties, attending meetings, volunteering in campaigns</li>
+              <li><strong>Civil Society:</strong> Participating in community organizations, advocacy groups, and unions</li>
+              <li><strong>Public Consultation:</strong> Contributing to government policy consultations and inquiries</li>
+              <li><strong>Civic Engagement:</strong> Contacting elected representatives, attending public meetings</li>
+              <li><strong>Media and Discussion:</strong> Engaging in informed public debate about issues</li>
+            </ul>
+
+            <p>
+              This multi-layered approach to democratic participation ensures that Australian democracy remains vibrant, responsive, and accountable to the people it serves.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
+
   <script>
-    // Tab navigation logic
-    document.querySelectorAll('nav button').forEach(btn => {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-        this.classList.add('active');
-        document.getElementById(this.getAttribute('data-section')).classList.add('active');
-        window.scrollTo({top: 0, behavior: "smooth"});
+    // Enhanced navigation with accessibility improvements
+    const navButtons = document.querySelectorAll('.nav-button');
+    const sections = document.querySelectorAll('.section');
+
+    function showSection(targetSection) {
+      // Hide all sections and remove active state
+      sections.forEach(section => {
+        section.classList.remove('active');
+        section.setAttribute('aria-hidden', 'true');
+      });
+      
+      navButtons.forEach(btn => {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-pressed', 'false');
+      });
+
+      // Show target section and set active state
+      const target = document.getElementById(targetSection);
+      const activeButton = document.querySelector(`[data-section="${targetSection}"]`);
+      
+      if (target && activeButton) {
+        target.classList.add('active');
+        target.setAttribute('aria-hidden', 'false');
+        activeButton.classList.add('active');
+        activeButton.setAttribute('aria-pressed', 'true');
+        
+        // Smooth scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Focus management for accessibility
+        target.focus();
+      }
+    }
+
+    // Add event listeners to navigation buttons
+    navButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const section = this.getAttribute('data-section');
+        showSection(section);
+      });
+
+      // Keyboard navigation support
+      button.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.click();
+        }
       });
     });
+
+    // Enhanced loading animations
+    function initializeAnimations() {
+      const cards = document.querySelectorAll('.card.loading');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }
+        });
+      }, { threshold: 0.1 });
+
+      cards.forEach(card => {
+        observer.observe(card);
+      });
+    }
+
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeAnimations();
+      
+      // Set initial ARIA states
+      sections.forEach((section, index) => {
+        if (index === 0) {
+          section.setAttribute('aria-hidden', 'false');
+        } else {
+          section.setAttribute('aria-hidden', 'true');
+        }
+      });
+    });
+
+    // Keyboard navigation for sections
+    document.addEventListener('keydown', function(e) {
+      if (e.key >= '1' && e.key <= '5') {
+        const sectionIndex = parseInt(e.key) - 1;
+        const sectionIds = ['overview', 'map', 'layers', 'powers', 'elections'];
+        if (sectionIds[sectionIndex]) {
+          showSection(sectionIds[sectionIndex]);
+        }
+      }
+    });
+
+    // Print functionality
+    function preparePrint() {
+      sections.forEach(section => {
+        section.style.display = 'block';
+        section.style.pageBreakBefore = 'always';
+      });
+    }
+
+    window.addEventListener('beforeprint', preparePrint);
   </script>
 </body>
 </html>
