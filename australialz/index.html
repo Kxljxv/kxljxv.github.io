@@ -4,22 +4,35 @@
   <meta charset="UTF-8">
   <title>The Australian System of Government – Interactive Guide</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!--
+    Copilot-generated interactive guide to the Australian System of Government
+    Edits/notes:
+    - Font size reduced for compactness
+    - Added side margin/padding for better readability
+    - Button font color remains light on click
+    - Diagram sections replaced with clear placeholders and explanation of intended diagram
+    - Interactive state map replaced with provided embed
+    - New "Layers of Government" section that clearly distinguishes Country, State/Territory, and Local levels, their roles, and necessity
+    - All sections updated for clarity and user preferences
+  -->
+
   <style>
     :root {
       --main-bg: #f4f6fa;
       --primary: #2e5ebc;
       --accent: #8ecae6;
       --surface: #fff;
-      --shadow: 0 6px 24px 0 rgba(30,60,90,0.08), 0 1.5px 4px 0 rgba(30,60,90,0.08);
-      --border-radius: 22px;
-      --blur-bg: blur(14px);
+      --shadow: 0 4px 18px 0 rgba(30,60,90,0.09);
+      --border-radius: 16px;
     }
     html, body {
       height: 100%;
       margin: 0;
       font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
       background: linear-gradient(120deg, #c9e0fb 0%, #e4f1fb 100%);
-      color: #26335a;
+      color: #253040;
+      font-size: 15px; /* Reduced font size */
     }
     body {
       min-height: 100vh;
@@ -27,73 +40,75 @@
       overflow-x: hidden;
     }
     .container {
-      max-width: 1200px;
-      margin: 32px auto 32px auto;
-      padding: 24px 16px;
+      max-width: 940px;
+      margin: 36px auto 36px auto;
+      padding: 28px 22px 24px 22px; /* Added side padding */
       background: var(--surface);
       border-radius: var(--border-radius);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
+      box-sizing: border-box;
     }
     header {
       text-align: center;
-      margin-bottom: 28px;
+      margin-bottom: 18px;
     }
     header h1 {
-      font-size: 2.7rem;
+      font-size: 2rem; /* Smaller */
       margin: 0 0 6px 0;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       font-weight: 800;
       color: var(--primary);
-      text-shadow: 0 2px 16px #b6d5f7;
+      text-shadow: 0 1px 8px #b6d5f7;
     }
     header p {
-      font-size: 1.2rem;
+      font-size: 1.03rem;
       color: #4b6382;
       margin-bottom: 0;
+      margin-top: 0.8em;
     }
     nav {
       margin-bottom: 18px;
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 8px;
     }
     nav button {
       background: linear-gradient(120deg, var(--primary), #7fa9e4);
       color: #fff;
       border: none;
-      border-radius: 32px;
-      padding: 8px 26px;
-      font-size: 1.1rem;
-      font-weight: 600;
+      border-radius: 22px;
+      padding: 5px 18px;
+      font-size: 1rem;
+      font-weight: 500;
       margin: 0 2px;
-      box-shadow: 0 2px 12px 0 rgba(80,120,200,0.10);
-      transition: background .15s, transform .12s;
+      box-shadow: 0 1px 8px 0 rgba(80,120,200,0.08);
       cursor: pointer;
       outline: none;
-      backdrop-filter: blur(4px);
+      transition: background .13s, color .11s, transform .1s;
+      user-select: none;
+      /* Prevent dark font on click */
+      -webkit-tap-highlight-color: transparent;
     }
-    nav button.active, nav button:hover {
-      background: linear-gradient(120deg, #456fc5 70%, #a7d5fc 100%);
-      color: #234;
-      transform: translateY(-2px) scale(1.04);
-      box-shadow: 0 6px 18px 0 rgba(80,120,200,0.13);
+    nav button.active, nav button:hover, nav button:focus {
+      background: linear-gradient(120deg, #4573d5 70%, #a7d5fc 100%);
+      color: #fff; /* Stay light on click */
+      transform: translateY(-1px) scale(1.03);
     }
     section {
       display: none;
-      animation: fadein .5s;
-      min-height: 300px;
+      animation: fadein .32s;
+      min-height: 220px;
     }
     section.active {
       display: block;
     }
     .card {
-      background: rgba(255,255,255,0.8);
+      background: rgba(255,255,255,0.94);
       border-radius: var(--border-radius);
       box-shadow: var(--shadow);
-      margin: 22px 0;
-      padding: 26px 30px 16px 30px;
+      margin: 18px 0;
+      padding: 18px 18px 10px 18px;
       position: relative;
       overflow: hidden;
     }
@@ -101,189 +116,48 @@
       margin-top: 0;
       color: var(--primary);
       font-weight: 700;
-      font-size: 1.5rem;
-      margin-bottom: 16px;
+      font-size: 1.14rem;
+      margin-bottom: 13px;
     }
     .card ul, .card ol {
       margin-top: 0;
-      margin-bottom: 0.8em;
-      padding-left: 1.3em;
+      margin-bottom: 0.7em;
+      padding-left: 1.2em;
     }
     .card strong {
-      color: #2155a5;
-    }
-    .diagram {
-      width: 100%;
-      max-width: 790px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 18px 0;
-      border-radius: var(--border-radius);
-      background: rgba(211, 233, 255, 0.52);
-      box-shadow: 0 4px 32px 0 rgba(30,60,90,0.13);
-      overflow-x: auto;
-    }
-    /* Map styling */
-    .aus-map {
-      width: 100%;
-      max-width: 690px;
-      margin: 22px auto 0 auto;
-      display: block;
-      border-radius: var(--border-radius);
-      background: linear-gradient(120deg, #e7f6fd 0%, #cbe4f6 100%);
-      box-shadow: 0 2px 18px 0 rgba(30,60,90,0.09);
-      position: relative;
-      aspect-ratio: 2.1/1;
-      min-height: 320px;
-    }
-    .state-dot {
-      position: absolute;
-      width: 38px;
-      height: 38px;
-      background: linear-gradient(120deg,#f5faff,#70b6f4 90%);
-      border: 2.5px solid #337ccf;
-      border-radius: 50%;
-      box-shadow: 0 2px 12px 0 rgba(80,120,200,0.16);
-      cursor: pointer;
-      transition: box-shadow .13s, transform .11s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .state-dot:hover, .state-dot.active {
-      box-shadow: 0 6px 24px 0 #8ecae666, 0 1.5px 4px 0 #2155a522;
-      background: linear-gradient(120deg,#e4f2ff,#377ae1);
-      transform: scale(1.09);
-      z-index: 2;
-    }
-    .state-dot span {
-      font-weight: 700;
-      color: #234;
-      font-size: 0.97rem;
-      pointer-events: none;
-    }
-    .state-popup {
-      position: absolute;
-      left: 48px;
-      top: -8px;
-      min-width: 240px;
-      max-width: 300px;
-      background: rgba(255,255,255,0.97);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      border: 1.5px solid #b3d4fe;
-      padding: 14px 22px;
-      font-size: 1.06rem;
-      z-index: 30;
-      animation: fadein .42s;
-    }
-    .state-popup h3 {
-      margin: 0 0 4px 0;
-      font-size: 1.14rem;
-      color: var(--primary);
-    }
-    .state-popup button {
-      border: none;
-      background: none;
-      color: #234;
-      font-size: 1.14rem;
-      position: absolute;
-      top: 9px;
-      right: 16px;
-      cursor: pointer;
-    }
-    /* Diagram styling */
-    .gov-diagram {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 28px;
-      margin: 30px auto 10px auto;
-      width: 100%;
-      max-width: 760px;
-    }
-    .gov-levels {
-      display: flex;
-      gap: 26px;
-      width: 100%;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .gov-box {
-      background: rgba(130,164,221,0.11);
-      border-radius: 25px;
-      box-shadow: 0 2px 12px 0 rgba(80,120,200,0.10);
-      padding: 22px 28px;
-      min-width: 190px;
-      max-width: 230px;
-      text-align: center;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #2155a5;
-      position: relative;
-      margin-bottom: 8px;
-      transition: background 0.18s;
-    }
-    .gov-box .gov-title {
-      font-size: 1.22rem;
-      font-weight: 700;
       color: #1a3963;
-      margin-bottom: 6px;
-      text-shadow: 0 2px 16px #b6d5f7;
     }
-    .gov-arrow {
-      width: 34px;
-      height: 34px;
+    /* Diagram placeholder styling */
+    .diagram-placeholder {
+      width: 100%;
+      min-height: 220px;
+      border-radius: 14px;
+      border: 1.6px dashed #a2b8da;
+      background: repeating-linear-gradient(120deg, #e9f3fb 0 20px, #f7fafd 20px 40px);
+      box-shadow: 0 2px 10px 0 rgba(80,120,200,0.05);
+      color: #456fc5;
+      font-size: 1.03em;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
-      color: #377ae1;
-      margin-top: 0;
-      margin-bottom: 0;
-      user-select: none;
-    }
-    .branch-list {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 14px;
-      flex-wrap: wrap;
-    }
-    .branch-card {
-      background: rgba(220,235,255,0.7);
-      border-radius: 16px;
-      box-shadow: 0 2px 10px 0 rgba(80,120,200,0.08);
-      padding: 14px 18px 10px 18px;
-      min-width: 160px;
-      max-width: 220px;
       text-align: center;
-      margin-bottom: 10px;
-      transition: background 0.14s;
-    }
-    .branch-card h4 {
-      color: #2155a5;
-      margin: 0 0 5px 0;
-    }
-    .blur-bg {
-      background: rgba(255,255,255,0.6);
-      backdrop-filter: blur(7px);
+      margin: 18px 0 8px 0;
+      padding: 32px 18px;
+      font-style: italic;
     }
     /* Table styling */
     .styled-table {
       width: 100%;
       border-collapse: collapse;
-      margin: 28px 0;
-      font-size: 1.03rem;
-      background: rgba(255,255,255,0.97);
-      border-radius: 18px;
+      margin: 16px 0;
+      font-size: 0.98rem;
+      background: rgba(255,255,255,0.98);
+      border-radius: 12px;
       box-shadow: var(--shadow);
       overflow: hidden;
     }
     .styled-table th, .styled-table td {
-      padding: 13px 10px;
+      padding: 8px 6px;
       text-align: left;
       border-bottom: 1px solid #e3eaf5;
     }
@@ -295,35 +169,18 @@
     .styled-table tr:last-child td {
       border-bottom: none;
     }
-    /* Responsive */
-    @media (max-width: 900px) {
-      .gov-levels {
-        flex-direction: column;
-        gap: 10px;
-        align-items: center;
-      }
-      .gov-box {
-        min-width: 0;
-        width: 90%;
-        max-width: 95vw;
-      }
-      .diagram, .aus-map, .gov-diagram {
-        max-width: 99vw;
-      }
-    }
-    @media (max-width: 600px) {
+    /* Responsive layout */
+    @media (max-width: 700px) {
       .container {
-        padding: 10px 1vw;
+        padding: 8px 2vw;
       }
-      .gov-box, .branch-card {
-        font-size: 1rem;
-        padding: 10px 6px;
+      .diagram-placeholder {
+        font-size: 0.98em;
+        padding: 16px 2vw;
+        min-height: 120px;
       }
-      .gov-arrow {
-        font-size: 1.4rem;
-      }
-      .styled-table th, .styled-table td {
-        padding: 8px 5px;
+      .card {
+        padding: 12px 5px;
       }
     }
     @keyframes fadein {
@@ -334,32 +191,46 @@
 </head>
 <body>
   <div class="container">
+    <!-- Header and Navigation -->
     <header>
       <h1>The Australian System of Government</h1>
-      <p>Explore how Australia is governed, from the Constitution to the States and Local Councils, with interactive diagrams and an explorable map.</p>
+      <p>
+        Your interactive guide to how Australia is governed, from the Constitution to the local council. 
+        Explore the three levels of government, their powers, and how they work together.
+      </p>
     </header>
     <nav>
       <button class="active" data-section="overview">Overview</button>
       <button data-section="map">Interactive Map</button>
-      <button data-section="structure">Government Structure</button>
-      <button data-section="branches">Separation of Powers</button>
-      <button data-section="parliament">Parliament/Cabinet</button>
-      <button data-section="states">States & Territories</button>
+      <button data-section="layers">Layers of Government</button>
+      <button data-section="powers">Separation of Powers</button>
+      <button data-section="parliament">Parliament & Cabinet</button>
       <button data-section="table">Executive Table</button>
     </nav>
 
     <!-- Overview Section -->
     <section id="overview" class="active">
       <div class="card">
-        <h2>Australia's System of Government</h2>
-        <p>
-          Australia is a <strong>federal parliamentary constitutional monarchy</strong>. The system is based on <strong>liberal democracy</strong>, with religious tolerance, freedom of speech, and the rule of law. The <strong>Australian Constitution</strong> (effective 1901) defines the framework and the separation of powers. Australia is comprised of <strong>six states</strong> and <strong>two self-governing territories</strong>, each with its own government, under a national (federal) government headquartered in Canberra.
-        </p>
+        <h2>Australia at a Glance</h2>
         <ul>
-          <li><strong>Parliamentary Government:</strong> The Executive comes from within the Parliament and is responsible to it.</li>
-          <li><strong>Constitutional Monarchy:</strong> The King is the Head of State, represented by the Governor-General, but acts only on advice of elected ministers.</li>
-          <li><strong>Three Levels:</strong> Federal, State/Territory, and Local Government.</li>
+          <li>
+            <strong>System:</strong> A <strong>federal parliamentary constitutional monarchy</strong> based on the liberal democratic tradition, with a written Constitution since 1901.
+          </li>
+          <li>
+            <strong>Levels:</strong> Three main levels – <b>Federal</b> (Commonwealth), <b>State/Territory</b>, and <b>Local</b> governments.
+          </li>
+          <li>
+            <strong>Parliamentary government:</strong> The Executive comes from, and is responsible to, the Parliament.
+          </li>
+          <li>
+            <strong>Constitutional Monarchy:</strong> The King is Head of State (represented by the Governor-General), but real power is exercised by elected officials.
+          </li>
         </ul>
+        <div class="diagram-placeholder">
+          (Overview Diagram Placeholder)<br>
+          <b>What to embed here:</b><br>
+          A summary diagram showing the relationship of the three levels of government (Federal, State/Territory, Local), the separation of powers (Legislative, Executive, Judiciary), and the symbolic role of the King/Governor-General.
+        </div>
       </div>
     </section>
 
@@ -367,177 +238,98 @@
     <section id="map">
       <div class="card">
         <h2>Interactive Map: States & Territories</h2>
-        <div class="aus-map" id="ausMap">
-          <!-- Dots and popups are placed dynamically -->
-        </div>
-        <div style="text-align:center; margin-top:10px; color:#2155a5; font-size:1.05rem;">
-          <span>Click a state/territory for details!</span>
+        <!-- Provided embed replaces custom map -->
+        <iframe src="https://app.atlas.co/embeds/9EkViselQJHDEU9xp6U7"
+          frameborder="0" width="100%" height="600"
+          style="max-width: 100%; border: 1px solid #EAEAEA; border-radius: 4px;">
+        </iframe>
+        <div style="margin-top: 10px; color: #2155a5; font-size: 0.97rem; text-align: center;">
+          Click on a state or territory to learn more about its government, capital, and responsibilities.
         </div>
       </div>
     </section>
 
-    <!-- Structure Diagram Section -->
-    <section id="structure">
+    <!-- Layers of Government Section -->
+    <section id="layers">
       <div class="card">
-        <h2>Diagram: The Structure of Australia's Government</h2>
-        <div class="diagram gov-diagram">
-          <!-- Top Level -->
-          <div class="gov-levels">
-            <div class="gov-box" style="background:rgba(255,255,255,0.82);">
-              <div class="gov-title">Constitution</div>
-              <div>Defines federal, state, and local government powers and roles.</div>
-            </div>
-            <span class="gov-arrow">↓</span>
-            <div class="gov-box">
-              <div class="gov-title">Governor-General</div>
-              <div>Represents the King.<br>Acts on advice of the Federal Executive Council.</div>
-            </div>
-          </div>
-          <span class="gov-arrow">↓</span>
-          <!-- Main branches -->
-          <div class="gov-levels">
-            <div class="gov-box">
-              <div class="gov-title">Legislative</div>
-              <div>Parliament (House of Representatives &amp; Senate)</div>
-            </div>
-            <div class="gov-box">
-              <div class="gov-title">Executive</div>
-              <div>Prime Minister &amp; Cabinet<br>Government Departments</div>
-            </div>
-            <div class="gov-box">
-              <div class="gov-title">Judiciary</div>
-              <div>High Court &amp; Federal Courts</div>
-            </div>
-          </div>
-          <span class="gov-arrow">↓</span>
-          <div class="gov-levels">
-            <div class="gov-box" style="background:rgba(255,255,255,0.85);">
-              <div class="gov-title">State &amp; Territory Governments</div>
-              <div>Each with own Parliament, Executive, Judiciary</div>
-            </div>
-          </div>
-          <span class="gov-arrow">↓</span>
-          <div class="gov-levels">
-            <div class="gov-box" style="background:rgba(255,255,255,0.89);">
-              <div class="gov-title">Local Government</div>
-              <div>Shires, Councils, Municipalities<br>Services: planning, roads, waste, facilities</div>
-            </div>
-          </div>
+        <h2>Layers of Government: Federal, State/Territory, Local</h2>
+        <div class="diagram-placeholder">
+          (Embed/Diagram Placeholder)<br>
+          <b>What to embed here:</b><br>
+          An interactive or visual diagram showing all three layers (Federal/Country, State or Territory, Local). 
+          <ul style="text-align:left; margin: 0.5em auto 0 auto; max-width: 430px;">
+            <li>Show how citizens are governed by all three layers at once.</li>
+            <li>Include sample roles/responsibilities for each layer.</li>
+            <li>Visually highlight the unique powers and necessity of each (e.g. why have states AND local?).</li>
+          </ul>
         </div>
+        <ul>
+          <li>
+            <b>Federal (Country):</b> Makes laws for the whole nation (defence, immigration, foreign policy, trade, currency, etc.).
+          </li>
+          <li>
+            <b>State/Territory:</b> Each state/territory has its own parliament and constitution. Responsible for health, education, roads, police, emergency services, and local government regulation.
+          </li>
+          <li>
+            <b>Local:</b> Councils or shires. Control town planning, local roads, waste, water, community facilities, and building codes. Funded by rates and state/federal grants.
+          </li>
+        </ul>
+        <p>
+          <b>Why have all three layers?</b><br>
+          <b>States/Territories</b> reflect historical colonies and help tailor laws to local needs (e.g. education, hospitals). <b>Local government</b> delivers close-to-home services and community priorities. The three levels work together, but each has distinct powers defined by the Constitution and state laws.
+        </p>
       </div>
     </section>
 
     <!-- Separation of Powers Section -->
-    <section id="branches">
+    <section id="powers">
       <div class="card">
-        <h2>The Separation of Powers</h2>
-        <p>
-          The Constitution separates power into three branches to provide <strong>checks and balances</strong>:
-        </p>
-        <div class="branch-list">
-          <div class="branch-card">
-            <h4>Legislative</h4>
-            <div>Makes and changes the law (Parliament: House of Representatives &amp; Senate)</div>
-          </div>
-          <div class="branch-card">
-            <h4>Executive</h4>
-            <div>Puts laws into action (Prime Minister, Cabinet, Departments, Governor-General)</div>
-          </div>
-          <div class="branch-card">
-            <h4>Judiciary</h4>
-            <div>Interprets and applies the law (High Court &amp; Federal Courts)</div>
-          </div>
+        <h2>Separation of Powers</h2>
+        <div class="diagram-placeholder">
+          (Separation of Powers Diagram Placeholder)<br>
+          <b>What to embed here:</b><br>
+          A clear diagram showing the three branches (Legislative, Executive, Judiciary), how they interact, and the checks/balances between them in Australia.
         </div>
         <ul>
           <li>
-            <strong>Why separation?</strong> Prevents oppressive government and maintains rule of law.
+            <strong>Legislative:</strong> Makes laws (Parliament: House of Representatives & Senate)
           </li>
           <li>
-            <strong>Australia's twist:</strong> Ministers must be members of Parliament, so Legislative &amp; Executive overlap, but checks exist via Opposition and bicameral system.
+            <strong>Executive:</strong> Puts laws into action (Prime Minister, Cabinet, Departments, Governor-General)
+          </li>
+          <li>
+            <strong>Judiciary:</strong> Interprets and applies the law (High Court & Federal Courts)
           </li>
         </ul>
+        <p>
+          <b>Note:</b> In Australia, executive ministers must also be members of Parliament, so there is overlap. Checks still exist via the bicameral Parliament and an independent judiciary.
+        </p>
       </div>
     </section>
 
-    <!-- Parliament/Cabinet Section -->
+    <!-- Parliament & Cabinet Section -->
     <section id="parliament">
       <div class="card">
         <h2>Parliament, Cabinet, and the Executive</h2>
-        <ul>
-          <li><strong>Bicameral Parliament:</strong> House of Representatives (Lower House) and Senate (Upper House).</li>
-          <li><strong>Forming Government:</strong> Party with most seats in House of Representatives forms government. Leader becomes Prime Minister.</li>
-          <li><strong>Cabinet:</strong> PM and senior ministers set government policy and major decisions.</li>
-        </ul>
-        <div class="diagram gov-diagram">
-          <div class="gov-levels" style="gap:10px;">
-            <div class="gov-box" style="background:#e7f2fd;">
-              <div class="gov-title">House of Representatives</div>
-              <div>148 members, initiates most legislation, government formed by majority.</div>
-            </div>
-            <div class="gov-box" style="background:#e7f2fd;">
-              <div class="gov-title">Senate</div>
-              <div>12 Senators per state, 2 per territory. Reviews and amends bills.</div>
-            </div>
-          </div>
-          <span class="gov-arrow">↔</span>
-          <div class="gov-levels" style="gap:10px;">
-            <div class="gov-box" style="background:#e6f9ff;">
-              <div class="gov-title">Cabinet</div>
-              <div>Prime Minister + senior ministers. Decides policy, proposes legislation.</div>
-            </div>
-            <div class="gov-box" style="background:#e6f9ff;">
-              <div class="gov-title">Governor-General</div>
-              <div>Represents King; assents to bills, appoints ministers, acts on advice.</div>
-            </div>
-          </div>
+        <div class="diagram-placeholder">
+          (Parliament/Cabinet Structure Diagram Placeholder)<br>
+          <b>What to embed here:</b><br>
+          A bicameral (two-chamber) Parliament diagram, showing the House of Representatives and Senate, the role of the Governor-General, and how Cabinet sits within the Executive.
         </div>
-        <ul style="margin-top:18px;">
-          <li><strong>Federal Executive Council</strong> advises the Governor-General formally. All ministers/secretaries are members.</li>
-          <li><strong>Checks and balances:</strong> Opposition parties, Senate reviews, and judiciary independence.</li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- States & Territories Section -->
-    <section id="states">
-      <div class="card">
-        <h2>States, Territories, and Local Government</h2>
         <ul>
           <li>
-            <strong>States:</strong> 6 states, each with its own Constitution, Parliament (bicameral except QLD), Premier, and Governor.
+            <b>Parliament:</b> House of Representatives (forms government), Senate (reviews/amends laws). Both must pass laws.
           </li>
           <li>
-            <strong>Territories:</strong> 2 self-governing territories, each with a single-chamber Parliament.
+            <b>Executive:</b> Cabinet (Prime Minister + Ministers), implements laws and manages government.
           </li>
           <li>
-            <strong>Local:</strong> About 900 local councils/shire bodies, handle planning, waste, local roads, recreation, etc.
+            <b>Governor-General:</b> Represents the King, formally signs laws and appoints Ministers, acts on advice of Cabinet.
           </li>
         </ul>
-        <div class="diagram gov-diagram">
-          <div class="gov-levels">
-            <div class="gov-box">
-              <div class="gov-title">State Parliament</div>
-              <div>Lower &amp; Upper House (except QLD)</div>
-            </div>
-            <div class="gov-box">
-              <div class="gov-title">State Executive</div>
-              <div>Premier &amp; Cabinet, Depts</div>
-            </div>
-            <div class="gov-box">
-              <div class="gov-title">State Judiciary</div>
-              <div>Supreme Court, Lower Courts</div>
-            </div>
-          </div>
-          <span class="gov-arrow">↓</span>
-          <div class="gov-levels">
-            <div class="gov-box" style="background-color:#f3f7fb;">
-              <div class="gov-title">Local Government</div>
-              <div>Council, Mayor/Chair, community services</div>
-            </div>
-          </div>
-        </div>
         <p>
-          State governments control health, education, police, roads, and more. Local governments operate under state laws with varying responsibilities.
+          After elections, the party (or coalition) with the most seats in the House of Representatives forms government. 
+          The Cabinet is the main policy-making body, while the Governor-General’s role is mostly ceremonial but carries constitutional significance.
         </p>
       </div>
     </section>
@@ -603,7 +395,7 @@
             </tbody>
           </table>
         </div>
-        <div style="font-size:.95rem;color:#4b6382;margin-top:8px;">
+        <div style="font-size:.93rem;color:#4b6382;margin-top:8px;">
           For full explanations, see previous sections.
         </div>
       </div>
@@ -611,7 +403,7 @@
   </div>
 
   <script>
-    // Tab navigation
+    // Tab navigation logic
     document.querySelectorAll('nav button').forEach(btn => {
       btn.addEventListener('click', function() {
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -621,166 +413,7 @@
         window.scrollTo({top: 0, behavior: "smooth"});
       });
     });
-
-    // Map: state/territory positions & info
-    const states = [
-      {
-        name: "Western Australia",
-        abbr: "WA",
-        left: "8%",
-        top: "58%",
-        details: `<strong>Western Australia (WA)</strong><br>
-          Capital: Perth<br>
-          Parliament: Bicameral<br>
-          Premier, Governor<br>
-          Major industries: Mining, energy, agriculture.<br>
-          Responsible for: Health, education, police, roads, etc.`
-      },
-      {
-        name: "Northern Territory",
-        abbr: "NT",
-        left: "41.5%",
-        top: "17%",
-        details: `<strong>Northern Territory (NT)</strong><br>
-          Capital: Darwin<br>
-          Parliament: Single chamber<br>
-          Chief Minister<br>
-          Known for: Kakadu, Uluru, Outback, Indigenous culture.`
-      },
-      {
-        name: "South Australia",
-        abbr: "SA",
-        left: "42%",
-        top: "67%",
-        details: `<strong>South Australia (SA)</strong><br>
-          Capital: Adelaide<br>
-          Parliament: Bicameral<br>
-          Premier, Governor<br>
-          Major industries: Wine, defense, manufacturing.`
-      },
-      {
-        name: "Queensland",
-        abbr: "QLD",
-        left: "70%",
-        top: "19%",
-        details: `<strong>Queensland (QLD)</strong><br>
-          Capital: Brisbane<br>
-          Parliament: <u>Unicameral</u> (only one house)<br>
-          Premier, Governor<br>
-          Known for: Great Barrier Reef, tourism, sugar cane.`
-      },
-      {
-        name: "New South Wales",
-        abbr: "NSW",
-        left: "83%",
-        top: "54%",
-        details: `<strong>New South Wales (NSW)</strong><br>
-          Capital: Sydney<br>
-          Parliament: Bicameral<br>
-          Premier, Governor<br>
-          Largest population, key industries: finance, tech, tourism.`
-      },
-      {
-        name: "Australian Capital Territory",
-        abbr: "ACT",
-        left: "87%",
-        top: "68%",
-        details: `<strong>Australian Capital Territory (ACT)</strong><br>
-          Capital: Canberra (also the national capital)<br>
-          Parliament: Single chamber<br>
-          Chief Minister<br>
-          Federal Parliament and government are based here.`
-      },
-      {
-        name: "Victoria",
-        abbr: "VIC",
-        left: "79%",
-        top: "84%",
-        details: `<strong>Victoria (VIC)</strong><br>
-          Capital: Melbourne<br>
-          Parliament: Bicameral<br>
-          Premier, Governor<br>
-          Known for: Arts, sports, education, manufacturing.`
-      },
-      {
-        name: "Tasmania",
-        abbr: "TAS",
-        left: "93%",
-        top: "97%",
-        details: `<strong>Tasmania (TAS)</strong><br>
-          Capital: Hobart<br>
-          Parliament: Bicameral<br>
-          Premier, Governor<br>
-          Island state, famous for wilderness, produce, wildlife.`
-      },
-    ];
-
-    function renderMap() {
-      const map = document.getElementById('ausMap');
-      map.innerHTML = "";
-      // Add a stylized SVG Australia outline (no image files! just SVG)
-      map.innerHTML += `<svg viewBox="0 0 1000 480" style="width:100%;height:100%;position:absolute;top:0;left:0;z-index:0;pointer-events:none;opacity:0.45;">
-        <path d="M100,420 Q140,270 72,160 Q120,85 200,90 Q230,90 210,130 Q220,100 310,80 Q330,130 380,110 Q390,60 450,50 Q520,100 600,80 Q640,110 670,130 Q750,110 790,170 Q830,200 770,250 Q830,300 820,370 Q780,430 670,410 Q620,470 540,420 Q400,450 310,460 Q200,470 100,420 Z"
-          fill="#b8e1fa" stroke="#377ae1" stroke-width="6"/>
-      </svg>`;
-      // Place dots
-      states.forEach((st, i) => {
-        const dot = document.createElement('div');
-        dot.className = 'state-dot';
-        dot.style.left = st.left;
-        dot.style.top = st.top;
-        dot.innerHTML = `<span>${st.abbr}</span>`;
-        dot.tabIndex = 0;
-        dot.setAttribute('aria-label', st.name);
-        dot.addEventListener('click', e => {
-          showStatePopup(i, dot);
-        });
-        dot.addEventListener('keydown', e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            showStatePopup(i, dot);
-            e.preventDefault();
-          }
-        });
-        map.appendChild(dot);
-      });
-    }
-
-    function showStatePopup(idx, dotElem) {
-      // Remove old popups
-      document.querySelectorAll('.state-dot').forEach(d => d.classList.remove('active'));
-      document.querySelectorAll('.state-popup').forEach(e => e.remove());
-      dotElem.classList.add('active');
-      // Create popup
-      const popup = document.createElement('div');
-      popup.className = 'state-popup';
-      popup.innerHTML = `<button title="Close" onclick="this.parentElement.remove();document.querySelectorAll('.state-dot').forEach(d=>d.classList.remove('active'));">×</button>
-        <h3>${states[idx].name}</h3>
-        <div>${states[idx].details}</div>`;
-      // Calculate popup position to not overflow map
-      const rect = dotElem.getBoundingClientRect();
-      const mapRect = document.getElementById('ausMap').getBoundingClientRect();
-      let left = dotElem.offsetLeft + 44;
-      let top = dotElem.offsetTop - 10;
-      if (left + 320 > mapRect.width) left = dotElem.offsetLeft - 240;
-      if (left < 0) left = 2;
-      if (top < 0) top = 2;
-      popup.style.left = left + "px";
-      popup.style.top = top + "px";
-      dotElem.parentElement.appendChild(popup);
-      // Accessibility: focus
-      setTimeout(()=>popup.focus(), 100);
-    }
-    // Render map on load & tab open
-    document.querySelector('button[data-section="map"]').addEventListener('click', renderMap);
-    if(document.getElementById('map').classList.contains('active')) renderMap();
-
-    // Keyboard: Close popups with Esc
-    document.addEventListener('keydown', function(e){
-      if (e.key === 'Escape') {
-        document.querySelectorAll('.state-popup').forEach(e => e.remove());
-        document.querySelectorAll('.state-dot').forEach(d => d.classList.remove('active'));
-      }
-    });
+    // No map rendering JS needed, as map now uses a static embed.
   </script>
 </body>
 </html>
