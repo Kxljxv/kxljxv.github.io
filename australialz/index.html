@@ -7,14 +7,14 @@
 
   <!--
     Copilot-generated interactive guide to the Australian System of Government
-    Edits/notes:
-    - Font size reduced for compactness
-    - Added side margin/padding for better readability
-    - Button font color remains light on click
-    - Diagram sections replaced with clear placeholders and explanation of intended diagram
-    - Interactive state map replaced with provided embed
-    - New "Layers of Government" section that clearly distinguishes Country, State/Territory, and Local levels, their roles, and necessity
-    - All sections updated for clarity and user preferences
+    v2: Per user request
+    - Overview: More detailed intro, more text, no diagram.
+    - Interactive Map: Embed and more textual explanation for each state/territory.
+    - Layers of Government: Much more text explaining differences, necessity, and roles of each layer, plus diagram embed.
+    - Separation of Powers: Detailed text and diagram embed.
+    - New: "Elections" section with comprehensive text on how elections work at all levels, replacing Parliament/Cabinet and Executive Table.
+    - All sections use more exposition, contextualization, and explanation.
+    - No diagram at Overview, no Parliament/Cabinet or Executive Table sections.
   -->
 
   <style>
@@ -32,7 +32,7 @@
       font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
       background: linear-gradient(120deg, #c9e0fb 0%, #e4f1fb 100%);
       color: #253040;
-      font-size: 15px; /* Reduced font size */
+      font-size: 15px;
     }
     body {
       min-height: 100vh;
@@ -42,7 +42,7 @@
     .container {
       max-width: 940px;
       margin: 36px auto 36px auto;
-      padding: 28px 22px 24px 22px; /* Added side padding */
+      padding: 28px 22px 24px 22px;
       background: var(--surface);
       border-radius: var(--border-radius);
       box-shadow: var(--shadow);
@@ -53,7 +53,7 @@
       margin-bottom: 18px;
     }
     header h1 {
-      font-size: 2rem; /* Smaller */
+      font-size: 2rem;
       margin: 0 0 6px 0;
       letter-spacing: 0.5px;
       font-weight: 800;
@@ -87,12 +87,11 @@
       outline: none;
       transition: background .13s, color .11s, transform .1s;
       user-select: none;
-      /* Prevent dark font on click */
       -webkit-tap-highlight-color: transparent;
     }
     nav button.active, nav button:hover, nav button:focus {
       background: linear-gradient(120deg, #4573d5 70%, #a7d5fc 100%);
-      color: #fff; /* Stay light on click */
+      color: #fff;
       transform: translateY(-1px) scale(1.03);
     }
     section {
@@ -127,57 +126,51 @@
     .card strong {
       color: #1a3963;
     }
-    /* Diagram placeholder styling */
-    .diagram-placeholder {
-      width: 100%;
-      min-height: 220px;
-      border-radius: 14px;
-      border: 1.6px dashed #a2b8da;
-      background: repeating-linear-gradient(120deg, #e9f3fb 0 20px, #f7fafd 20px 40px);
-      box-shadow: 0 2px 10px 0 rgba(80,120,200,0.05);
-      color: #456fc5;
-      font-size: 1.03em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      margin: 18px 0 8px 0;
-      padding: 32px 18px;
-      font-style: italic;
+    .state-details-list {
+      margin: 1.3em 0 0.7em 0;
+      background: #f5f8fc;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 0.97em;
+      box-shadow: 0 1px 3px 0 #e3eaf5;
     }
-    /* Table styling */
-    .styled-table {
+    .state-details-list dt {
+      font-weight: bold;
+      color: #2e5ebc;
+      margin-top: 0.4em;
+    }
+    .state-details-list dd {
+      margin-left: 0;
+      margin-bottom: 0.2em;
+      margin-top: 0;
+      color: #253040;
+    }
+    /* Diagram embed styling */
+    .diagram-embed {
+      position: relative;
       width: 100%;
-      border-collapse: collapse;
-      margin: 16px 0;
-      font-size: 0.98rem;
-      background: rgba(255,255,255,0.98);
-      border-radius: 12px;
-      box-shadow: var(--shadow);
+      height: 0;
+      padding-top: 100.0000%;
+      box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16);
+      margin-top: 1.6em;
+      margin-bottom: 0.9em;
       overflow: hidden;
+      border-radius: 8px;
+      will-change: transform;
     }
-    .styled-table th, .styled-table td {
-      padding: 8px 6px;
-      text-align: left;
-      border-bottom: 1px solid #e3eaf5;
+    .diagram-embed iframe {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0; left: 0;
+      border: none;
+      padding: 0;
+      margin: 0;
+      background: #fff;
     }
-    .styled-table th {
-      background: #e7f2fd;
-      font-weight: 700;
-      color: #2155a5;
-    }
-    .styled-table tr:last-child td {
-      border-bottom: none;
-    }
-    /* Responsive layout */
     @media (max-width: 700px) {
       .container {
         padding: 8px 2vw;
-      }
-      .diagram-placeholder {
-        font-size: 0.98em;
-        padding: 16px 2vw;
-        min-height: 120px;
       }
       .card {
         padding: 12px 5px;
@@ -195,82 +188,158 @@
     <header>
       <h1>The Australian System of Government</h1>
       <p>
-        Your interactive guide to how Australia is governed, from the Constitution to the local council. 
-        Explore the three levels of government, their powers, and how they work together.
+        Discover how Australia is governed: explore the unique blend of constitutional monarchy, federalism, and parliamentary democracy that shapes the nation.
       </p>
     </header>
     <nav>
       <button class="active" data-section="overview">Overview</button>
-      <button data-section="map">Interactive Map</button>
+      <button data-section="map">States & Territories</button>
       <button data-section="layers">Layers of Government</button>
       <button data-section="powers">Separation of Powers</button>
-      <button data-section="parliament">Parliament & Cabinet</button>
-      <button data-section="table">Executive Table</button>
+      <button data-section="elections">Elections</button>
     </nav>
 
     <!-- Overview Section -->
     <section id="overview" class="active">
       <div class="card">
         <h2>Australia at a Glance</h2>
+        <p>
+          Australia's system of government is founded on <b>liberal democratic principles</b>, such as religious freedom, freedom of speech, and the rule of law. It draws from British and North American influences, but has evolved its own distinctive practices and institutions.<br><br>
+          The <b>Commonwealth of Australia</b> was established in 1901, uniting six former British colonies into a federal nation. Today, Australia is made up of <b>six states</b> and <b>two self-governing territories</b>. Each state and territory has its own constitution, parliament, government, and laws, but all are united under the Australian Constitution.
+        </p>
         <ul>
           <li>
-            <strong>System:</strong> A <strong>federal parliamentary constitutional monarchy</strong> based on the liberal democratic tradition, with a written Constitution since 1901.
+            <b>Federation:</b> Australia is a federation, meaning power is shared between a <b>national government</b> and <b>state/territory governments</b>. Other federations include Canada, India, and Germany.
           </li>
           <li>
-            <strong>Levels:</strong> Three main levels – <b>Federal</b> (Commonwealth), <b>State/Territory</b>, and <b>Local</b> governments.
+            <b>Parliamentary Government:</b> The Executive Government—ministers and Prime Minister—must be drawn from the Parliament and is responsible to it.
           </li>
           <li>
-            <strong>Parliamentary government:</strong> The Executive comes from, and is responsible to, the Parliament.
-          </li>
-          <li>
-            <strong>Constitutional Monarchy:</strong> The King is Head of State (represented by the Governor-General), but real power is exercised by elected officials.
+            <b>Constitutional Monarchy:</b> The King is the formal head of state, represented in Australia by the Governor-General, but holds mainly ceremonial powers.
           </li>
         </ul>
-        <div class="diagram-placeholder">
-          (Overview Diagram Placeholder)<br>
-          <b>What to embed here:</b><br>
-          A summary diagram showing the relationship of the three levels of government (Federal, State/Territory, Local), the separation of powers (Legislative, Executive, Judiciary), and the symbolic role of the King/Governor-General.
-        </div>
+        <p>
+          The <b>Australian Constitution</b> (effective 1901) is the supreme law that sets out the structure of government, powers of each branch, and how they interact. Some important features of government are based on tradition and political practice, not just the written Constitution.
+        </p>
+        <p>
+          The system is designed with <b>checks and balances</b> to prevent any one part of government from holding too much power, and to ensure accountability to the people.
+        </p>
       </div>
     </section>
 
-    <!-- Interactive Map Section -->
+    <!-- Interactive Map and States Section -->
     <section id="map">
       <div class="card">
-        <h2>Interactive Map: States & Territories</h2>
-        <!-- Provided embed replaces custom map -->
+        <h2>Australia's States & Territories</h2>
+        <p>
+          Australia consists of six states and two self-governing territories, each with its own parliament, government, and unique responsibilities. The <b>federal capital</b> is Canberra, in the Australian Capital Territory. Each state and territory is responsible for a range of services, such as health, education, police, and local government regulation.
+        </p>
         <iframe src="https://app.atlas.co/embeds/9EkViselQJHDEU9xp6U7"
-          frameborder="0" width="100%" height="800px"
+          frameborder="0" width="100%" height="600"
           style="max-width: 100%; border: 1px solid #EAEAEA; border-radius: 4px;">
         </iframe>
-        <div style="margin-top: 10px; color: #2155a5; font-size: 0.97rem; text-align: center;">
-          Click on a state or territory to learn more about its government, capital, and responsibilities.
-        </div>
+        <p style="margin-bottom:0.5em;">
+          <b>Below are the capitals and key responsibilities of each state and territory:</b>
+        </p>
+        <dl class="state-details-list">
+          <dt>New South Wales (NSW)</dt>
+          <dd><b>Capital:</b> Sydney<br>
+            <b>Parliament:</b> Bicameral<br>
+            <b>Responsibilities:</b> Health, education, police, transport, local government within the state and more.
+          </dd>
+          <dt>Victoria (VIC)</dt>
+          <dd><b>Capital:</b> Melbourne<br>
+            <b>Parliament:</b> Bicameral<br>
+            <b>Responsibilities:</b> Health, education, roads, emergency services, public land use, regulation of local councils.
+          </dd>
+          <dt>Queensland (QLD)</dt>
+          <dd><b>Capital:</b> Brisbane<br>
+            <b>Parliament:</b> Unicameral (only one house)<br>
+            <b>Responsibilities:</b> Similar to other states, including health, police, fire, and ambulance services.
+          </dd>
+          <dt>Western Australia (WA)</dt>
+          <dd><b>Capital:</b> Perth<br>
+            <b>Parliament:</b> Bicameral<br>
+            <b>Responsibilities:</b> Health, mining regulation, education, and local government oversight.
+          </dd>
+          <dt>South Australia (SA)</dt>
+          <dd><b>Capital:</b> Adelaide<br>
+            <b>Parliament:</b> Bicameral<br>
+            <b>Responsibilities:</b> Health, education, state development, and emergency services.
+          </dd>
+          <dt>Tasmania (TAS)</dt>
+          <dd><b>Capital:</b> Hobart<br>
+            <b>Parliament:</b> Bicameral<br>
+            <b>Responsibilities:</b> Local government, public health, education, and environmental management.
+          </dd>
+          <dt>Northern Territory (NT)</dt>
+          <dd><b>Capital:</b> Darwin<br>
+            <b>Parliament:</b> Unicameral<br>
+            <b>Responsibilities:</b> Health, education, police, and land management. The NT has powers delegated by the federal government.
+          </dd>
+          <dt>Australian Capital Territory (ACT)</dt>
+          <dd><b>Capital:</b> Canberra (also the national capital)<br>
+            <b>Parliament:</b> Unicameral<br>
+            <b>Responsibilities:</b> Local services, education, health, and regulation of the national capital area.
+          </dd>
+        </dl>
+        <p>
+          Each state and territory maintains its own legal system, and differences in their responsibilities reflect their unique histories and needs.
+        </p>
       </div>
     </section>
 
     <!-- Layers of Government Section -->
     <section id="layers">
       <div class="card">
-        <h2>Layers of Government: Federal, State/Territory, Local</h2>
-        <div style="position: relative; width: 100%; height: 0; padding-top: 100.0000%; padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden; border-radius: 8px; will-change: transform;">
-          <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;" src="https://www.canva.com/design/DAGpaBVAFzI/k74h1fW0LkkiO1ec9PJzyw/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen"></iframe>
-        </div>
-
-        <ul>
-          <li>
-            <b>Federal (Country):</b> Makes laws for the whole nation (defence, immigration, foreign policy, trade, currency, etc.).
-          </li>
-          <li>
-            <b>State/Territory:</b> Each state/territory has its own parliament and constitution. Responsible for health, education, roads, police, emergency services, and local government regulation.
-          </li>
-          <li>
-            <b>Local:</b> Councils or shires. Control town planning, local roads, waste, water, community facilities, and building codes. Funded by rates and state/federal grants.
-          </li>
-        </ul>
+        <h2>The Three Layers of Government in Australia</h2>
         <p>
-          <b>Why have all three layers?</b><br>
-          <b>States/Territories</b> reflect historical colonies and help tailor laws to local needs (e.g. education, hospitals). <b>Local government</b> delivers close-to-home services and community priorities. The three levels work together, but each has distinct powers defined by the Constitution and state laws.
+          Australia’s system of government is organised into <b>three interdependent layers</b>: the federal (national) government, state/territory governments, and local governments. Each layer has its own powers, responsibilities, and institutions, and each plays a crucial role in governing the country.
+        </p>
+        <div class="diagram-embed">
+          <iframe loading="lazy" src="https://www.canva.com/design/DAGpaBVAFzI/k74h1fW0LkkiO1ec9PJzyw/view?embed" allowfullscreen="allowfullscreen"></iframe>
+        </div>
+        <h3 style="margin-top:1.1em;">Federal (Commonwealth) Government</h3>
+        <p>
+          The <b>federal government</b> is responsible for matters that affect the entire nation. Its powers are set out in the Constitution and include:
+          <ul>
+            <li>Defence and military</li>
+            <li>Foreign affairs and trade</li>
+            <li>Immigration and citizenship</li>
+            <li>Currency and banking</li>
+            <li>Social security and national welfare</li>
+            <li>National taxation and customs</li>
+          </ul>
+          The seat of the federal government is in Canberra, ACT.
+        </p>
+        <h3>State and Territory Governments</h3>
+        <p>
+          <b>State and territory governments</b> are responsible for areas not managed by the federal government, including:
+          <ul>
+            <li>Public hospitals and health services</li>
+            <li>Public education (schools and TAFEs)</li>
+            <li>Police, fire, ambulance, and emergency services</li>
+            <li>Roads, public transport, and land use</li>
+            <li>Regulation and funding of local government</li>
+          </ul>
+          Each state and territory has its own constitution, parliament, and courts. States have more autonomy; territories have powers delegated by the federal parliament.
+        </p>
+        <h3>Local Governments</h3>
+        <p>
+          <b>Local governments</b> (councils or shires) are created by state governments and are responsible for:
+          <ul>
+            <li>Town planning and zoning</li>
+            <li>Building codes and permits</li>
+            <li>Local roads, parks, and community facilities</li>
+            <li>Waste collection and recycling</li>
+            <li>Water, sewerage, and drainage (in some areas)</li>
+            <li>Local events and recreational services</li>
+          </ul>
+          There are about 900 local governments in Australia. Their powers differ by state, and they are funded by local rates as well as state and federal grants.
+        </p>
+        <h3>Why Three Layers?</h3>
+        <p>
+          Australia’s three-layer system allows for both <b>national consistency</b> (through the federal government) and <b>local flexibility</b> (through states, territories, and councils). States reflect Australia’s colonial history and regional diversity, while local governments provide services tailored to the needs of specific communities.
         </p>
       </div>
     </section>
@@ -279,121 +348,76 @@
     <section id="powers">
       <div class="card">
         <h2>Separation of Powers</h2>
-        <div style="position: relative; width: 100%; height: 0; padding-top: 100.0000%; padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden; border-radius: 8px; will-change: transform;">
-          <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;" src="https://www.canva.com/design/DAGpaUn3ZLw/umVPNIJoRDkfM3HvTr4hdg/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen"></iframe>
+        <p>
+          The <b>Australian Constitution</b> establishes a system of government based on the separation of powers. This means that the responsibilities of governing are divided among three branches, each with its own area of authority:
+        </p>
+        <div class="diagram-embed">
+          <iframe loading="lazy" src="https://www.canva.com/design/DAGpaUn3ZLw/umVPNIJoRDkfM3HvTr4hdg/view?embed" allowfullscreen="allowfullscreen"></iframe>
         </div>
         <ul>
           <li>
-            <strong>Legislative:</strong> Makes laws (Parliament: House of Representatives & Senate)
+            <b>Legislative:</b> The Parliament makes and changes the laws. This includes the House of Representatives and the Senate at the federal level, and similar bodies in each state and territory.
           </li>
           <li>
-            <strong>Executive:</strong> Puts laws into action (Prime Minister, Cabinet, Departments, Governor-General)
+            <b>Executive:</b> The Prime Minister, Cabinet, and government departments put the laws into action. The Governor-General (representing the King) formally approves laws and appoints ministers, but acts on the advice of the elected government.
           </li>
           <li>
-            <strong>Judiciary:</strong> Interprets and applies the law (High Court & Federal Courts)
+            <b>Judiciary:</b> The High Court and other federal courts interpret the laws and ensure they are applied fairly. Courts have the power to rule on the validity of laws and to settle disputes.
           </li>
         </ul>
         <p>
-          <b>Note:</b> In Australia, executive ministers must also be members of Parliament, so there is overlap. Checks still exist via the bicameral Parliament and an independent judiciary.
+          <b>Why is this important?</b> The separation of powers is designed to prevent any one branch from becoming too powerful and to provide checks and balances. For example, the courts can rule a law invalid if it goes against the Constitution, and Parliament can scrutinise the actions of the Executive.
+        </p>
+        <p>
+          In practice, there is some <b>overlap</b>, especially between the Parliament and the Executive. Ministers must be members of Parliament, meaning the legislative and executive roles are not entirely separate. However, Australia’s system still maintains vital checks and balances—especially through the independence of the judiciary and the existence of an official opposition in Parliament.
         </p>
       </div>
     </section>
 
-    <!-- Parliament & Cabinet Section -->
-    <section id="parliament">
+    <!-- Elections Section -->
+    <section id="elections">
       <div class="card">
-        <h2>Parliament, Cabinet, and the Executive</h2>
-        <div class="diagram-placeholder">
-          (Parliament/Cabinet Structure Diagram Placeholder)<br>
-          <b>What to embed here:</b><br>
-          A bicameral (two-chamber) Parliament diagram, showing the House of Representatives and Senate, the role of the Governor-General, and how Cabinet sits within the Executive.
-        </div>
-        <ul>
-          <li>
-            <b>Parliament:</b> House of Representatives (forms government), Senate (reviews/amends laws). Both must pass laws.
-          </li>
-          <li>
-            <b>Executive:</b> Cabinet (Prime Minister + Ministers), implements laws and manages government.
-          </li>
-          <li>
-            <b>Governor-General:</b> Represents the King, formally signs laws and appoints Ministers, acts on advice of Cabinet.
-          </li>
-        </ul>
+        <h2>How Elections Work in Australia</h2>
         <p>
-          After elections, the party (or coalition) with the most seats in the House of Representatives forms government. 
-          The Cabinet is the main policy-making body, while the Governor-General’s role is mostly ceremonial but carries constitutional significance.
+          Elections are a cornerstone of Australian democracy, ensuring that government at every level is accountable to the people. Australians regularly vote to choose representatives at the federal, state/territory, and local levels. Each level of government has its own electoral system and cycle.
         </p>
-      </div>
-    </section>
-
-    <!-- Executive Table Section -->
-    <section id="table">
-      <div class="card">
-        <h2>Table: The Executive Government of Australia</h2>
-        <div style="overflow-x:auto;">
-          <table class="styled-table">
-            <thead>
-              <tr>
-                <th>Position</th>
-                <th>How Achieved</th>
-                <th>Formal Appointment</th>
-                <th>Constitutional Functions</th>
-                <th>Functions in Practice</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Sovereign</strong></td>
-                <td>Inherited</td>
-                <td>Appoints Governor-General</td>
-                <td>Head of Executive Government and part of Parliament (functions delegated to Governor-General)</td>
-                <td>Head of State; appoints Governor-General; acts as advised by PM</td>
-              </tr>
-              <tr>
-                <td><strong>Governor-General</strong></td>
-                <td>Selected by Prime Minister</td>
-                <td>Appointed by Sovereign as representative</td>
-                <td>Represents Sovereign as Head of Executive and Parliament; acts on advice of Fed. Executive Council</td>
-                <td>Performs Head of State functions; has reserve powers in emergencies</td>
-              </tr>
-              <tr>
-                <td><strong>Prime Minister</strong></td>
-                <td>Leader of majority party in House of Representatives</td>
-                <td>Commissioned as Minister of State by Governor-General</td>
-                <td>As for Ministers (not recognised by Constitution)</td>
-                <td>Chairs Cabinet; Head of Executive in practice</td>
-              </tr>
-              <tr>
-                <td><strong>Ministers</strong></td>
-                <td>Selected by Prime Minister from Parliament</td>
-                <td>Appointed as Ministers of State and to Federal Executive Council by Governor-General</td>
-                <td>Administer Departments, advise Governor-General</td>
-                <td>Senior ministers in Cabinet set policy; junior ministers assist</td>
-              </tr>
-              <tr>
-                <td><strong>Parliamentary Secretaries</strong></td>
-                <td>As for ministers</td>
-                <td>As for ministers</td>
-                <td>As for Ministers</td>
-                <td>Assist ministers in administration</td>
-              </tr>
-              <tr>
-                <td><strong>Executive Councillors</strong></td>
-                <td>As for ministers</td>
-                <td>Appointed by Governor-General</td>
-                <td>Advise Governor-General</td>
-                <td>Only ministers and secretaries are appointed; advise while in government</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div style="font-size:.93rem;color:#4b6382;margin-top:8px;">
-          For full explanations, see previous sections.
-        </div>
+        <h3>Federal Elections</h3>
+        <p>
+          <b>Federal Parliament</b> consists of two houses: the House of Representatives (lower house) and the Senate (upper house). Federal elections are held at least every three years.
+        </p>
+        <ul>
+          <li><b>House of Representatives:</b> Each of the 151 electorates elects one member, using a system called preferential voting. The party (or coalition) with a majority of members forms the government, and its leader becomes Prime Minister.</li>
+          <li><b>Senate:</b> Each state elects 12 senators, and each territory elects two, using proportional representation. This system gives all states equal representation and often allows minor parties to win seats.</li>
+          <li>All Australian citizens aged 18 and over are required to vote. Voting is by secret ballot.</li>
+        </ul>
+        <h3>State and Territory Elections</h3>
+        <p>
+          Each state and territory has its own parliament and electoral system. Most states have two houses (lower and upper), but Queensland, the Northern Territory, and the ACT have only one. Voting is compulsory in all states and territories except Western Australia local councils.
+        </p>
+        <ul>
+          <li><b>Lower houses:</b> Elect government, usually using preferential voting.</li>
+          <li><b>Upper houses:</b> Where they exist, use proportional or preferential systems.</li>
+          <li>State and territory elections are usually held every four years.</li>
+        </ul>
+        <h3>Local Government Elections</h3>
+        <p>
+          Local government (council) elections are run by state electoral commissions. Councillors and, in some places, mayors are elected to represent their local communities. Voting rules vary between states—compulsory in some (e.g., Victoria, NSW), voluntary in others (e.g., WA).
+        </p>
+        <ul>
+          <li>Local councils decide on community issues like planning, local roads, parks, and waste.</li>
+          <li>Voting systems vary: often preferential or proportional voting.</li>
+        </ul>
+        <h3>Referendums</h3>
+        <p>
+          The <b>Australian Constitution</b> can only be changed by referendum. This means a proposed change must be approved by a majority of voters nationally and a majority in at least four of the six states. Referendums are rare and require extensive public debate.
+        </p>
+        <h3>Why Are Elections Important?</h3>
+        <p>
+          Elections ensure that government is responsible to the people and reflect the will of the community. Compulsory voting helps achieve high turnouts and broad representation. Australia's robust electoral system is designed to maintain fairness, transparency, and public confidence at every level of government.
+        </p>
       </div>
     </section>
   </div>
-
   <script>
     // Tab navigation logic
     document.querySelectorAll('nav button').forEach(btn => {
@@ -405,7 +429,6 @@
         window.scrollTo({top: 0, behavior: "smooth"});
       });
     });
-    // No map rendering JS needed, as map now uses a static embed.
   </script>
 </body>
 </html>
