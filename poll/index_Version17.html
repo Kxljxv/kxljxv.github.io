@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Deutsche Wahlumfragen Dashboard</title>
+  <!-- ECharts -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <!-- Flowbite CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --primary-bg: #f8f9fa;
+      --card-bg: rgba(255, 255, 255, 0.8);
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .dashboard {
+      display: grid;
+      gap: 2rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #2d3436;
+      font-size: 2.5rem;
+    }
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    #echartsHeatmap {
+      width: 100%;
+      min-width: 800px;
+      height: 260px;
+      max-width: 100vw;
+      margin-bottom: 20px;
+      margin-top: 20px;
+    }
+    .piecharts-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+      align-items: start;
+    }
+    #echartsPie, #echartsSeatsPie {
+      width: 420px;
+      min-width: 310px;
+      height: 400px;
+      max-width: 100vw;
+      margin-bottom: 1rem;
+    }
+    .pie-title {
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.1em;
+      color: #2563eb;
+      margin-bottom: 0.5rem;
+    }
+    .calendar-arrows {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .calendar-arrow {
+      font-size: 2rem;
+      color: #2563eb;
+      background: #f3f4f6;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+      user-select: none;
+    }
+    .calendar-arrow:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+    .survey-info {
+      margin-top: 1.5rem;
+      background: rgba(255,255,255,0.85);
+      border-radius: .75rem;
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      font-size: 1.05rem;
+    }
+    .survey-select-modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    .survey-select-box {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      padding: 2rem;
+      min-width: 320px;
+      max-width: 90vw;
+      min-height: 120px;
+      text-align: center;
+    }
+    .survey-select-box h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: #2563eb;
+    }
+
+    /* Smartphone Mode */
+    @media (max-width: 600px) {
+      body {
+        padding: 0.5rem;
+      }
+      h1 {
+        font-size: 1.35rem;
+        margin-bottom: 1rem;
+      }
+      .container {
+        max-width: 100vw;
+        padding: 0;
+      }
+      .dashboard {
+        gap: 1rem;
+      }
+      .card {
+        padding: 0.7rem;
+        border-radius: 0.7rem;
+      }
+      .calendar-arrows {
+        gap: 0.2rem;
+      }
+      .calendar-arrow {
+        font-size: 1.2rem;
+        width: 28px;
+        height: 28px;
+      }
+      #echartsHeatmap {
+        min-width: unset;
+        width: 100vw;
+        height: 140px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+      .piecharts-row {
+        flex-direction: column;
+        gap: 0.6rem;
+        align-items: stretch;
+      }
+      #echartsPie, #echartsSeatsPie {
+        width: 100vw;
+        min-width: 180px;
+        max-width: 100vw;
+        height: 200px;
+        margin-bottom: 0.5rem;
+      }
+      .pie-title {
+        font-size: 0.98em;
+        margin-bottom: 0.2rem;
+      }
+      .survey-info {
+        font-size: 0.98rem;
+        margin-top: 0.7rem;
+        padding: 0.7rem;
+        border-radius: 0.6rem;
+      }
+      .survey-select-box {
+        padding: 1rem;
+        min-width: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Parliament Selector -->
+  <nav class="bg-white border-gray-200 dark:bg-gray-900 rounded-lg shadow mb-6">
+    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+      <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Wahlumfragen</span>
+      <div class="flex md:order-2">
+        <button id="parliamentDropdownButton" data-dropdown-toggle="parliamentDropdown" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button">
+          <span id="selectedParliamentLabel">Parlament wählen</span>
+          <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+          </svg>
+        </button>
+        <div id="parliamentDropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+          <ul id="parliamentDropdownList" class="py-2 text-sm text-gray-700 dark:text-gray-200">
+            <!-- Parliaments will be inserted here -->
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <h1>Deutsche Wahlumfragen</h1>
+    <div class="dashboard">
+      <div class="card">
+        <div class="calendar-arrows">
+          <button class="calendar-arrow" id="calendarPrevYear" title="Vorheriges Jahr">&lt;</button>
+          <span id="calendarYearLabel" style="font-size:1.2em;font-weight:500;"></span>
+          <button class="calendar-arrow" id="calendarNextYear" title="Nächstes Jahr">&gt;</button>
+        </div>
+        <div id="echartsHeatmap"></div>
+        <div class="piecharts-row">
+          <div>
+            <div class="pie-title">Umfrageergebnisse</div>
+            <div id="echartsPie"></div>
+          </div>
+          <div>
+            <div class="pie-title">Sitzverteilung (nur Parteien &gt; 5%)</div>
+            <div id="echartsSeatsPie"></div>
+          </div>
+        </div>
+        <div id="surveyInfo" class="survey-info"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for selecting survey on date with multiple -->
+  <div id="surveySelectModal" style="display:none;" class="survey-select-modal">
+    <div class="survey-select-box">
+      <h2>Mehrere Umfragen an diesem Tag</h2>
+      <div id="surveySelectList"></div>
+      <button class="mt-4 px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300" onclick="document.getElementById('surveySelectModal').style.display='none'">Abbrechen</button>
+    </div>
+  </div>
+
+  <div id="loading" class="loading">Laden...</div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
+  <script>
+    // Party color mapping (Shortcut and Name, always use upper-case for shortcut lookup)
+    const partyColorTable = {
+      "SPD": "#E3000F",
+      "CDU": "#000000",
+      "CSU": "#0570C9",
+      "CDU/CSU": "#000000",
+      "GRÜNE": "#1AA037",
+      "DIE LINKE": "#E3000F",
+      "FDP": "#FFEF00",
+      "AFD": "#0489DB",
+      "DIE PARTEI": "#B92837",
+      "PIRATEN": "#FE7400",
+      "FREIE WÄHLER": "#063E8F",
+      "ÖDP": "#EE7100",
+      "NPD": "#EB0019",
+      "BP": "#0080FF",
+      "REP": "#004385",
+      "SSW": "#00277E",
+      "DKP": "#E30018",
+      "LKR": "#FE8100",
+      "MLPD": "#ED0008",
+      "TIERSCHUTZPARTEI": "#002B6C",
+      "V-PARTEI³": "#93B90E",
+      "PRO DEUTSCHLAND": "#25457D",
+      "BÜSO": "#004B91",
+      "BVB/FW": "#063E8F",
+      "BÜNDNIS SAHRA WAGENKNECHT": "#7B6BAE",
+      "BÜNDNIS DEUTSCHLAND": "#003B6F",
+      "FAMILIE": "#A6006B",
+      "VOLT": "#662D91",
+      "SONSTIGE": "#5C75CC"
+    };
+    function getPartyColor(shortcut, name) {
+      if (shortcut && partyColorTable[shortcut.toUpperCase()]) return partyColorTable[shortcut.toUpperCase()];
+      if (name && partyColorTable[name.toUpperCase()]) return partyColorTable[name.toUpperCase()];
+      if (name && partyColorTable[normalizePartyName(name)]) return partyColorTable[normalizePartyName(name)];
+      return "#5C75CC";
+    }
+    function normalizePartyName(name) {
+      return name.toUpperCase()
+        .replace(/[Ä]/g, "AE")
+        .replace(/[Ö]/g, "OE")
+        .replace(/[Ü]/g, "UE")
+        .replace(/[ß]/g, "SS")
+        .replace(/[^A-Z0-9]/g, " ");
+    }
+    function getDecimalPlaces(num) {
+      const s = String(num);
+      if (s.indexOf('.') > -1) {
+        return s.length - s.indexOf('.') - 1;
+      }
+      return 0;
+    }
+    function formatValueWithDecimals(num) {
+      if (getDecimalPlaces(num) > 0) return num;
+      return parseInt(num, 10);
+    }
+    // Helper: get all dates between two dates (inclusive)
+    function getDatesBetween(start, end) {
+      const result = [];
+      let current = new Date(start);
+      const endDate = new Date(end);
+      while (current <= endDate) {
+        result.push(current.toISOString().slice(0,10));
+        current.setDate(current.getDate() + 1);
+      }
+      return result;
+    }
+
+    class DawumAPI {
+      static async fetchData() {
+        const response = await fetch('https://api.dawum.de/');
+        if (!response.ok) throw new Error('Network response was not ok');
+        return await response.json();
+      }
+    }
+
+    class Dashboard {
+      constructor() {
+        this.data = null;
+        this.selectedParliament = null;
+        this.surveys = [];
+        this.datesToSurveys = {};
+        this.partyList = [];
+        this.selectedSurvey = null;
+        this.heatmapYear = null;
+        this.years = [];
+        this.echartsHeatmap = null;
+        this.echartsPie = null;
+        this.echartsSeatsPie = null;
+        this.maxSurveyInADay = 1;
+        this.init();
+      }
+
+      async init() {
+        try {
+          this.data = await DawumAPI.fetchData();
+          this.renderParliamentDropdown();
+          this.selectedParliament = Object.keys(this.data.Parliaments)[0];
+          this.updateParliamentLabel();
+          this.updateSurveys();
+          document.getElementById('loading').style.display = 'none';
+        } catch (error) {
+          document.getElementById('loading').innerHTML = 'Fehler beim Laden der Daten. Bitte versuchen Sie es später erneut.';
+        }
+      }
+
+      renderParliamentDropdown() {
+        const dropdownList = document.getElementById('parliamentDropdownList');
+        dropdownList.innerHTML = "";
+        Object.entries(this.data.Parliaments).forEach(([id, parl]) => {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" data-parliament-id="${id}">${parl.Name}</a>`;
+          dropdownList.appendChild(li);
+          li.querySelector('a').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.selectedParliament = id;
+            this.updateParliamentLabel();
+            this.updateSurveys();
+            document.getElementById('parliamentDropdown').classList.add('hidden');
+          });
+        });
+      }
+
+      updateParliamentLabel() {
+        const label = document.getElementById('selectedParliamentLabel');
+        label.textContent = this.data.Parliaments[this.selectedParliament]?.Name || "Parlament wählen";
+      }
+
+      updateSurveys() {
+        this.surveys = Object.values(this.data.Surveys)
+          .filter(s => s.Parliament_ID === this.selectedParliament)
+          .sort((a, b) => new Date(a.Date) - new Date(b.Date));
+        this.years = [...new Set(this.surveys.map(s => new Date(s.Date).getFullYear()))];
+        this.heatmapYear = this.years.length ? this.years[this.years.length-1] : (new Date().getFullYear());
+        this.buildDatesToSurveys();
+        this.preparePartyList();
+        this.computeMaxSurveyInADay();
+        this.renderHeatmap();
+        this.renderPie();
+      }
+
+      buildDatesToSurveys() {
+        this.datesToSurveys = {};
+        for (const s of this.surveys) {
+          let start = s.Survey_Period && s.Survey_Period.Date_Start ? s.Survey_Period.Date_Start.slice(0,10) : s.Date.slice(0,10);
+          let end = s.Survey_Period && s.Survey_Period.Date_End ? s.Survey_Period.Date_End.slice(0,10) : s.Date.slice(0,10);
+          if (new Date(end) < new Date(start)) end = start;
+          const periodDates = getDatesBetween(start, end);
+          for (const d of periodDates) {
+            if (!this.datesToSurveys[d]) this.datesToSurveys[d] = [];
+            this.datesToSurveys[d].push(s);
+          }
+        }
+      }
+
+      computeMaxSurveyInADay() {
+        let max = 1;
+        for (const arr of Object.values(this.datesToSurveys)) {
+          if (arr.length > max) max = arr.length;
+        }
+        this.maxSurveyInADay = max;
+      }
+
+      preparePartyList() {
+        if (this.surveys.length === 0) {
+          this.partyList = [];
+          return;
+        }
+        const latestSurvey = this.surveys[this.surveys.length-1];
+        this.partyList = Object.keys(latestSurvey.Results).map(id => ({
+          id,
+          name: this.data.Parties[id].Name
+        }));
+      }
+
+      renderHeatmap() {
+        const year = this.heatmapYear;
+        document.getElementById('calendarYearLabel').textContent = year;
+        const start = +echarts.time.parse(year + '-01-01');
+        const end = +echarts.time.parse(year + '-12-31');
+        const dayTime = 3600 * 24 * 1000;
+        const data = [];
+        for (let time = start; time <= end; time += dayTime) {
+          const dateString = echarts.time.format(time, '{yyyy}-{MM}-{dd}', false);
+          data.push([
+            dateString,
+            this.datesToSurveys[dateString] ? this.datesToSurveys[dateString].length : 0
+          ]);
+        }
+
+        const chartDom = document.getElementById('echartsHeatmap');
+        if (this.echartsHeatmap) {
+          this.echartsHeatmap.dispose();
+        }
+        this.echartsHeatmap = echarts.init(chartDom, null, {renderer: 'svg'});
+
+        const _this = this;
+        const option = {
+          visualMap: {
+            show: false,
+            min: 0,
+            max: this.maxSurveyInADay,
+            inRange: { color: ['#dbeafe', '#2563eb'] }
+          },
+          calendar: {
+            range: year.toString(),
+            cellSize: ['auto', 22],
+            itemStyle: {
+              borderWidth: 0.5,
+              borderColor: '#bbb'
+            },
+            yearLabel: { show: false },
+            monthLabel: { color: '#2563eb', fontWeight: 600, fontSize: 15 },
+            dayLabel: { firstDay: 1, color: '#666' }
+          },
+          tooltip: {
+            formatter: function(params) {
+              if (!params.value) return '';
+              const [date, count] = params.value;
+              if (count === 0) return `${date}: keine Umfrage`;
+              return `${date}: ${count} Umfrage${count === 1 ? '' : 'n'}`;
+            }
+          },
+          series: [{
+            type: 'heatmap',
+            coordinateSystem: 'calendar',
+            data: data,
+            emphasis: { itemStyle: { borderColor: '#2563eb', borderWidth: 2 } }
+          }]
+        };
+        this.echartsHeatmap.setOption(option);
+
+        // Heatmap click event
+        this.echartsHeatmap.on('click', function(params) {
+          if (!params.value) return;
+          const [date, count] = params.value;
+          if (!count) return;
+          const surveys = _this.datesToSurveys[date];
+          if (!surveys) return;
+          if (surveys.length === 1) {
+            _this.selectedSurvey = surveys[0];
+            _this.renderPie();
+          } else {
+            _this.openSurveySelect(date, surveys);
+          }
+        });
+
+        document.getElementById('calendarPrevYear').onclick = () => {
+          const idx = this.years.indexOf(this.heatmapYear);
+          if (idx > 0) {
+            this.heatmapYear = this.years[idx-1];
+            this.renderHeatmap();
+          }
+        };
+        document.getElementById('calendarNextYear').onclick = () => {
+          const idx = this.years.indexOf(this.heatmapYear);
+          if (idx < this.years.length-1) {
+            this.heatmapYear = this.years[idx+1];
+            this.renderHeatmap();
+          }
+        };
+        document.getElementById('calendarPrevYear').disabled = (this.years.indexOf(this.heatmapYear) === 0);
+        document.getElementById('calendarNextYear').disabled = (this.years.indexOf(this.heatmapYear) === this.years.length-1);
+      }
+
+      openSurveySelect(date, surveys) {
+        const modal = document.getElementById('surveySelectModal');
+        const list = document.getElementById('surveySelectList');
+        list.innerHTML = "";
+        surveys.forEach((s, idx) => {
+          const inst = this.data.Institutes[s.Institute_ID]?.Name || '';
+          const tasker = this.data.Taskers[s.Tasker_ID]?.Name || '';
+          const method = this.data.Methods[s.Method_ID]?.Name || '';
+          const period = s.Survey_Period?.Date_Start ? (new Date(s.Survey_Period.Date_Start).toLocaleDateString('de-DE') + ' – ' + new Date(s.Survey_Period.Date_End).toLocaleDateString('de-DE')) : '';
+          const btn = document.createElement('button');
+          btn.className = 'block w-full mb-2 bg-blue-100 hover:bg-blue-200 rounded px-4 py-2 text-blue-900 text-left';
+          btn.innerHTML = `<b>${inst}</b> <span class="ml-2 text-xs text-gray-600">${tasker}</span><br><span class="text-xs text-gray-500">${method}${period ? ' · ' + period : ''}</span>`;
+          btn.onclick = () => {
+            this.selectedSurvey = s;
+            modal.style.display = 'none';
+            this.renderPie();
+          };
+          list.appendChild(btn);
+        });
+        modal.style.display = '';
+      }
+
+      renderPie() {
+        const pieDom = document.getElementById('echartsPie');
+        const seatsPieDom = document.getElementById('echartsSeatsPie');
+        if (this.echartsPie) this.echartsPie.dispose();
+        if (this.echartsSeatsPie) this.echartsSeatsPie.dispose();
+        if (!this.surveys.length) {
+          pieDom.innerHTML = "<div class='text-center text-gray-500'>Keine Daten verfügbar</div>";
+          seatsPieDom.innerHTML = "<div class='text-center text-gray-500'>Keine Daten verfügbar</div>";
+          document.getElementById('surveyInfo').innerHTML = "";
+          return;
+        }
+        let survey = this.selectedSurvey;
+        if (!survey) survey = this.surveys[this.surveys.length-1];
+        this.selectedSurvey = survey;
+
+        // Prepare pie data for Umfrageergebnisse, sorted by value descending
+        let pieData = Object.entries(survey.Results).map(([partyId, value]) => {
+          const partyObj = this.data.Parties[partyId];
+          const name = partyObj?.Name || '';
+          const shortcut = partyObj?.Shortcut || name;
+          return {
+            name: name,
+            value: Number(value),
+            shortcut: shortcut,
+            itemStyle: { color: getPartyColor(shortcut, name) }
+          };
+        });
+        pieData.sort((a, b) => b.value - a.value);
+
+        this.echartsPie = echarts.init(pieDom, null, {renderer: 'svg'});
+        const pieOption = {
+          tooltip: {
+            trigger: 'item',
+            formatter: p => {
+              let val = p.value;
+              let percent = p.percent;
+              const valStr = (typeof val === "number" && getDecimalPlaces(val) > 0) ? val : parseInt(val, 10);
+              const percentStr = (typeof percent === "number" && getDecimalPlaces(percent) > 0) ? percent : parseInt(percent, 10);
+              return `${p.data.name}: ${valStr} (${percentStr}%)`;
+            }
+          },
+          legend: {
+            show: false
+          },
+          series: [{
+            name: 'Umfrage',
+            type: 'pie',
+            radius: window.innerWidth <= 600 ? '40%' : '60%',
+            center: ['50%', '50%'],
+            data: pieData,
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.2)'
+              }
+            },
+            label: {
+              fontSize: window.innerWidth <= 600 ? 11 : 14,
+              formatter: function(p) {
+                let val = p.value;
+                const valStr = (typeof val === "number" && getDecimalPlaces(val) > 0) ? val : parseInt(val, 10);
+                return `${p.data.shortcut}: ${valStr}`;
+              }
+            }
+          }]
+        };
+        this.echartsPie.setOption(pieOption);
+
+        // Prepare seat distribution pie (only parties > 5%, not "sonstige Parteien"), sorted by value descending
+        let seatsPieData = Object.entries(survey.Results)
+          .filter(([partyId, value]) => {
+            const partyObj = this.data.Parties[partyId];
+            const name = partyObj?.Name || '';
+            return Number(value) > 5 && name !== "sonstige Parteien";
+          })
+          .map(([partyId, value]) => {
+            const partyObj = this.data.Parties[partyId];
+            const name = partyObj?.Name || '';
+            const shortcut = partyObj?.Shortcut || name;
+            return {
+              name: name,
+              value: Number(value),
+              shortcut: shortcut,
+              itemStyle: { color: getPartyColor(shortcut, name) }
+            };
+          });
+        seatsPieData.sort((a, b) => b.value - a.value);
+
+        this.echartsSeatsPie = echarts.init(seatsPieDom, null, {renderer: 'svg'});
+        const seatsPieOption = {
+          tooltip: {
+            trigger: 'item',
+            formatter: p => {
+              let val = p.value;
+              let percent = p.percent;
+              const valStr = (typeof val === "number" && getDecimalPlaces(val) > 0) ? val : parseInt(val, 10);
+              const percentStr = (typeof percent === "number" && getDecimalPlaces(percent) > 0) ? percent : parseInt(percent, 10);
+              return `${p.data.name}: ${valStr} (${percentStr}%)`;
+            }
+          },
+          legend: {
+            show: false
+          },
+          series: [{
+            name: 'Sitze (>5%)',
+            type: 'pie',
+            radius: window.innerWidth <= 600 ? '40%' : '60%',
+            center: ['50%', '50%'],
+            data: seatsPieData,
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.2)'
+              }
+            },
+            label: {
+              fontSize: window.innerWidth <= 600 ? 11 : 14,
+              formatter: function(p) {
+                let val = p.value;
+                const valStr = (typeof val === "number" && getDecimalPlaces(val) > 0) ? val : parseInt(val, 10);
+                return `${p.data.shortcut}: ${valStr}`;
+              }
+            }
+          }]
+        };
+        this.echartsSeatsPie.setOption(seatsPieOption);
+
+        this.renderSurveyInfo(survey);
+      }
+
+      renderSurveyInfo(survey) {
+        if (!survey) {
+          document.getElementById('surveyInfo').innerHTML = "";
+          return;
+        }
+        const institute = this.data.Institutes[survey.Institute_ID]?.Name || "-";
+        const tasker = this.data.Taskers[survey.Tasker_ID]?.Name || "-";
+        const method = this.data.Methods[survey.Method_ID]?.Name || "-";
+        const date = new Date(survey.Date).toLocaleDateString('de-DE');
+        const surveyPeriod = survey.Survey_Period && survey.Survey_Period.Date_Start && survey.Survey_Period.Date_End
+          ? `${new Date(survey.Survey_Period.Date_Start).toLocaleDateString('de-DE')} – ${new Date(survey.Survey_Period.Date_End).toLocaleDateString('de-DE')}` : "-";
+        const persons = survey.Surveyed_Persons || "-";
+        document.getElementById('surveyInfo').innerHTML = `
+          <div>
+            <div><strong>Institut:</strong> ${institute}</div>
+            <div><strong>Auftraggeber:</strong> ${tasker}</div>
+            <div><strong>Methode:</strong> ${method}</div>
+            <div><strong>Veröffentlicht:</strong> ${date}</div>
+            <div><strong>Befragungszeitraum:</strong> ${surveyPeriod}</div>
+            <div><strong>Befragte Personen:</strong> ${persons}</div>
+          </div>
+        `;
+      }
+    }
+
+    // Redraw piecharts on orientation change or resize (for mobile responsiveness)
+    window.addEventListener('resize', function() {
+      if (window.dashboardInstance && typeof window.dashboardInstance.renderPie === 'function') {
+        window.dashboardInstance.renderPie();
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.dashboardInstance = new Dashboard();
+    });
+  </script>
+</body>
+</html>
