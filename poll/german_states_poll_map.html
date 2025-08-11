@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Deutsche Bundesländer Wahlumfragen</title>
+  <!-- ECharts -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <!-- Flowbite CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --primary-bg: #f8f9fa;
+      --card-bg: rgba(255, 255, 255, 0.8);
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .dashboard {
+      display: grid;
+      gap: 2rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #2d3436;
+      font-size: 2.5rem;
+    }
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    #germanyMap {
+      width: 100%;
+      height: 600px;
+      margin: 2rem 0;
+    }
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    .legend-container {
+      margin-top: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.9);
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 3px;
+      border: 1px solid #ccc;
+    }
+    .state-info {
+      margin-top: 1.5rem;
+      background: rgba(255,255,255,0.9);
+      border-radius: .75rem;
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      font-size: 1.05rem;
+      text-align: center;
+    }
+    @media (max-width: 768px) {
+      .controls-row {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      #germanyMap {
+        height: 400px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Deutsche Bundesländer Wahlumfragen</h1>
+    
+    <div class="dashboard">
+      <div class="card">
+        <div class="controls-row">
+          <!-- Party Selection -->
+          <div class="flex items-center gap-2">
+            <label for="partySelect" class="text-sm font-medium text-gray-700">Partei:</label>
+            <select id="partySelect" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
+              <option value="">Partei wählen...</option>
+            </select>
+          </div>
+          
+          <!-- View Mode Selection -->
+          <div class="flex items-center gap-2">
+            <label for="viewModeSelect" class="text-sm font-medium text-gray-700">Ansicht:</label>
+            <select id="viewModeSelect" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
+              <option value="current">Aktuelle Umfragewerte</option>
+              <option value="difference">Veränderung zur Vorumfrage</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="germanyMap"></div>
+        
+        <div class="legend-container" id="legendContainer">
+          <!-- Legend will be generated dynamically -->
+        </div>
+        
+        <div id="stateInfo" class="state-info">
+          Wählen Sie eine Partei aus, um die Karte zu visualisieren.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="loading" class="loading">Laden...</div>
+
+  <script>
+    // Party color mapping from original code
+    const partyColorTable = {
+      "SPD": "#E3000F",
+      "CDU": "#000000",
+      "CSU": "#0570C9",
+      "CDU/CSU": "#000000",
+      "GRÜNE": "#1AA037",
+      "DIE LINKE": "#E3000F",
+      "FDP": "#FFEF00",
+      "AFD": "#0489DB",
+      "DIE PARTEI": "#B92837",
+      "PIRATEN": "#FE7400",
+      "FREIE WÄHLER": "#063E8F",
+      "ÖDP": "#EE7100",
+      "NPD": "#EB0019",
+      "BP": "#0080FF",
+      "REP": "#004385",
+      "SSW": "#00277E",
+      "DKP": "#E30018",
+      "LKR": "#FE8100",
+      "MLPD": "#ED0008",
+      "TIERSCHUTZPARTEI": "#002B6C",
+      "V-PARTEI³": "#93B90E",
+      "PRO DEUTSCHLAND": "#25457D",
+      "BÜSO": "#004B91",
+      "BVB/FW": "#063E8F",
+      "BÜNDNIS SAHRA WAGENKNECHT": "#7B6BAE",
+      "BÜNDNIS DEUTSCHLAND": "#003B6F",
+      "FAMILIE": "#A6006B",
+      "VOLT": "#662D91",
+      "SONSTIGE": "#5C75CC"
+    };
+
+    function getPartyColor(shortcut, name) {
+      if (shortcut && partyColorTable[shortcut.toUpperCase()]) return partyColorTable[shortcut.toUpperCase()];
+      if (name && partyColorTable[name.toUpperCase()]) return partyColorTable[name.toUpperCase()];
+      return "#5C75CC";
+    }
+
+    // Mock data for German states (Bundesländer) - in real implementation, this would come from the API
+    const mockStateData = {
+      "Baden-Württemberg": { SPD: 23.5, "CDU/CSU": 32.1, GRÜNE: 18.2, FDP: 8.3, AFD: 12.4, "DIE LINKE": 3.2 },
+      "Bayern": { SPD: 18.9, "CDU/CSU": 38.7, GRÜNE: 15.1, FDP: 7.8, AFD: 14.2, "DIE LINKE": 2.8 },
+      "Berlin": { SPD: 25.8, "CDU/CSU": 18.3, GRÜNE: 22.4, FDP: 6.9, AFD: 15.2, "DIE LINKE": 8.1 },
+      "Brandenburg": { SPD: 28.2, "CDU/CSU": 19.5, GRÜNE: 12.3, FDP: 5.4, AFD: 24.8, "DIE LINKE": 7.2 },
+      "Bremen": { SPD: 31.2, "CDU/CSU": 16.8, GRÜNE: 19.5, FDP: 7.2, AFD: 12.9, "DIE LINKE": 9.1 },
+      "Hamburg": { SPD: 29.4, "CDU/CSU": 21.7, GRÜNE: 20.8, FDP: 8.1, AFD: 11.3, "DIE LINKE": 6.2 },
+      "Hessen": { SPD: 24.1, "CDU/CSU": 29.8, GRÜNE: 17.9, FDP: 9.2, AFD: 13.4, "DIE LINKE": 3.8 },
+      "Mecklenburg-Vorpommern": { SPD: 26.7, "CDU/CSU": 18.9, GRÜNE: 8.4, FDP: 4.1, AFD: 28.3, "DIE LINKE": 9.8 },
+      "Niedersachsen": { SPD: 27.3, "CDU/CSU": 28.4, GRÜNE: 16.2, FDP: 7.8, AFD: 14.7, "DIE LINKE": 3.1 },
+      "Nordrhein-Westfalen": { SPD: 26.8, "CDU/CSU": 27.9, GRÜNE: 17.5, FDP: 8.9, AFD: 12.2, "DIE LINKE": 4.3 },
+      "Rheinland-Pfalz": { SPD: 28.9, "CDU/CSU": 26.3, GRÜNE: 15.8, FDP: 7.4, AFD: 15.1, "DIE LINKE": 3.9 },
+      "Saarland": { SPD: 32.1, "CDU/CSU": 24.7, GRÜNE: 12.9, FDP: 6.8, AFD: 16.2, "DIE LINKE": 5.1 },
+      "Sachsen": { SPD: 16.2, "CDU/CSU": 22.8, GRÜNE: 9.1, FDP: 5.9, AFD: 32.4, "DIE LINKE": 10.8 },
+      "Sachsen-Anhalt": { SPD: 19.8, "CDU/CSU": 21.3, GRÜNE: 7.2, FDP: 4.8, AFD: 31.2, "DIE LINKE": 12.9 },
+      "Schleswig-Holstein": { SPD: 24.6, "CDU/CSU": 31.2, GRÜNE: 18.3, FDP: 8.7, AFD: 11.8, "DIE LINKE": 2.9 },
+      "Thüringen": { SPD: 15.9, "CDU/CSU": 18.7, GRÜNE: 8.5, FDP: 4.2, AFD: 29.1, "DIE LINKE": 19.2 }
+    };
+
+    // Mock previous poll data for difference calculation
+    const mockPreviousStateData = {
+      "Baden-Württemberg": { SPD: 22.1, "CDU/CSU": 33.4, GRÜNE: 17.8, FDP: 9.1, AFD: 11.2, "DIE LINKE": 3.8 },
+      "Bayern": { SPD: 19.2, "CDU/CSU": 37.9, GRÜNE: 14.8, FDP: 8.4, AFD: 13.8, "DIE LINKE": 3.1 },
+      "Berlin": { SPD: 24.9, "CDU/CSU": 19.1, GRÜNE: 21.8, FDP: 7.2, AFD: 14.8, "DIE LINKE": 9.2 },
+      "Brandenburg": { SPD: 27.8, "CDU/CSU": 20.1, GRÜNE: 11.9, FDP: 5.8, AFD: 23.4, "DIE LINKE": 8.1 },
+      "Bremen": { SPD: 30.8, "CDU/CSU": 17.2, GRÜNE: 18.9, FDP: 7.8, AFD: 12.1, "DIE LINKE": 9.8 },
+      "Hamburg": { SPD: 28.9, "CDU/CSU": 22.3, GRÜNE: 20.1, FDP: 8.7, AFD: 10.9, "DIE LINKE": 6.8 },
+      "Hessen": { SPD: 23.6, "CDU/CSU": 30.4, GRÜNE: 17.2, FDP: 9.8, AFD: 12.9, "DIE LINKE": 4.2 },
+      "Mecklenburg-Vorpommern": { SPD: 25.9, "CDU/CSU": 19.7, GRÜNE: 8.1, FDP: 4.4, AFD: 27.1, "DIE LINKE": 11.2 },
+      "Niedersachsen": { SPD: 26.8, "CDU/CSU": 29.1, GRÜNE: 15.7, FDP: 8.2, AFD: 13.9, "DIE LINKE": 3.7 },
+      "Nordrhein-Westfalen": { SPD: 26.1, "CDU/CSU": 28.7, GRÜNE: 16.9, FDP: 9.4, AFD: 11.8, "DIE LINKE": 4.9 },
+      "Rheinland-Pfalz": { SPD: 28.2, "CDU/CSU": 27.1, GRÜNE: 15.1, FDP: 7.9, AFD: 14.4, "DIE LINKE": 4.6 },
+      "Saarland": { SPD: 31.4, "CDU/CSU": 25.3, GRÜNE: 12.2, FDP: 7.1, AFD: 15.8, "DIE LINKE": 5.8 },
+      "Sachsen": { SPD: 15.8, "CDU/CSU": 23.4, GRÜNE: 8.7, FDP: 6.2, AFD: 31.2, "DIE LINKE": 11.9 },
+      "Sachsen-Anhalt": { SPD: 19.2, "CDU/CSU": 22.1, GRÜNE: 6.8, FDP: 5.1, AFD: 30.4, "DIE LINKE": 14.2 },
+      "Schleswig-Holstein": { SPD: 23.9, "CDU/CSU": 32.1, GRÜNE: 17.8, FDP: 9.2, AFD: 11.2, "DIE LINKE": 3.4 },
+      "Thüringen": { SPD: 15.2, "CDU/CSU": 19.4, GRÜNE: 8.1, FDP: 4.8, AFD: 28.3, "DIE LINKE": 20.1 }
+    };
+
+    class GermanyMapDashboard {
+      constructor() {
+        this.mapChart = null;
+        this.selectedParty = '';
+        this.viewMode = 'current'; // 'current' or 'difference'
+        this.stateData = mockStateData;
+        this.previousStateData = mockPreviousStateData;
+        this.init();
+      }
+
+      async init() {
+        try {
+          this.setupControls();
+          this.initMap();
+          document.getElementById('loading').style.display = 'none';
+        } catch (error) {
+          document.getElementById('loading').innerHTML = 'Fehler beim Laden der Daten. Bitte versuchen Sie es später erneut.';
+        }
+      }
+
+      setupControls() {
+        // Populate party dropdown
+        const partySelect = document.getElementById('partySelect');
+        const parties = new Set();
+        
+        Object.values(this.stateData).forEach(statePolls => {
+          Object.keys(statePolls).forEach(party => parties.add(party));
+        });
+
+        [...parties].sort().forEach(party => {
+          const option = document.createElement('option');
+          option.value = party;
+          option.textContent = party;
+          partySelect.appendChild(option);
+        });
+
+        // Event listeners
+        partySelect.addEventListener('change', (e) => {
+          this.selectedParty = e.target.value;
+          this.updateMap();
+        });
+
+        document.getElementById('viewModeSelect').addEventListener('change', (e) => {
+          this.viewMode = e.target.value;
+          this.updateMap();
+        });
+      }
+
+      async initMap() {
+        const mapDom = document.getElementById('germanyMap');
+        this.mapChart = echarts.init(mapDom, null, {renderer: 'svg'});
+
+        // Register Germany map - in a real implementation, you'd load the actual GeoJSON
+        const geoJsonData = this.getGermanyGeoJSON();
+        echarts.registerMap('Germany', geoJsonData);
+
+        const option = {
+          tooltip: {
+            trigger: 'item',
+            formatter: (params) => {
+              if (!this.selectedParty || !params.data) return '';
+              const stateName = params.data.name;
+              const value = params.data.value;
+              
+              if (this.viewMode === 'current') {
+                return `${stateName}<br/>${this.selectedParty}: ${value}%`;
+              } else {
+                const sign = value >= 0 ? '+' : '';
+                return `${stateName}<br/>${this.selectedParty}: ${sign}${value}% (Veränderung)`;
+              }
+            }
+          },
+          visualMap: {
+            show: false
+          },
+          series: [{
+            name: 'Umfragewerte',
+            type: 'map',
+            map: 'Germany',
+            data: [],
+            emphasis: {
+              itemStyle: {
+                areaColor: '#ffeaa7'
+              },
+              label: {
+                show: true,
+                color: '#2d3436'
+              }
+            },
+            itemStyle: {
+              borderColor: '#2d3436',
+              borderWidth: 1
+            },
+            label: {
+              show: true,
+              fontSize: 10,
+              color: '#fff',
+              fontWeight: 'bold'
+            }
+          }]
+        };
+
+        this.mapChart.setOption(option);
+        
+        // Click event
+        this.mapChart.on('click', (params) => {
+          if (params.data && this.selectedParty) {
+            this.showStateInfo(params.data.name, params.data.value);
+          }
+        });
+      }
+
+      updateMap() {
+        if (!this.selectedParty) {
+          document.getElementById('stateInfo').innerHTML = 'Wählen Sie eine Partei aus, um die Karte zu visualisieren.';
+          this.mapChart.setOption({
+            series: [{
+              data: []
+            }]
+          });
+          this.updateLegend([]);
+          return;
+        }
+
+        const mapData = [];
+        const values = [];
+
+        Object.keys(this.stateData).forEach(state => {
+          let value;
+          
+          if (this.viewMode === 'current') {
+            value = this.stateData[state][this.selectedParty] || 0;
+          } else {
+            const current = this.stateData[state][this.selectedParty] || 0;
+            const previous = this.previousStateData[state]?.[this.selectedParty] || 0;
+            value = Math.round((current - previous) * 10) / 10; // Round to 1 decimal
+          }
+
+          mapData.push({
+            name: state,
+            value: value
+          });
+          values.push(value);
+        });
+
+        const minValue = Math.min(...values);
+        const maxValue = Math.max(...values);
+        const partyColor = getPartyColor(this.selectedParty, this.selectedParty);
+
+        // Generate color scale
+        const colorScale = this.generateColorScale(partyColor, minValue, maxValue);
+
+        this.mapChart.setOption({
+          visualMap: {
+            show: false,
+            min: minValue,
+            max: maxValue,
+            inRange: {
+              color: colorScale
+            }
+          },
+          series: [{
+            data: mapData
+          }]
+        });
+
+        this.updateLegend(values, partyColor);
+        this.updateStateInfo();
+      }
+
+      generateColorScale(baseColor, minValue, maxValue) {
+        if (this.viewMode === 'difference') {
+          // For difference mode, use red for negative, white for zero, green for positive
+          return ['#ff4757', '#ffffff', '#2ed573'];
+        } else {
+          // For current values, create a gradient from light to dark
+          return ['#f1f2f6', baseColor];
+        }
+      }
+
+      updateLegend(values, partyColor) {
+        const legendContainer = document.getElementById('legendContainer');
+        legendContainer.innerHTML = '';
+
+        if (!values.length) return;
+
+        const minValue = Math.min(...values);
+        const maxValue = Math.max(...values);
+        
+        if (this.viewMode === 'difference') {
+          // Legend for difference mode
+          const legendItems = [
+            { color: '#ff4757', label: `${minValue}% (Verlust)` },
+            { color: '#ffffff', label: '0% (keine Änderung)' },
+            { color: '#2ed573', label: `+${maxValue}% (Gewinn)` }
+          ];
+          
+          legendItems.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'legend-item';
+            div.innerHTML = `
+              <div class="legend-color" style="background-color: ${item.color}; border: 1px solid #ccc;"></div>
+              <span>${item.label}</span>
+            `;
+            legendContainer.appendChild(div);
+          });
+        } else {
+          // Legend for current values
+          const steps = 5;
+          for (let i = 0; i < steps; i++) {
+            const ratio = i / (steps - 1);
+            const value = minValue + (maxValue - minValue) * ratio;
+            const opacity = 0.2 + 0.8 * ratio;
+            
+            const div = document.createElement('div');
+            div.className = 'legend-item';
+            div.innerHTML = `
+              <div class="legend-color" style="background-color: ${partyColor}; opacity: ${opacity};"></div>
+              <span>${Math.round(value * 10) / 10}%</span>
+            `;
+            legendContainer.appendChild(div);
+          }
+        }
+      }
+
+      showStateInfo(stateName, value) {
+        const stateInfo = document.getElementById('stateInfo');
+        
+        if (this.viewMode === 'current') {
+          stateInfo.innerHTML = `
+            <h3 class="text-lg font-bold text-blue-700 mb-2">${stateName}</h3>
+            <div class="text-gray-700">
+              <strong>${this.selectedParty}:</strong> ${value}%
+            </div>
+          `;
+        } else {
+          const sign = value >= 0 ? '+' : '';
+          const changeText = value > 0 ? 'Zugewinn' : value < 0 ? 'Verlust' : 'Keine Veränderung';
+          stateInfo.innerHTML = `
+            <h3 class="text-lg font-bold text-blue-700 mb-2">${stateName}</h3>
+            <div class="text-gray-700">
+              <strong>${this.selectedParty}:</strong> ${sign}${value}% (${changeText})
+            </div>
+          `;
+        }
+      }
+
+      updateStateInfo() {
+        const stateInfo = document.getElementById('stateInfo');
+        if (this.viewMode === 'current') {
+          stateInfo.innerHTML = `
+            <div class="text-gray-600">
+              Aktuelle Umfragewerte für <strong>${this.selectedParty}</strong><br/>
+              <small>Klicken Sie auf ein Bundesland für Details</small>
+            </div>
+          `;
+        } else {
+          stateInfo.innerHTML = `
+            <div class="text-gray-600">
+              Veränderung zur Vorumfrage für <strong>${this.selectedParty}</strong><br/>
+              <small>Klicken Sie auf ein Bundesland für Details</small>
+            </div>
+          `;
+        }
+      }
+
+      // Simplified Germany GeoJSON (this would be a full GeoJSON in a real implementation)
+      getGermanyGeoJSON() {
+        return {
+          type: "FeatureCollection",
+          features: [
+            // Simplified representations - in reality you'd use proper GeoJSON data
+            // This is just a placeholder structure
+            { type: "Feature", properties: { name: "Baden-Württemberg" }, geometry: { type: "Polygon", coordinates: [[[8.0, 47.5], [10.5, 47.5], [10.5, 49.8], [8.0, 49.8], [8.0, 47.5]]] }},
+            { type: "Feature", properties: { name: "Bayern" }, geometry: { type: "Polygon", coordinates: [[[10.5, 47.2], [13.8, 47.2], [13.8, 50.5], [10.5, 50.5], [10.5, 47.2]]] }},
+            { type: "Feature", properties: { name: "Berlin" }, geometry: { type: "Polygon", coordinates: [[[13.0, 52.3], [13.8, 52.3], [13.8, 52.7], [13.0, 52.7], [13.0, 52.3]]] }},
+            { type: "Feature", properties: { name: "Brandenburg" }, geometry: { type: "Polygon", coordinates: [[[11.2, 51.3], [14.8, 51.3], [14.8, 53.5], [11.2, 53.5], [11.2, 51.3]]] }},
+            { type: "Feature", properties: { name: "Bremen" }, geometry: { type: "Polygon", coordinates: [[[8.4, 53.0], [8.9, 53.0], [8.9, 53.6], [8.4, 53.6], [8.4, 53.0]]] }},
+            { type: "Feature", properties: { name: "Hamburg" }, geometry: { type: "Polygon", coordinates: [[[9.7, 53.4], [10.3, 53.4], [10.3, 53.8], [9.7, 53.8], [9.7, 53.4]]] }},
+            { type: "Feature", properties: { name: "Hessen" }, geometry: { type: "Polygon", coordinates: [[[8.0, 49.8], [10.2, 49.8], [10.2, 51.7], [8.0, 51.7], [8.0, 49.8]]] }},
+            { type: "Feature", properties: { name: "Mecklenburg-Vorpommern" }, geometry: { type: "Polygon", coordinates: [[[10.5, 53.1], [14.4, 53.1], [14.4, 54.7], [10.5, 54.7], [10.5, 53.1]]] }},
+            { type: "Feature", properties: { name: "Niedersachsen" }, geometry: { type: "Polygon", coordinates: [[[6.6, 51.3], [11.2, 51.3], [11.2, 53.9], [6.6, 53.9], [6.6, 51.3]]] }},
+            { type: "Feature", properties: { name: "Nordrhein-Westfalen" }, geometry: { type: "Polygon", coordinates: [[[5.9, 50.3], [8.5, 50.3], [8.5, 52.5], [5.9, 52.5], [5.9, 50.3]]] }},
+            { type: "Feature", properties: { name: "Rheinland-Pfalz" }, geometry: { type: "Polygon", coordinates: [[[6.1, 49.1], [8.5, 49.1], [8.5, 50.9], [6.1, 50.9], [6.1, 49.1]]] }},
+            { type: "Feature", properties: { name: "Saarland" }, geometry: { type: "Polygon", coordinates: [[[6.3, 49.1], [7.4, 49.1], [7.4, 49.6], [6.3, 49.6], [6.3, 49.1]]] }},
+            { type: "Feature", properties: { name: "Sachsen" }, geometry: { type: "Polygon", coordinates: [[[11.9, 50.2], [15.0, 50.2], [15.0, 51.7], [11.9, 51.7], [11.9, 50.2]]] }},
+            { type: "Feature", properties: { name: "Sachsen-Anhalt" }, geometry: { type: "Polygon", coordinates: [[[10.6, 51.0], [12.8, 51.0], [12.8, 53.0], [10.6, 53.0], [10.6, 51.0]]] }},
+            { type: "Feature", properties: { name: "Schleswig-Holstein" }, geometry: { type: "Polygon", coordinates: [[[8.0, 53.6], [11.3, 53.6], [11.3, 55.1], [8.0, 55.1], [8.0, 53.6]]] }},
+            { type: "Feature", properties: { name: "Thüringen" }, geometry: { type: "Polygon", coordinates: [[[9.9, 50.2], [12.7, 50.2], [12.7, 51.6], [9.9, 51.6], [9.9, 50.2]]] }}
+          ]
+        };
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      new GermanyMapDashboard();
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
+</body>
+</html>
