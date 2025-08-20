@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Berlin Electoral Heatmap — Select up to 3 Parties</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" />
+  <style>
+    :root{
+      --bg:#0b0d10;
+      --panel:#11151a;
+      --ring:#273040;
+      --muted:#93a0b3;
+      --radius:14px;
+    }
+    html,body{height:100%;margin:0;background:var(--bg);color:#e7ebf3;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    #app{position:fixed;inset:0}
+    .map-stack{position:absolute;inset:0}
+    .map{position:absolute;inset:0;mix-blend-mode:screen}
+    .map.overlay{pointer-events:none}
+
+    .controls{
+      position:absolute;z-index:10;top:14px;left:14px;
+      display:flex;flex-direction:column;gap:10px;
+      background:rgba(17,21,26,.82);backdrop-filter:blur(6px);
+      border:1px solid var(--ring);border-radius:var(--radius);padding:12px
+    }
+    .controls h2{margin:0 0 6px 0;font-size:14px;color:#d9e1f1}
+    .party-select{display:flex;align-items:center;gap:10px}
+    .party-select select{background:#0d1116;color:#fff;border:1px solid #1a2332;border-radius:8px;padding:4px;font-size:13px}
+    .swatch{width:14px;height:14px;border-radius:4px;border:1px solid #fff3}
+    .hint{font-size:12px;color:var(--muted)}
+    .legend{position:absolute;z-index:10;left:14px;bottom:14px;
+      background:rgba(17,21,26,.82);backdrop-filter:blur(6px);
+      border:1px solid var(--ring);border-radius:var(--radius);padding:12px}
+    .legend h3{margin:0 0 8px 0;font-size:13px}
+    .legend-row{display:flex;align-items:center;gap:8px;margin:6px 0}
+    .key{width:16px;height:16px;border-radius:4px;border:1px solid #fff3}
+    .label{font-size:12px}
+    .note{margin-top:6px;font-size:11px;color:var(--muted);max-width:260px}
+
+    .loading{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(#0b0d10,#0b0d10ef)}
+    .card{width:min(92vw,520px);background:#0f1318;border:1px solid var(--ring);border-radius:18px;padding:16px 18px}
+    .spinner{width:28px;height:28px;border-radius:50%;border:3px solid #1f2633;border-top-color:#cdd6e6;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .progress{width:100%;height:10px;border-radius:999px;background:#0b0f14;border:1px solid #1b2330;overflow:hidden}
+    .bar{height:100%;width:0%;background:linear-gradient(90deg,#6ea8fe,#a5f3fc);transition:width .35s ease}
+    @media (max-width:700px){ .controls,.legend{left:12px;right:12px} }
+  </style>
+</head>
+<body>
+  <div id="app" aria-label="Berlin electoral heatmaps">
+    <div class="map-stack">
+      <div id="map-slot1" class="map"></div>
+      <div id="map-slot2" class="map overlay"></div>
+      <div id="map-slot3" class="map overlay"></div>
+
+      <div class="controls" role="region" aria-label="Layer controls">
+        <h2>Wähle bis zu 3 Parteien</h2>
+
+        <div class="party-select">
+          <span class="swatch" style="background:red"></span>
+          <select id="sel-slot1"></select>
+        </div>
+        <div class="party-select">
+          <span class="swatch" style="background:green"></span>
+          <select id="sel-slot2"></select>
+        </div>
+        <div class="party-select">
+          <span class="swatch" style="background:blue"></span>
+          <select id="sel-slot3"></select>
+        </div>
+
+        <div class="hint">Bis zu drei Parteien werden additiv angezeigt (Farben: Rot, Grün, Blau).</div>
+      </div>
+
+      <div class="legend">
+        <h3>Legende</h3>
+        <div class="legend-row"><span class="key" style="background:red"></span><span class="label" id="lab-slot1"></span></div>
+        <div class="legend-row"><span class="key" style="background:green"></span><span class="label" id="lab-slot2"></span></div>
+        <div class="legend-row"><span class="key" style="background:blue"></span><span class="label" id="lab-slot3"></span></div>
+        <div class="note">Überlappungen mischen sich (z. B. Rot+Grün=Gelb).</div>
+      </div>
+
+      <div id="loading" class="loading" aria-live="polite" aria-busy="true">
+        <div class="card">
+          <div class="row"><div class="spinner"></div><div>
+            <h1 style="margin:0 0 4px 0;font-size:16px">Daten werden geladen…</h1>
+            <p style="margin:0;color:#93a0b3;font-size:13px">GeoJSON holen & Heatmaps vorbereiten.</p>
+          </div></div>
+          <div class="progress"><div id="bar" class="bar"></div></div>
+          <p id="status" style="margin:8px 0 0 0;color:#93a0b3;font-size:12px">Starte Download…</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+  <script>
+    const GEOJSON_URL = "https://kxljxv.github.io/heatmap/berlin_points.json";
+    const BLANK_DARK_STYLE = { version: 8, sources: {}, layers: [{ id: "bg", type: "background", paint: { "background-color": "#000000" } }] };
+    const START = { center: [13.4050, 52.52], zoom: 10.2 };
+
+    const bar=document.getElementById('bar');
+    const statusEl=document.getElementById('status');
+    const loading=document.getElementById('loading');
+    const setProgress=(p,m)=>{ bar.style.width=Math.max(0,Math.min(100,p))+"%"; if(m)statusEl.textContent=m; };
+
+    const slotMaps=[
+      new maplibregl.Map({container:'map-slot1',style:BLANK_DARK_STYLE,...START,attributionControl:false}),
+      new maplibregl.Map({container:'map-slot2',style:BLANK_DARK_STYLE,...START,interactive:false,attributionControl:false}),
+      new maplibregl.Map({container:'map-slot3',style:BLANK_DARK_STYLE,...START,interactive:false,attributionControl:false})
+    ];
+    slotMaps[0].addControl(new maplibregl.NavigationControl(),'top-right');
+
+    function syncFollowers(){
+      const c=slotMaps[0].getCenter();
+      const opts={center:c,zoom:slotMaps[0].getZoom(),bearing:slotMaps[0].getBearing(),pitch:slotMaps[0].getPitch(),animate:false};
+      slotMaps[1].jumpTo(opts);slotMaps[2].jumpTo(opts);
+    }
+    slotMaps[0].on('move',syncFollowers);
+    slotMaps[0].on('resize',()=>{slotMaps[1].resize();slotMaps[2].resize();});
+
+    const PARTY_FIELDS={
+      axSPDabs:"SPD", axGRUabs:"GRÜNE", axCDUabs:"CDU", axLINabs:"LINKE", axAFDabs:"AfD", axFDPabs:"FDP",
+      axPMUTabs:"Tierschutzpartei", axFWabs:"Freie Wähler", axVLTabs:"Volt", axMLPabs:"MLPD", axBSWabs:"BSW"
+    };
+
+    const selects=[document.getElementById('sel-slot1'),document.getElementById('sel-slot2'),document.getElementById('sel-slot3')];
+    const labels=[document.getElementById('lab-slot1'),document.getElementById('lab-slot2'),document.getElementById('lab-slot3')];
+    for(const s of selects){
+      for(const [field,name] of Object.entries(PARTY_FIELDS)){
+        const opt=document.createElement('option');opt.value=field;opt.textContent=name;s.appendChild(opt);
+      }
+    }
+    selects[0].value="axSPDabs";selects[1].value="axGRUabs";selects[2].value="axCDUabs";
+
+    (async function init(){
+      try{
+        setProgress(10,"Lade GeoJSON…");
+        const res=await fetch(GEOJSON_URL,{cache:"no-store"});
+        const data=await res.json();
+
+        await Promise.all(slotMaps.map(m=>onceLoaded(m)));
+        for(const m of slotMaps) m.addSource('src',{type:'geojson',data});
+
+        const baseRadius=["interpolate",["linear"],["zoom"],6,8,10,20,13,30,15,42];
+        const baseIntensity=["interpolate",["linear"],["zoom"],6,0.35,10,0.8,14,1.1];
+
+        function grad(r,g,b){return["interpolate",["linear"],["heatmap-density"],0,`rgba(${r},${g},${b},0)`,1,`rgba(${r},${g},${b},1)`];}
+        const colors=[[255,0,0],[0,255,0],[0,0,255]];
+
+        function updateLayer(slot){
+          const field=selects[slot].value;
+          const name=PARTY_FIELDS[field];
+          labels[slot].textContent=name;
+
+          let max=1;for(const f of data.features){const v=+f.properties[field];if(v>max)max=v;}
+          const weight=["interpolate",["linear"],["coalesce",["to-number",["get",field]],0],0,0,max,1];
+
+          if(slotMaps[slot].getLayer('layer')) slotMaps[slot].removeLayer('layer');
+          slotMaps[slot].addLayer({id:'layer',type:'heatmap',source:'src',paint:{
+            "heatmap-weight":weight,"heatmap-intensity":baseIntensity,"heatmap-radius":baseRadius,
+            "heatmap-color":grad(...colors[slot]),"heatmap-opacity":0.95}});
+        }
+
+        selects.forEach((s,i)=>{s.addEventListener('change',()=>updateLayer(i));updateLayer(i);});
+        syncFollowers();
+        setProgress(100,"Fertig!");setTimeout(()=>loading.style.display='none',400);
+      }catch(e){console.error(e);alert("Fehler: "+e.message);}
+    })();
+
+    function onceLoaded(map){return new Promise(res=>map.loaded()?res():map.on('load',res));}
+  </script>
+</body>
+</html>
