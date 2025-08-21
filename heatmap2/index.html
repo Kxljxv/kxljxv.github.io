@@ -61,17 +61,18 @@
         <h2>Wähle bis zu 3 Parteien</h2>
 
         <div class="party-select">
-          <span class="swatch" style="background:red"></span>
+          <span class="swatch toggle" data-slot="0" style="background:red;cursor:pointer"></span>
           <select id="sel-slot1"></select>
         </div>
         <div class="party-select">
-          <span class="swatch" style="background:green"></span>
+          <span class="swatch toggle" data-slot="1" style="background:green;cursor:pointer"></span>
           <select id="sel-slot2"></select>
         </div>
         <div class="party-select">
-          <span class="swatch" style="background:blue"></span>
+          <span class="swatch toggle" data-slot="2" style="background:blue;cursor:pointer"></span>
           <select id="sel-slot3"></select>
         </div>
+
 
         <div class="hint">Bis zu drei Parteien werden additiv angezeigt (Farben: Rot, Grün, Blau).</div>
       </div>
@@ -130,6 +131,9 @@
 
     const selects=[document.getElementById('sel-slot1'),document.getElementById('sel-slot2'),document.getElementById('sel-slot3')];
     const labels=[document.getElementById('lab-slot1'),document.getElementById('lab-slot2'),document.getElementById('lab-slot3')];
+    const toggles=document.querySelectorAll('.swatch.toggle');
+    const disabledSlots=[false,false,false];
+
     for(const s of selects){
       for(const [field,name] of Object.entries(PARTY_FIELDS)){
         const opt=document.createElement('option');opt.value=field;opt.textContent=name;s.appendChild(opt);
@@ -153,12 +157,31 @@
         const colors=[[255,0,0],[0,255,0],[0,0,255]];
 
         function updateLayer(slot){
+          if(disabledSlots[slot]){
+            labels[slot].textContent="(deaktiviert)";
+            if(slotMaps[slot].getLayer('layer')) slotMaps[slot].removeLayer('layer');
+            return;
+          }
+
           const field=selects[slot].value;
           const name=PARTY_FIELDS[field];
           labels[slot].textContent=name;
 
-          let max=1;for(const f of data.features){const v=+f.properties[field];if(v>max)max=v;}
+          // recalc max only for currently selected (enabled) parties
+          let max=1;
+          const activeFields=selects.map((s,i)=>disabledSlots[i]?null:s.value).filter(Boolean);
+          for(const f of data.features){
+            for(const af of activeFields){
+              const v=+f.properties[af];
+              if(v>max){
+                max=v;
+                console.log("max updated:", max);
+              }
+            }
+          }
+
           const weight=["interpolate",["linear"],["coalesce",["to-number",["get",field]],0],0,0,max,1];
+          console.log(`updateLayer slot ${slot}: field=${field}, max=${max}`);
 
           if(slotMaps[slot].getLayer('layer')) slotMaps[slot].removeLayer('layer');
           slotMaps[slot].addLayer({id:'layer',type:'heatmap',source:'src',paint:{
@@ -166,11 +189,29 @@
             "heatmap-color":grad(...colors[slot]),"heatmap-opacity":0.95}});
         }
 
-        selects.forEach((s,i)=>{s.addEventListener('change',()=>updateLayer(i));updateLayer(i);});
+        selects.forEach((s,i)=>{s.addEventListener('change',()=>{selects.forEach((_,j)=>updateLayer(j));});updateLayer(i);});
+
+        toggles.forEach(t=>{
+          t.addEventListener('click',()=>{
+            const slot=+t.dataset.slot;
+            disabledSlots[slot]=!disabledSlots[slot];
+            if(disabledSlots[slot]){
+              t.style.filter="grayscale(100%) brightness(0.6)";
+              selects[slot].disabled=true;
+            }else{
+              t.style.filter="";
+              selects[slot].disabled=false;
+            }
+            selects.forEach((_,j)=>updateLayer(j));
+          });
+        });
+
         syncFollowers();
         setProgress(100,"Fertig!");setTimeout(()=>loading.style.display='none',400);
       }catch(e){console.error(e);alert("Fehler: "+e.message);}
     })();
+
+
 
     function onceLoaded(map){return new Promise(res=>map.loaded()?res():map.on('load',res));}
   </script>
