@@ -1,4 +1,3 @@
-
 # Wahlprogramm für die Schülersprecher\*innenwahl
 
 *Käthe-Kollwitz-Gymnasium Berlin-Pankow*
@@ -28,7 +27,7 @@
 ## 3. Beteiligung und Transparenz
 
 * **Schüler\*innenhaushalt verständlich machen:**
-  Der Schüler*innenhaushalt soll allen zugänglich und verständlich sein. Wir setzen uns dafür ein, dass mehr Schüler*innen unkompliziert eigene Projekte und Ideen einbringen können – deine Idee kann die Schule verändern!
+  Der Schüler\*innenhaushalt soll allen zugänglich und verständlich sein. Wir setzen uns dafür ein, dass mehr Schüler\*innen unkompliziert eigene Projekte und Ideen einbringen können – deine Idee kann die Schule verändern!
 
 * **Transparente SV-Arbeit:**
   Alle Protokolle und wichtigen Informationen der GSV werden für dich digital zugänglich gemacht. So weißt du immer, was beschlossen wird und wie du dich einbringen kannst.
@@ -51,7 +50,7 @@
   Wir setzen uns für konkrete Maßnahmen gegen überhitzte Räume und für konsequente Mülltrennung ein.
 
 * **Kontakt zu Politik und Gesellschaft:**
-  Wir möchten den Austausch mit Politiker*innen und gesellschaftlichen Akteur*innen weiter ausbauen. Politische Bildung und Engagement sollen Teil unseres Schullebens werden.
+  Wir möchten den Austausch mit Politiker\*innen und gesellschaftlichen Akteur\*innen weiter ausbauen. Politische Bildung und Engagement sollen Teil unseres Schullebens werden.
 
 ---
 
@@ -78,7 +77,7 @@
 ## 8. Ganztag
 
 * **Flexibler Ganztag:**
-  Wir fordern ein Ganztagssystem, das sich an den Alltag der Schüler*innen anpasst. Der Alltag der Schüler*innen darf sich nicht dem Ganztag unterordnen – Hobbys wie Vereinssport müssen weiterhin möglich bleiben.
+  Wir fordern ein Ganztagssystem, das sich an den Alltag der Schüler\*innen anpasst. Der Alltag der Schüler\*innen darf sich nicht dem Ganztag unterordnen – Hobbys wie Vereinssport müssen weiterhin möglich bleiben.
 
 * **Übersichtliches Ticketsystem:**
   Außerdem setzen wir uns für ein transparenteres und nutzerfreundlicheres Ticketsystem ein.

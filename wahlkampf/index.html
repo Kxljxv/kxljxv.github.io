@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wahlkampf Blog</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <h1>Wahlkampf Blog</h1>
+                    <p class="tagline">Transparent & Informativ</p>
+                </div>
+                <nav class="nav-menu" id="nav-menu">
+                    <!-- Navigation wird dynamisch generiert -->
+                </nav>
+                <button class="mobile-menu-toggle" id="nav-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="content-container">
+                <article class="markdown-content" id="content">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Lade Inhalt...</p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Wahlkampf Blog. Alle Inhalte werden aus Markdown-Dateien generiert.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
