@@ -4,11 +4,11 @@ Diese Datenschutzerklärung informiert Sie über die Art, den Umfang und Zweck d
 
 ## Verantwortliche Stelle
 
-Max Mustermann  
-Musterstraße 12  
-10435 Berlin (Deutschland)  
-E-Mail: kontakt@beispiel.de  
-Telefon: +49 (0)30 1234567
+Kolja Vöhringer
+In den Floragärten 12
+13187 Berlin (Deutschland)
+E-Mail: koljavvoehringer@gmail.com
+Telefon: +49 178 3041163
 
 ## Hosting über GitHub Pages
 

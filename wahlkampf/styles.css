@@ -37,7 +37,7 @@
 /* CSS Custom Properties */
 :root {
     /* Neue Farben nach Anforderung */
-    --bg-color: #ebebeb;
+    --bg-color: #dfdfdf;
     --text-color: #2e2e2e;
     
     /* Grüne Farbpalette dezent */
@@ -47,10 +47,10 @@
     --blue-accent: #0BA1DD; /* Himmel */
     
     /* Neutrale Farben */
-    --white: #ffffff;
-    --light-gray: #f5f5f5;
-    --medium-gray: #cccccc;
-    --dark-gray: #666666;
+    --white: #ebebeb;
+    --light-gray: #dfdfdf;
+    --medium-gray: #afafaf;
+    --dark-gray: #535353;
     
     /* Schriftarten */
     --font-heading: 'GrueneType Neue', serif;
@@ -177,7 +177,7 @@ body {
 /* Markdown Content Styles */
 .markdown-content h1 {
     font-family: var(--font-heading);
-    font-size: 2.5rem;
+    font-size: 3rem;
     color: var(--text-color);
     margin-bottom: var(--spacing-lg);
     line-height: 1.2;
@@ -185,7 +185,7 @@ body {
 
 .markdown-content h2 {
     font-family: var(--font-heading);
-    font-size: 2rem;
+    font-size: 2.5rem;
     color: var(--text-color);
     margin: var(--spacing-xl) 0 var(--spacing-md);
     padding-bottom: var(--spacing-sm);
