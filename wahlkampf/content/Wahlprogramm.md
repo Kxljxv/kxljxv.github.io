@@ -1,4 +1,4 @@
-# Wahlprogramm für die Schülersprecher\*innenwahl
+# Wahlprogramm für die Schülersprecher*innenwahl
 
 *Käthe-Kollwitz-Gymnasium Berlin-Pankow*
 
@@ -7,14 +7,14 @@
 ## 1. Mitbestimmung stärken
 
 * **Digitale Umfragen und Abstimmungen:**
-  Wir wollen digitale Abstimmungen und Umfragen einführen, damit alle Schüler\*innen die Möglichkeit haben, diese Schule zu einem besseren Ort zu machen.
+  Wir wollen digitale Abstimmungen und Umfragen einführen, damit sich alle Schüler\*innen einbringen können.
 
 ---
 
 ## 2. Schulalltag verbessern
 
 * **LEK-Begrenzung:**
-  Wir wollen die Belastung durch LEKs begrenzen. Im letzten Schuljahr hat die GSV dort bereits ein Konzept ausgearbeitet, welches wir jetzt finalisieren wollen, um es dann in der Gesamtkonferenz vorzustellen, wo es hoffentlich angenommen wird.
+  Der Hauptgrund für Schulstress sind Tests und Klassenarbeiten. Deshalb wollen wir die Anzahl schriftlicher Kontrollen pro Woche begrenzen. Bereits im letzten Schuljahr hat die GSV dazu ein Konzept erarbeitet, das wir nun finalisieren möchten.
 
 * **Mehr Wasserspender:**
   Wir setzen uns dafür ein, dass noch ein weiterer Wasserspender im Schulgebäude aufgestellt wird. Es darf keine langen Schlangen mehr geben, nur um an genießbares Wasser zu gelangen.
@@ -57,7 +57,7 @@
 ## 6. Vielfalt und Chancengleichheit
 
 * **Unterstützung für alle Schüler\*innen:**
-  Das KKG soll für Schüler\*innen verschiedenster sozialer Hintergründe offen und zugänglich bleiben. Konkret setzen wir uns dafür ein, dass die finanzielle Lage von Familien keine Auswirkung auf die Bildung hat.
+  Das KKG soll für Schüler\*innen verschiedenster sozialer Hintergründe offen und zugänglich bleiben. Soziale Unterschiede dürfen kein Hindernis sein! 
 
 ---
 
@@ -76,8 +76,8 @@
 
 ## 8. Ganztag
 
-* **Flexibler Ganztag:**
-  Wir fordern ein Ganztagssystem, das sich an den Alltag der Schüler\*innen anpasst. Der Alltag der Schüler\*innen darf sich nicht dem Ganztag unterordnen – Hobbys wie Vereinssport müssen weiterhin möglich bleiben.
+* **Fairer Ganztag:**
+  Wir wollen einen Ganztag, der sich dem Alltag der Schüler\*innen anpasst – und nicht umgekehrt. Hobbys wie Vereinssport müssen weiterhin möglich bleiben.
 
 * **Übersichtliches Ticketsystem:**
   Außerdem setzen wir uns für ein transparenteres und nutzerfreundlicheres Ticketsystem ein.
@@ -88,3 +88,9 @@
 
 * **Digitale Anwendungen verbessern:**
   Wir wollen zusammen mit der Schulleitung auf eine erfolgreiche Digitalisierung hinarbeiten. Es bringt niemandem etwas, wenn Anwendungen wie Untis nicht funktionieren oder wir extrem viele verschiedene Anmeldeportale haben und dadurch den Überblick verlieren.
+
+
+---
+<br/>
+
+**Kolja Vöhringer & Hannes Rolshoven**

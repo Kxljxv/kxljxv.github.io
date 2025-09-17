@@ -1,0 +1,27 @@
+[
+  {
+    "id": "startseite",
+    "file": "content/Startseite.md",
+    "title": "Startseite",
+    "nav": "top",
+    "default": true
+  },
+  {
+    "id": "wahlprogramm",
+    "file": "content/Wahlprogramm.md",
+    "title": "Wahlprogramm",
+    "nav": "top"
+  },
+  {
+    "id": "impressum",
+    "file": "content/Impressum.md",
+    "title": "Impressum",
+    "nav": "footer"
+  }
+  ,{
+    "id": "datenschutz",
+    "file": "content/Datenschutz.md",
+    "title": "Datenschutz",
+    "nav": "footer"
+  }
+]

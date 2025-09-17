@@ -1,6 +1,7 @@
 // App-Konfiguration
 const CONFIG = {
-    defaultFile: 'Wahlprogramm.md',
+    defaultPageId: null,
+    pages: [],
     contentElement: document.getElementById('content'),
     navList: document.getElementById('nav-menu'),
     navToggle: document.getElementById('nav-toggle')
@@ -16,23 +17,22 @@ const utils = {
             .replace(/\b\w/g, l => l.toUpperCase());
     },
 
-    // Erstelle Navigation-Item
-    createNavItem: (filename, title) => {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = '#';
-        a.textContent = title;
-        a.dataset.file = filename;
-        a.addEventListener('click', (e) => {
+    // Erstelle Navigation-Item (nach Page-ID)
+    createNavItem: (page) => {
+        const link = document.createElement('a');
+        link.href = `#/` + page.id;
+        link.textContent = page.title;
+        link.dataset.pageId = page.id;
+        link.className = 'nav-link';
+        link.addEventListener('click', (e) => {
             e.preventDefault();
-            app.loadMarkdown(filename);
-            app.setActiveNavItem(a);
+            app.loadPageById(page.id);
+            app.setActiveNavItem(link);
             if (window.innerWidth <= 768) {
                 CONFIG.navList.classList.remove('active');
             }
         });
-        li.appendChild(a);
-        return li;
+        return link;
     },
 
     // Zeige Loading-Spinner
@@ -109,114 +109,77 @@ const app = {
         console.log('🚀 Initialisiere Wahlkampf Blog...');
         
         markdownParser.init();
-        await app.loadNavigation();
+        await app.loadConfig();
+        app.buildNavigation();
         app.setupMobileMenu();
         app.handleRouting();
         
         console.log('✅ App initialisiert');
     },
-
-    // Lade Navigation aus verfügbaren Markdown-Dateien
-    loadNavigation: async () => {
-        const files = ['Wahlprogramm.md', 'Wer_wir_sind.md'];
-        const existingFiles = [];
-        
-        for (const file of files) {
-            try {
-                const response = await fetch(file);
-                if (response.ok) {
-                    existingFiles.push(file);
-                }
-            } catch (error) {
-                console.warn(`Datei ${file} nicht gefunden`);
-            }
+    // Lade Seitenkonfiguration
+    loadConfig: async () => {
+        try {
+            const res = await fetch('pages.json');
+            if (!res.ok) throw new Error('pages.json nicht gefunden');
+            const pages = await res.json();
+            CONFIG.pages = pages;
+            const defaultPage = pages.find(p => p.default) || pages.find(p => p.id) || null;
+            CONFIG.defaultPageId = defaultPage ? defaultPage.id : null;
+        } catch (e) {
+            console.error(e);
+            utils.showError('Konfigurationsdatei konnte nicht geladen werden.');
         }
-        
-        if (existingFiles.length === 0) {
-            existingFiles.push('Wahlprogramm.md');
-        }
-        
-        app.populateNavigation(existingFiles);
     },
 
-    // Navigation befüllen
-    populateNavigation: (files) => {
+    // Navigation aufbauen (nur top-Nav)
+    buildNavigation: () => {
         CONFIG.navList.innerHTML = '';
-        
-        // Füge Home-Link hinzu
-        const homeLink = document.createElement('a');
-        homeLink.href = '#';
-        homeLink.dataset.file = 'home';
-        homeLink.textContent = 'Startseite';
-        homeLink.className = 'nav-link';
-        CONFIG.navList.appendChild(homeLink);
-        
-        // Füge Links für Markdown-Dateien hinzu
-        files.forEach(file => {
-            const link = document.createElement('a');
-            link.href = '#';
-            link.dataset.file = file;
-            link.textContent = utils.getTitleFromFilename(file);
-            link.className = 'nav-link';
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                app.loadMarkdown(file);
-                
-                // Aktualisiere aktiven Link
-                CONFIG.navList.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-                
-                // Schließe mobile Menu
-                CONFIG.navList.classList.remove('active');
-            });
+        const topPages = CONFIG.pages.filter(p => p.nav === 'top');
+        topPages.forEach(page => {
+            const link = utils.createNavItem(page);
             CONFIG.navList.appendChild(link);
         });
 
-        // Lade erste Datei
-        const firstFile = files[0] || CONFIG.defaultFile;
-        app.loadMarkdown(firstFile);
+        // Footer Impressum-Handler
+        const impressumLink = document.getElementById('impressum-link');
+        if (impressumLink) {
+            impressumLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                app.loadPageById('impressum');
+            });
+        }
+
+        // Footer Datenschutz-Handler
+        const datenschutzLink = document.getElementById('datenschutz-link');
+        if (datenschutzLink) {
+            datenschutzLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                app.loadPageById('datenschutz');
+            });
+        }
     },
 
-    // Lade Markdown-Datei
-    loadMarkdown: async (filename) => {
+    // Seite per ID laden
+    loadPageById: async (pageId) => {
+        const page = CONFIG.pages.find(p => p.id === pageId) || CONFIG.pages.find(p => p.id === CONFIG.defaultPageId);
+        if (!page) {
+            utils.showError('Seite nicht gefunden.');
+            return;
+        }
         utils.showLoading();
-        
         try {
-            const response = await fetch(filename);
-            if (!response.ok) {
-                // Versuche alternative Schreibweisen
-                const alternatives = [filename, filename.toLowerCase(), filename.toUpperCase()];
-                for (const altFile of alternatives) {
-                    const altResponse = await fetch(altFile);
-                    if (altResponse.ok) {
-                        const markdown = await altResponse.text();
-                        const html = markdownParser.parse(markdown);
-                        CONFIG.contentElement.innerHTML = html;
-                        window.history.pushState({ file: altFile }, '', `#${altFile}`);
-                        app.setActiveNavItemFromFile(altFile);
-                        console.log(`✅ Geladen: ${altFile}`);
-                        return;
-                    }
-                }
-                throw new Error(`Datei ${filename} nicht gefunden`);
-            }
-            
+            const response = await fetch(page.file);
+            if (!response.ok) throw new Error('Datei nicht gefunden');
             const markdown = await response.text();
             const html = markdownParser.parse(markdown);
-            
             CONFIG.contentElement.innerHTML = html;
-            
-            // Aktualisiere URL ohne Reload
-            window.history.pushState({ file: filename }, '', `#${filename}`);
-            
-            // Aktualisiere aktiven Navigationspunkt
-            app.setActiveNavItemFromFile(filename);
-            
-            console.log(`✅ Geladen: ${filename}`);
-            
+            window.location.hash = `#/${page.id}`;
+            const active = CONFIG.navList.querySelector(`[data-page-id="${page.id}"]`);
+            if (active) app.setActiveNavItem(active);
+            console.log(`✅ Geladen: ${page.file}`);
         } catch (error) {
             console.error('Fehler beim Laden:', error);
-            utils.showError(`Die Datei "${filename}" konnte nicht geladen werden. Bitte überprüfen Sie, ob die Datei existiert.`);
+            utils.showError(`Die Seite "${page.title}" konnte nicht geladen werden.`);
         }
     },
 
@@ -227,13 +190,6 @@ const app = {
         activeLink.classList.add('active');
     },
 
-    // Setze aktiven Navigationspunkt basierend auf Dateiname
-    setActiveNavItemFromFile: (filename) => {
-        const link = CONFIG.navList.querySelector(`[data-file="${filename}"]`);
-        if (link) {
-            app.setActiveNavItem(link);
-        }
-    },
 
     // Setup für Mobile-Navigation
     setupMobileMenu: () => {
@@ -243,7 +199,8 @@ const app = {
 
         // Schließe Menu bei Klick außerhalb
         document.addEventListener('click', (e) => {
-            if (!CONFIG.navMenu.contains(e.target) && !CONFIG.navToggle.contains(e.target)) {
+            const isClickInside = CONFIG.navList.contains(e.target) || CONFIG.navToggle.contains(e.target);
+            if (!isClickInside) {
                 CONFIG.navList.classList.remove('active');
             }
         });
@@ -251,14 +208,15 @@ const app = {
 
     // Routing basierend auf URL-Hash
     handleRouting: () => {
+        const parseHash = () => {
+            const raw = window.location.hash || '';
+            const match = raw.match(/^#\/(.+)$/);
+            return match ? match[1] : CONFIG.defaultPageId;
+        };
+
         const loadFromHash = () => {
-            const hash = window.location.hash.slice(1);
-            if (hash && hash.endsWith('.md')) {
-                app.loadMarkdown(hash);
-            } else {
-                // Lade Standarddatei
-                app.loadMarkdown(CONFIG.defaultFile);
-            }
+            const pageId = parseHash();
+            app.loadPageById(pageId);
         };
 
         // Beim Laden
@@ -266,58 +224,8 @@ const app = {
 
         // Bei Hash-Änderung
         window.addEventListener('hashchange', loadFromHash);
-
-        // Browser Back/Forward
-        window.addEventListener('popstate', (e) => {
-            if (e.state && e.state.file) {
-                app.loadMarkdown(e.state.file);
-            }
-        });
     }
 };
-
-// Fallback für Dateiliste (wenn kein Server vorhanden)
-if (!window.location.pathname.includes('/api/')) {
-    // Erstelle eine einfache Dateiliste aus vorhandenen Dateien
-    const checkFileExists = async (filename) => {
-        try {
-            const response = await fetch(filename, { method: 'HEAD' });
-            return response.ok;
-        } catch {
-            return false;
-        }
-    };
-
-    // Überprüfe vorhandene Dateien
-    const discoverFiles = async () => {
-        const potentialFiles = ['Wahlprogramm.md', 'Wer_wir_sind.md', 'Wahlprogramm.MD', 'WER_WIR_SIND.MD'];
-        const existingFiles = [];
-        
-        for (const file of potentialFiles) {
-            if (await checkFileExists(file)) {
-                existingFiles.push(file);
-            }
-        }
-        
-        // Fallback: Versuche es mit den tatsächlichen Dateinamen
-        if (existingFiles.length === 0) {
-            const actualFiles = ['Wahlprogramm.md', 'Wer_wir_sind.md'];
-            return actualFiles;
-        }
-        
-        return existingFiles;
-    };
-
-    // Überschreibe loadNavigation für Fallback
-    app.loadNavigation = async () => {
-        const files = await discoverFiles();
-        if (files.length > 0) {
-            app.populateNavigation(files);
-        } else {
-            utils.showError('Keine Markdown-Dateien gefunden. Bitte fügen Sie .md Dateien zum Ordner hinzu.');
-        }
-    };
-}
 
 // App starten wenn DOM geladen ist
 document.addEventListener('DOMContentLoaded', app.init);
