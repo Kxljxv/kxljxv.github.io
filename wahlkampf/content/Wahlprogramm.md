@@ -1,5 +1,6 @@
 # Wahlprogramm für die Schülersprecher*innenwahl
 
+*von Kolja Vöhringer (10.1) und Hannes Rolshoven (12)*
 *Käthe-Kollwitz-Gymnasium Berlin-Pankow*
 
 ---
@@ -95,6 +96,3 @@
 
 
 ---
-<br/>
-
-**Kolja Vöhringer & Hannes Rolshoven**

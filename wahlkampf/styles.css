@@ -407,3 +407,18 @@ body {
     background: linear-gradient(135deg, var(--green-primary), var(--green-secondary));
     color: var(--white);
 }
+
+/* CTA Heading */
+.cta-heading {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-top: var(--spacing-xl);
+}
+
+/* Ensure centering within markdown container */
+.markdown-content .cta-heading {
+    text-align: center;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}

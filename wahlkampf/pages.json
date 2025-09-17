@@ -4,7 +4,8 @@
     "file": "content/Startseite.md",
     "title": "Startseite",
     "nav": "top",
-    "default": true
+    "default": true,
+    "cta": true
   },
   {
     "id": "wahlprogramm",

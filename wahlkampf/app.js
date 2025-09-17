@@ -13,6 +13,36 @@ const CONFIG = {
     navToggle: document.getElementById('nav-toggle')
 };
 
+// Zufällige Wahlaufrufe (alle enthalten die Namen)
+const CTAS = [
+    'Wählt Kolja & Hannes –| für eine starke GSV!',
+    'Mit Kolja & Hannes:| Mitsprache, die ankommt!',
+    'Setzt auf Kolja & Hannes –| gemeinsam mehr erreichen!',
+    'Eure Stimme für Kolja & Hannes:| Klar. Verlässlich. Wirksam.',
+    'Kolja & Hannes wählen –| für Transparenz und echte Beteiligung!',
+    'Gemeinsam stark:| Kolja & Hannes ins Schülersprecher-Team!'
+];
+
+const cta = {
+    shouldShow: (page) => Boolean(page && page.cta),
+    render: () => {
+        const text = CTAS[Math.floor(Math.random() * CTAS.length)];
+        const el = document.createElement('h1');
+        el.className = 'cta-heading';
+        // In zwei Zeilen aufteilen, wenn ":" oder "–" vorhanden
+        const match = text.match(/[|]/);
+        if (match) {
+            const idx = text.indexOf(match[0]);
+            const first = text.slice(0, idx).trim();
+            const second = text.slice(idx + 1).trim();
+            el.innerHTML = `${first}<br>${second}`;
+        } else {
+            el.textContent = text;
+        }
+        return el;
+    }
+};
+
 // Utility-Funktionen
 const utils = {
     // Extrahiere Titel aus Dateiname
@@ -235,6 +265,10 @@ const app = {
             const active = CONFIG.navList.querySelector(`[data-page-id="${page.id}"]`);
             if (active) app.setActiveNavItem(active);
             console.log(`✅ Geladen: ${page.file}`);
+            // CTA ggf. anhängen
+            if (cta.shouldShow(page)) {
+                CONFIG.contentElement.appendChild(cta.render());
+            }
             // Falls ein Anker angefordert wurde (bei internen Links)
             const pendingAnchor = app._pendingAnchor;
             if (pendingAnchor) {
