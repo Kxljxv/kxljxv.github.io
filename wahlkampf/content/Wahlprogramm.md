@@ -40,7 +40,11 @@
 ## 4. Gemeinschaft und Teilhabe
 
 * **Willkommensklassen einbinden:**
-  Leider sind die Willkommensklassen noch viel zu wenig in die Schulgemeinschaft integriert. Das wollen wir ändern. Ein erster Ansatz wäre, dass auch die Willkommensklassen Vertreter\*innen für die GSV wählen. Diese werden dann speziell gefördert, um eine Teilhabe in der Schülervertretung zu ermöglichen.
+  Die Willkommensklassen sollen noch stärker als Teil unserer Schule wahrgenommen und eingebunden werden. Als GSV-Vorstand wollen wir sie nicht nur innerhalb der Gesamtschülervertretung unterstützen, sondern auch darüber hinaus, damit ihre Anliegen und Bedürfnisse gehört und vertreten werden.
+* **Schulgemeinschaft stärken :**
+  Durch gemeinsame Aktivitäten der gesamten Schulgemeinschaft – ähnlich wie bei den Activity Days – möchten wir das Miteinander fördern und das Gemeinschaftsgefühl weiter ausbauen.
+* **Wohlfühlen am KKG:**
+  In unserer Schule sollen sich alle wohlfühlen. Deshalb wollen wir die Feedbackgespräche fortführen und weiterentwickeln, um das Vertrauen zwischen Schüler\*innen und Lehrkräften zu stärken. Zudem möchten wir durch eine Reduktion von Stress und weniger Belastungsspitzen im Schulalltag mehr Raum für Spaß an Schule schaffen.
 
 ---
 
