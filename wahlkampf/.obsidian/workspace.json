@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "content/Startseite.md",
+                "file": "content/Wahlprogramm.md",
                 "mode": "preview",
-                "source": false
+                "source": true
               },
               "icon": "lucide-file",
-              "title": "Startseite"
+              "title": "Wahlprogramm"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "content/Startseite.md",
+                "file": "content/Wahlprogramm.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Startseite"
+              "title": "Backlinks for Wahlprogramm"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "content/Startseite.md",
+                "file": "content/Wahlprogramm.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from Startseite"
+              "title": "Outgoing links from Wahlprogramm"
             }
           },
           {
@@ -142,13 +142,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "content/Startseite.md",
+                "file": "content/Wahlprogramm.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Startseite"
+              "title": "Outline of Wahlprogramm"
             }
           }
         ]
@@ -171,9 +171,9 @@
   },
   "active": "e7a71f786d66c92f",
   "lastOpenFiles": [
-    "Wahlprogramm.md",
-    "content/Wahlprogramm.md",
     "content/Startseite.md",
+    "content/Wahlprogramm.md",
+    "Wahlprogramm.md",
     "content/Impressum.md",
     "Vorderseite.pdf",
     "content/Datenschutz.md",

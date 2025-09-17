@@ -21,7 +21,7 @@ Gemeinsam sind wir seit mehreren Jahren **aktiv in der GSV** und bringen zudem *
 - **Ganztag flexibel denken:** Ganztag, der **Hobbys und Vereinssport** ermöglicht; übersichtliches **Ticketsystem**.
 - **Digitalisierung, die funktioniert:** Anwendungen wie **Untis** zuverlässig nutzen – weniger Portale, mehr Übersicht.
 
-👉 Das vollständige Programm findest du unter **„Wahlprogramm“** in der Navigation.
+👉 Das vollständige Programm findest du unter **„[[Wahlprogramm]]“** in der Navigation.
 
 ## Mach mit
 

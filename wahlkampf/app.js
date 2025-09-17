@@ -2,6 +2,12 @@
 const CONFIG = {
     defaultPageId: null,
     pages: [],
+    pageIndex: {
+        byId: {},
+        byFilePath: {},
+        byFileBase: {},
+        byTitle: {}
+    },
     contentElement: document.getElementById('content'),
     navList: document.getElementById('nav-menu'),
     navToggle: document.getElementById('nav-toggle')
@@ -71,11 +77,29 @@ const markdownParser = {
         // Erweiterter Renderer für bessere Formatierung
         const renderer = new marked.Renderer();
         
-        // Custom Link-Renderer
+        // Custom Link-Renderer (interne .md und Wiki-Links abfangen)
         renderer.link = (href, title, text) => {
-            const isExternal = href.startsWith('http');
-            const target = isExternal ? 'target="_blank" rel="noopener noreferrer"' : '';
-            return `<a href="${href}" ${target} title="${title || text}">${text}</a>`;
+            try {
+                const isExternal = /^https?:\/\//i.test(href);
+                if (!isExternal) {
+                    // Markdown-Links auf .md-Dateien inkl. optionalem Anchor
+                    // Beispiele: 'content/Wahlprogramm.md#abschnitt', 'Wahlprogramm.md'
+                    const mdMatch = href.match(/^(.+?\.md)(?:#([\w\-\s%äöüÄÖÜß.]+))?$/i);
+                    if (mdMatch) {
+                        const filePath = mdMatch[1].toLowerCase();
+                        const anchor = mdMatch[2] || '';
+                        const pageId = CONFIG.pageIndex.byFilePath[filePath] || CONFIG.pageIndex.byFileBase[filePath.replace(/^.*\//, '').replace(/\.md$/i, '')];
+                        if (pageId) {
+                            const anchorAttr = anchor ? ` data-anchor="${anchor}"` : '';
+                            return `<a href="#/${pageId}" class="internal-link" data-page-id="${pageId}"${anchorAttr} title="${title || text}">${text}</a>`;
+                        }
+                    }
+                }
+                const target = isExternal ? 'target="_blank" rel="noopener noreferrer"' : '';
+                return `<a href="${href}" ${target} title="${title || text}">${text}</a>`;
+            } catch {
+                return `<a href="${href}" title="${title || text}">${text}</a>`;
+            }
         };
 
         // Custom Image-Renderer
@@ -94,12 +118,32 @@ const markdownParser = {
     // Konvertiere Markdown zu HTML
     parse: (markdown) => {
         try {
-            return marked.parse(markdown);
+            const preprocessed = markdownParser.preprocessWikiLinks(markdown);
+            return marked.parse(preprocessed);
         } catch (error) {
             console.error('Markdown parsing error:', error);
             return `<pre style="color: red;">Fehler beim Parsen des Markdown: ${error.message}</pre>`;
         }
     }
+};
+
+// Zusätzliche Parser-Helfer
+markdownParser.preprocessWikiLinks = (markdown) => {
+    // Obsidian-Wiki-Links: [[Ziel|Text]] oder [[Ziel#Überschrift|Text]]
+    // Ersetze durch HTML-Links, die unsere Router-Logik verstehen
+    return markdown.replace(/\[\[([^\]|#]+)(?:#([^\]|]+))?(?:\|([^\]]+))?\]\]/g, (m, rawTarget, rawAnchor, alias) => {
+        const target = String(rawTarget || '').trim();
+        const anchor = String(rawAnchor || '').trim();
+        const text = (alias || target).trim();
+        if (!target) return text;
+        const norm = target.toLowerCase().replace(/\s+/g, '_');
+        const pageId = CONFIG.pageIndex.byId[target] || CONFIG.pageIndex.byTitle[target.toLowerCase()] || CONFIG.pageIndex.byFileBase[target.toLowerCase()] || CONFIG.pageIndex.byFileBase[norm];
+        if (pageId) {
+            const anchorAttr = anchor ? ` data-anchor="${anchor}"` : '';
+            return `<a href="#/${pageId}" class="internal-link" data-page-id="${pageId}"${anchorAttr}>${text}</a>`;
+        }
+        return text;
+    });
 };
 
 // Haupt-App
@@ -125,6 +169,20 @@ const app = {
             CONFIG.pages = pages;
             const defaultPage = pages.find(p => p.default) || pages.find(p => p.id) || null;
             CONFIG.defaultPageId = defaultPage ? defaultPage.id : null;
+            // Indizes aufbauen für Link-Auflösung
+            CONFIG.pageIndex = { byId: {}, byFilePath: {}, byFileBase: {}, byTitle: {} };
+            pages.forEach(p => {
+                CONFIG.pageIndex.byId[p.id] = p.id;
+                const filePath = (p.file || '').toLowerCase();
+                if (filePath) {
+                    CONFIG.pageIndex.byFilePath[filePath] = p.id;
+                    const base = filePath.replace(/^.*\//, '').replace(/\.md$/i, '');
+                    CONFIG.pageIndex.byFileBase[base] = p.id;
+                }
+                if (p.title) {
+                    CONFIG.pageIndex.byTitle[String(p.title).toLowerCase()] = p.id;
+                }
+            });
         } catch (e) {
             console.error(e);
             utils.showError('Konfigurationsdatei konnte nicht geladen werden.');
@@ -177,6 +235,14 @@ const app = {
             const active = CONFIG.navList.querySelector(`[data-page-id="${page.id}"]`);
             if (active) app.setActiveNavItem(active);
             console.log(`✅ Geladen: ${page.file}`);
+            // Falls ein Anker angefordert wurde (bei internen Links)
+            const pendingAnchor = app._pendingAnchor;
+            if (pendingAnchor) {
+                app._pendingAnchor = null;
+                const slug = app.slugifyHeading(pendingAnchor);
+                const el = document.getElementById(slug);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         } catch (error) {
             console.error('Fehler beim Laden:', error);
             utils.showError(`Die Seite "${page.title}" konnte nicht geladen werden.`);
@@ -204,6 +270,20 @@ const app = {
                 CONFIG.navList.classList.remove('active');
             }
         });
+
+        // Delegierter Click-Handler für interne Links innerhalb des Inhalts
+        CONFIG.contentElement.addEventListener('click', (e) => {
+            const a = e.target.closest('a');
+            if (!a) return;
+            // Interne Navigationslinks
+            const pageId = a.getAttribute('data-page-id');
+            if (a.classList.contains('internal-link') && pageId) {
+                e.preventDefault();
+                const anchor = a.getAttribute('data-anchor');
+                app._pendingAnchor = anchor || null;
+                app.loadPageById(pageId);
+            }
+        });
     },
 
     // Routing basierend auf URL-Hash
@@ -225,6 +305,20 @@ const app = {
         // Bei Hash-Änderung
         window.addEventListener('hashchange', loadFromHash);
     }
+};
+
+// Utility: Heading-Slug ähnlich marked
+app.slugifyHeading = (text) => {
+    return String(text || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[ä]/g, 'ae')
+        .replace(/[ö]/g, 'oe')
+        .replace(/[ü]/g, 'ue')
+        .replace(/[ß]/g, 'ss')
+        .replace(/[^a-z0-9\s\-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/\-+/g, '-');
 };
 
 // App starten wenn DOM geladen ist
