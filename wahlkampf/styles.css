@@ -41,10 +41,10 @@
     --text-color: #2e2e2e;
     
     /* Grüne Farbpalette dezent */
-    --green-primary: #008939; /* Klee */
-    --green-secondary: #005538; /* Tanne */
-    --green-accent: #8ABD24; /* Grashalm */
-    --blue-accent: #0BA1DD; /* Himmel */
+    --green-primary: #3CB4E4; /* Klee */
+    --green-secondary: #0BA1DD; /* Tanne */
+    --green-accent: #2F765E; /* Grashalm */
+    --blue-accent: #FFF17A; /* Himmel */
     
     /* Neutrale Farben */
     --white: #ebebeb;
