@@ -33,7 +33,7 @@ _Käthe-Kollwitz-Gymnasium Berlin-Pankow_
     Der **Schüler\*innenhaushalt** soll für alle zugänglich und verständlich sein. Wir setzen uns dafür ein, dass mehr Schüler\*innen **unkompliziert** eigene **Projekte** und **Ideen** einbringen können und dafür auch ein Budget bekommen.
     
 - **Transparente SV-Arbeit:**  
-    Alle **Protokolle** und wichtigen Informationen der **GSV** werden für dich **digital** zugänglich gemacht. So weißt du immer, was **beschlossen** wird und wie du dich einbringen kannst.
+    Alle **Protokolle** und wichtigen Informationen der **GSV** sollen für alle Schüler\*innen **digital** zugänglich gemacht werden. So weißt du immer, was **beschlossen** wird und wie du dich einbringen kannst.
     
 - **Mehr Einfluss der GSV:**  
     Wir arbeiten daran, den **Einfluss der GSV** auf schulische Entscheidungen zu erhöhen. Die **Interessen der Schülerschaft** werden von uns **klar** und **konstruktiv** gegenüber der Schulleitung und anderen Parteien vertreten.
@@ -58,7 +58,7 @@ _Käthe-Kollwitz-Gymnasium Berlin-Pankow_
 ## 5. Nachhaltigkeit und gesellschaftlicher Austausch
 
 - **Klimaschutz an der Schule:**  
-    Wir setzen uns für konkrete Maßnahmen gegen **überhitzte Räume** und für konsequente **Mülltrennung** ein.
+    Wir setzen uns für konkrete Maßnahmen gegen **überhitzte Räume** und **Mülltrennung** ein.
     
 - **Kontakt zu Politik und Gesellschaft:**  
     Wir möchten den **Austausch mit Politiker\*innen** und **gesellschaftlichen Akteur\*innen** weiter ausbauen. Politische Bildung und Engagement sollen Teil unseres Schullebens werden.
