@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE dokumente [
+
+				<!ENTITY % xhtml-transitional PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+				%xhtml-transitional;
+
+        <!ELEMENT dokumente (norm)*>
+        <!ATTLIST dokumente
+                builddate CDATA #REQUIRED
+                doknr CDATA #REQUIRED>
+        <!ELEMENT norm (metadaten|textdaten)*>
+        <!ATTLIST norm
+                builddate CDATA #REQUIRED
+                doknr CDATA #REQUIRED>
+        <!ELEMENT metadaten (jurabk|amtabk?|ausfertigung-datum?|gueltigab?|gueltigbis?|dokumenttyp?|fundstelle?|gliederungsnr?|kurzue?|langue?|titel?|enbez?|gliederungseinheit?|zitiervorschlag?)*>
+        <!ELEMENT jurabk (#PCDATA)>
+        <!ELEMENT amtabk (#PCDATA)>
+        <!ELEMENT ausfertigung-datum (#PCDATA)>
+        <!ELEMENT gueltigab (#PCDATA)>
+        <!ELEMENT gueltigbis (#PCDATA)>
+        <!ELEMENT dokumenttyp (#PCDATA)>
+        <!ELEMENT fundstelle (#PCDATA)>
+        <!ELEMENT gliederungsnr (#PCDATA)>
+        <!ELEMENT kurzue (#PCDATA)>
+        <!ELEMENT langue (#PCDATA)>
+        <!ELEMENT titel (#PCDATA)>
+        <!ELEMENT enbez (#PCDATA)>
+        <!ELEMENT gliederungseinheit (gliederungsbez?, gliederungstitel?)>
+        <!ELEMENT gliederungsbez (#PCDATA)>
+        <!ELEMENT gliederungstitel (#PCDATA)>
+        <!ELEMENT zitiervorschlag (#PCDATA)>
+        <!ELEMENT textdaten ANY>
+        ]>
+
+<dokumente builddate="20190222091615" doknr="jlr-LernMVBE2010rahmen">
+
+<norm builddate="20190222091615" doknr="jlr-LernMVBE2010rahmen"><metadaten><jurabk>LernMV BE 2010</jurabk><amtabk>LernmittelVO</amtabk><ausfertigung-datum>16.12.2010</ausfertigung-datum><gueltigab>31.12.2010</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><fundstelle>GVBl. 2010, 662</fundstelle><gliederungsnr>2230-1-43</gliederungsnr><kurzue>Lernmittelverordnung</kurzue><langue>Verordnung über die Lernmittel an allgemein bildenden und beruflichen Schulen (Lernmittelverordnung - LernmittelVO) vom 16. Dezember 2010</langue><titel>Verordnung über die Lernmittel an allgemein bildenden und beruflichen Schulen (Lernmittelverordnung - LernmittelVO) vom 16. Dezember 2010</titel></metadaten><textdaten>
+          <div class="jnhtml">
+            <table class="standangaben" width="100%">
+              <colgroup>
+                <col width="10%"/>
+                <col width="90%"/>
+              </colgroup>
+              <tr>
+                <td class="StandangabeStand">Stand:</td>
+                <td>letzte berücksichtigte Änderung: zuletzt geändert durch Artikel 4 der Verordnung vom 03.08.2018 (GVBl. S. 506)</td>
+              </tr>
+            </table>
+          </div>
+        </textdaten></norm>
+
+<norm builddate="20190222091615" doknr="jlr-LernMVBE2010pELS"><metadaten><jurabk>LernMV BE 2010</jurabk><amtabk>LernmittelVO</amtabk><ausfertigung-datum>16.12.2010</ausfertigung-datum><gueltigab>31.12.2010</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-43</gliederungsnr><kurzue>Lernmittelverordnung</kurzue><enbez>Eingangsformel</enbez></metadaten><textdaten>
+          <p>
+            Auf Grund des
+            § 50 Absatz 4 des Schulgesetzes
+            vom 26. Januar 2004 (GVBl. S. 26), das zuletzt durch Gesetz vom 28. Juni 2010 (GVBl. S. 342) geändert worden ist, wird verordnet:
+          </p>
+        </textdaten></norm>
+
+<norm builddate="20190222091615" doknr="jlr-LernMVBE2010pP1"><metadaten><jurabk>LernMV BE 2010</jurabk><amtabk>LernmittelVO</amtabk><ausfertigung-datum>16.12.2010</ausfertigung-datum><gueltigab>31.12.2010</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-43</gliederungsnr><zitiervorschlag>§ 1 LernmittelVO in der Fassung vom 16.12.2010</zitiervorschlag><kurzue>Lernmittelverordnung</kurzue><enbez>§ 1</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 1
+            <br/>
+            Geltungsbereich
+          </h3>
+          <p>
+            <a name="P1-A1"/>
+            Diese Verordnung gilt für die Schülerinnen und Schüler an allgemein bildenden und beruflichen Schulen. Sie gilt nicht für Schülerinnen und Schüler, die sich in einer Berufsausbildung im Sinne des
+            Berufsbildungsgesetzes
+            vom 23. März 2005 (BGBl. I S. 931), das zuletzt durch Artikel 15 Absatz 90 des Gesetzes vom 5. Februar 2009 (BGBl. I S. 160) geändert worden ist, oder des
+            Altenpflegegesetzes
+            in der Fassung der Bekanntmachung vom 25. August 2003 (BGBl. I S. 1690), das zuletzt durch Artikel 12b des Gesetzes vom 17. Juli 2009 (BGBl. I S. 1990) geändert worden ist, in der jeweils geltenden Fassung, befinden.
+          </p>
+        </textdaten></norm>
+
+<norm builddate="20190222091615" doknr="jlr-LernMVBE2010pP2"><metadaten><jurabk>LernMV BE 2010</jurabk><amtabk>LernmittelVO</amtabk><ausfertigung-datum>16.12.2010</ausfertigung-datum><gueltigab>31.12.2010</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-43</gliederungsnr><zitiervorschlag>§ 2 LernmittelVO in der Fassung vom 16.12.2010</zitiervorschlag><kurzue>Lernmittelverordnung</kurzue><enbez>§ 2</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 2
+            <br/>
+            Lernmittelarten
+          </h3>
+          <p>
+            <a name="P2-A1"/>
+            Lernmittel sind
+          </p>
+          <dl>
+            <dt style="float: left; min-width: 1em;">1.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>Schulbücher,</p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">2.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>ergänzende Druckschriften (beispielsweise Wörterbücher, Lektüren, Arbeitshefte, Atlanten, Notenblätter) und</p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">3.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>andere Unterrichtsmedien (beispielsweise Lernkarteien, digitale Datenträger),</p>
+            </dd>
+          </dl>
+          <p>die für die Schülerinnen und Schüler bestimmt sind und von diesen selbstständig und eigenverantwortlich überwiegend im Unterricht und bei der häuslichen Vor- und Nachbereitung des Unterrichts verwendet werden, soweit es sich um im Handel zu erwerbende Verlagsprodukte handelt.</p>
+        </textdaten></norm>
+
+<norm builddate="20190222091615" doknr="jlr-LernMVBE2010pP3"><metadaten><jurabk>LernMV BE 2010</jurabk><amtabk>LernmittelVO</amtabk><ausfertigung-datum>16.12.2010</ausfertigung-datum><gueltigab>31.12.2010</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-43</gliederungsnr><zitiervorschlag>§ 3 LernmittelVO in der Fassung vom 16.12.2010</zitiervorschlag><kurzue>Lernmittelverordnung</kurzue><enbez>§ 3</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 3
+            <br/>
+            Auswahl der Lernmittel
+          </h3>
+          <p>
+            <a name="P3-A1"/>
+            (1) Bei der Auswahl der Lernmittel durch die Gesamtkonferenz gemäß
+            § 79 Absatz 3 Nummer 8 des Schulgesetzes
+            oder die von ihr gebildeten Fachkonferenzen gemäß
+            § 80 Absatz 1 Satz 3 Nummer 3 des Schulgesetzes
+            sind die Grundsätze der Wirtschaftlichkeit, Sparsamkeit, Zweckmäßigkeit und des sinnvollen Einsatzes im Unterricht sowie die gemäß
+            § 7 Absatz 5 Satz 3 des Schulgesetzes
+            festgelegten Mindeststandards zu beachten.
+          </p>
+          <p>
+            <a name="P3-A2"/>
+            (2) Unterscheidet sich ein Lernmittel der Art, dem Inhalt und der didaktisch-methodischen Aufbereitung nach nicht wesentlich von einem anderen, so ist das preisgünstigste Lernmittel auszuwählen.
+          </p>
+        </textdaten></norm>
+
+<norm builddate="20190222091615" doknr="jlr-LernMVBE2010pP4"><metadaten><jurabk>LernMV BE 2010</jurabk><amtabk>LernmittelVO</amtabk><ausfertigung-datum>16.12.2010</ausfertigung-datum><gueltigab>31.12.2010</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-43</gliederungsnr><zitiervorschlag>§ 4 LernmittelVO in der Fassung vom 16.12.2010</zitiervorschlag><kurzue>Lernmittelverordnung</kurzue><enbez>§ 4</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 4
+            <br/>
+            Ausleihe
+          </h3>
+          <p>
+            <a name="P4-A1"/>
+            (1) Die von der Schule unentgeltlich bereitgestellten Lernmittel werden den Schülerinnen oder Schülern in der Regel zu Beginn des Unterrichts im neuen Schuljahr zur Verfügung gestellt.
+          </p>
+          <p>
+            <a name="P4-A2"/>
+            (2) Diese Lernmittel sind als Eigentum des Landes Berlin zu kennzeichnen und zu inventarisieren. Die Schule gibt vor, wann die Rückgabe zu erfolgen hat.
+          </p>
+        </textdaten></norm>
+
+<norm builddate="20190222091615" doknr="jlr-LernMVBE2010pP5"><metadaten><jurabk>LernMV BE 2010</jurabk><amtabk>LernmittelVO</amtabk><ausfertigung-datum>16.12.2010</ausfertigung-datum><gueltigab>31.12.2010</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-43</gliederungsnr><zitiervorschlag>§ 5 LernmittelVO in der Fassung vom 16.12.2010</zitiervorschlag><kurzue>Lernmittelverordnung</kurzue><enbez>§ 5</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 5
+            <br/>
+            Gebrauchsdauer
+          </h3>
+          <p>
+            <a name="P5-A1"/>
+            Die dem Land Berlin gehörenden Lernmittel müssen grundsätzlich mindestens vier Jahre, schulbuchergänzende Druckschriften -mit Ausnahme der jährlich zu ersetzenden Arbeitshefte - mindestens sechs Jahre genutzt werden. Dies gilt nicht, wenn zwingende fachliche Gründe eine vorzeitige Auswechselung erfordern.
+          </p>
+        </textdaten></norm>
+
+<norm builddate="20190222091615" doknr="jlr-LernMVBE2010V3P6"><metadaten><jurabk>LernMV BE 2010</jurabk><amtabk>LernmittelVO</amtabk><ausfertigung-datum>03.08.2018</ausfertigung-datum><gueltigab>17.08.2018</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-43</gliederungsnr><zitiervorschlag>§ 6 LernmittelVO in der Fassung vom 03.08.2018</zitiervorschlag><kurzue>Lernmittelverordnung</kurzue><enbez>§ 6</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 6
+            <br/>
+            Lernmittelbeschaffung im Rahmen des Eigenanteils
+          </h3>
+          <p>
+            <a name="P6-A1"/>
+            (1) Die Erziehungsberechtigten oder die volljährigen Schülerinnen oder Schüler ab Jahrgangsstufe 7 aufwärts sind nach
+            § 50 Absatz 2 Satz 2 des Schulgesetzes
+            verpflichtet, für jedes Schuljahr Lernmittel selbst und auf eigene Kosten zu beschaffen. Der Höchstbetrag des Eigenanteils beträgt 100 Euro je Schülerin oder Schüler und bezieht sich auf den Neuwert der für das jeweilige Schuljahr zu beschaffenden Lernmittel.
+          </p>
+          <p>
+            <a name="P6-A2"/>
+            (2) Die Schule informiert die Erziehungsberechtigten oder die volljährigen Schülerinnen oder Schüler in der Regel bis spätestens vier Wochen vor Beginn der Sommerferien (beispielsweise über Bücherlisten) über die im Rahmen des Eigenanteils zu beschaffenden Lernmittel.
+          </p>
+          <p>
+            <a name="P6-A3"/>
+            (3) Liegt der für eine Schulart festgelegte Mindeststandard unter dem Höchstbetrag für den Eigenanteil, darf der Eigenanteil nicht höher als dieser Mindeststandard sein.
+          </p>
+          <p>
+            <a name="P6-A4"/>
+            (4) Auch bei einem Schulwechsel im laufenden Schuljahr darf der Höchstbetrag für den Eigenanteil nicht überschritten werden.
+          </p>
+          <p>
+            <a name="P6-A5"/>
+            (5) Wiederholt eine Schülerin oder ein Schüler eine Jahrgangsstufe, wird der Neuwert der weiterhin nutzbaren Lernmittel auf den zu erbringenden Eigenanteil angerechnet.
+          </p>
+          <p>
+            <a name="P6-A6"/>
+            (6) Richtet die Schule nach Maßgabe der schulrechtlichen Bestimmungen einen Lernmittelfonds ein, steht es den Erziehungsberechtigten oder den volljährigen Schülerinnen oder Schülern frei, sich mit dem Eigenanteil daran zu beteiligen.
+          </p>
+          <p>
+            <a name="P6-A7"/>
+            (7) Die Erziehungsberechtigten oder die volljährigen Schülerinnen oder Schüler sind von der Schule darüber zu informieren, dass bei einer Beteiligung am schulischen Lernmittelfonds die Lernmittel Eigentum des Landes Berlin sind.
+          </p>
+        </textdaten></norm>
+
+<norm builddate="20190222091615" doknr="jlr-LernMVBE2010V1P7"><metadaten><jurabk>LernMV BE 2010</jurabk><amtabk>LernmittelVO</amtabk><ausfertigung-datum>02.11.2012</ausfertigung-datum><gueltigab>01.12.2012</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-43</gliederungsnr><zitiervorschlag>§ 7 LernmittelVO in der Fassung vom 02.11.2012</zitiervorschlag><kurzue>Lernmittelverordnung</kurzue><enbez>§ 7</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 7
+            <br/>
+            Befreiung von der Zahlung des Eigenanteils
+          </h3>
+          <p>
+            <a name="P7-A1"/>
+            (1) Von der Zahlung des Eigenanteils bei Lernmitteln sind befreit:
+          </p>
+          <dl>
+            <dt style="float: left; min-width: 1em;">1.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>
+                Bezieherinnen oder Bezieher von Leistungen nach dem Dritten und Vierten Kapitel des
+                Zwölften Buches Sozialgesetzbuch
+                - Sozialhilfe - (Artikel 1 des Gesetzes vom 27. Dezember 2003, BGBl. I S. 3022), das zuletzt durch Artikel 13 Absatz 28 des Gesetzes vom 12. April 2012 (BGBl. I S. 579) geändert worden ist, in der jeweils geltenden Fassung,
+              </p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">2.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>
+                Bezieherinnen oder Bezieher von Leistungen nach dem
+                Zweiten Buch Sozialgesetzbuch
+                - Grundsicherung für Arbeitsuchende -(Artikel 1 des Gesetzes vom 24. Dezember 2003, BGBl. I S. 2954, 2955), das zuletzt durch Artikel 3 des Gesetzes vom 24. Oktober 2010 (BGBl. I S. 1422) geändert worden ist, in der jeweils geltenden Fassung,
+              </p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">3.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>
+                Bezieherinnen oder Bezieher von Leistungen nach dem
+                Wohngeldgesetz
+                vom 24. September 2008 (BGBl. I S. 1856), das zuletzt durch Artikel 7 Absatz 8 des Gesetzes vom 7. Juli 2009 (BGBl. I S. 1707) geändert worden ist, in der jeweils geltenden Fassung,
+              </p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">4.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>
+                Bezieherinnen oder Bezieher von Leistungen nach
+                § 6a des Bundeskindergeldgesetzes
+                in der Fassung der Bekanntmachung vom 28. Januar 2009 (BGBl. I S. 142, 3177), das zuletzt durch Artikel 9 des Gesetzes vom 7. Dezember 2011 (BGBl. I S. 2592) geändert worden ist, in der jeweils geltenden Fassung,
+              </p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">5.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>
+                Bezieherinnen oder Bezieher von Leistungen nach dem
+                Asylbewerberleistungsgesetz
+                in der Fassung der Bekanntmachung vom 5. August 1997 (BGBl. I S. 2022), das zuletzt durch Artikel 2e des Gesetzes vom 24. September 2008 (BGBl. I S. 1856) geändert worden ist, in der jeweils geltenden Fassung,
+              </p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">6.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>
+                Schülerinnen oder Schüler, die sich gemäß
+                §§ 27
+                oder
+                41
+                in Verbindung mit
+                §§ 33
+                ,
+                34
+                und
+                35 a Absatz 1 und 2 Nummer 3 und 4 des Achten Buches Sozialgesetzbuch
+                - Kinder- und Jugendhilfe - (Artikel 1 des Gesetzes vom 26. Juni 1990, BGBl. I S. 1163) in der Fassung der Bekanntmachung vom 14. Dezember 2006 (BGBl. I S. 3134), das zuletzt durch Artikel 2 des Gesetzes vom 22. Dezember 2011 (BGBl. I S. 2975) geändert worden ist, in der jeweils geltenden Fassung, in Vollzeitpflege, Heimerziehung oder sonstiger betreuter Wohnform befinden, oder deren Erziehungsberechtigte,
+              </p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">7.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>
+                Schülerinnen oder Schüler, die Leistungen nach dem
+                Bundesausbildungsförderungsgesetz
+                in der Fassung der Bekanntmachung vom 7. Dezember 2010 (BGBl. I S. 1952, 2012 I S. 197), das zuletzt durch Artikel 31 des Gesetzes vom 20. Dezember 2011 (BGBl. I S. 2854) geändert worden ist, in der jeweils geltenden Fassung, beziehen, oder deren Erziehungsberechtigte.
+              </p>
+            </dd>
+          </dl>
+          <p>
+            <a name="P7-A2"/>
+            (2) Schülerinnen oder Schülern, die selbst oder deren Erziehungsberechtigte gemäß Absatz 1 von der Zahlung eines Eigenanteils bei Lernmitteln befreit sind, werden die erforderlichen Lernmittel von der Schule zur Verfügung gestellt.
+            § 4
+            gilt entsprechend.
+          </p>
+          <p>
+            <a name="P7-A3"/>
+            (3)  Der Nachweis über den Bezug von Leistungen nach Absatz 1 Nummer 1 bis 5 gilt mit der Vorlage des „berlinpass-BuT“ als erbracht.
+          </p>
+          <p>
+            <a name="P7-A4"/>
+            (4) Der Nachweis über den Bezug von Leistungen nach Absatz 1 Nummer 1 bis 5 und 7 oder das Vorliegen der Voraussetzungen nach Absatz 1 Nummer 6 muss der Schulleitung oder der von ihr bestimmten Person in der Regel spätestens vier Wochen vor Beginn der Sommerferien vorgelegt werden. Aus dem Nachweis muss sich ergeben, dass die Anspruchsvoraussetzungen am 1. August des Jahres (Schuljahresbeginn) erfüllt sind. Die Sätze 1 und 2 gelten auch in den Fällen der Vorlage des „berlinpass-BuT“ nach Absatz 3.
+          </p>
+          <p>
+            <a name="P7-A5"/>
+            (5) Der Anspruch auf Befreiung von der Zahlung des Eigenanteils erlischt, wenn der erforderliche Nachweis nicht innerhalb von vier Wochen nach Beginn des Unterrichts nachgereicht wurde.
+          </p>
+          <p>
+            <a name="P7-A6"/>
+            (6) Wird glaubhaft gemacht, dass die Frist ohne Verschulden versäumt wurde, kann die Schule die sonst privat zu beschaffenden Lernmittel bis zur Erbringung des Nachweises leihweise zur Verfügung stellen.
+          </p>
+        </textdaten></norm>
+
+<norm builddate="20190222091615" doknr="jlr-LernMVBE2010V1P8"><metadaten><jurabk>LernMV BE 2010</jurabk><amtabk>LernmittelVO</amtabk><ausfertigung-datum>02.11.2012</ausfertigung-datum><gueltigab>01.12.2012</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-43</gliederungsnr><zitiervorschlag>§ 8 LernmittelVO in der Fassung vom 02.11.2012</zitiervorschlag><kurzue>Lernmittelverordnung</kurzue><enbez>§ 8</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 8
+            <br/>
+            Datenerfassung
+          </h3>
+          <p>
+            <a name="P8-A1"/>
+            Unter Beachtung des
+            § 64 des Schulgesetzes
+            erfasst die Schule von den Schülerinnen und Schülern, die selbst oder deren Erziehungsberechtigte von der Zahlung des Eigenanteils befreit sind, folgende Daten in einer gesonderten Liste gemäß
+            § 4 Absatz 3 der Schuldatenverordnung
+            vom 13. Oktober 1994 (GVBl. S. 435), die zuletzt durch Verordnung vom 15. September 2010 (GVBl. S. 446) geändert worden ist:
+          </p>
+          <dl>
+            <dt style="float: left; min-width: 1em;">1.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>Name,</p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">2.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>Vornamen,</p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">3.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>Geburtsdatum,</p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">4.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>Jahrgangsstufe/Klasse.</p>
+            </dd>
+          </dl>
+          <p>Es verbleiben keine Kopien der Berechtigungsnachweise an den Schulen.</p>
+        </textdaten></norm>
+
+<norm builddate="20190222091615" doknr="jlr-LernMVBE2010V1P9"><metadaten><jurabk>LernMV BE 2010</jurabk><amtabk>LernmittelVO</amtabk><ausfertigung-datum>02.11.2012</ausfertigung-datum><gueltigab>01.12.2012</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-43</gliederungsnr><zitiervorschlag>§ 9 LernmittelVO in der Fassung vom 02.11.2012</zitiervorschlag><kurzue>Lernmittelverordnung</kurzue><enbez>§ 9</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 9
+            <br/>
+            Inkrafttreten, Außerkrafttreten
+          </h3>
+          <p>
+            <a name="P9-A1"/>
+            Diese Verordnung tritt am Tage nach der Verkündung im Gesetz- und Verordnungsblatt für Berlin in Kraft. Gleichzeitig tritt die Lernmittelverordnung vom 3. Juli 2003 (GVBl. S. 270), die zuletzt durch Verordnung vom 28. Januar 2005 (GVBl. S. 137) geändert worden ist, außer Kraft.
+          </p>
+          <p>Berlin, den 16. Dezember 2010</p>
+          <p align="center" style="text-align:center">
+            Senatsverwaltung für Bildung, Wissenschaft und Forschung
+            <br/>
+            Prof. Dr. E. Jürgen Zöllner
+          </p>
+        </textdaten></norm></dokumente>

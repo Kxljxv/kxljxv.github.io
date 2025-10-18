@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE dokumente [
+
+				<!ENTITY % xhtml-transitional PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+				%xhtml-transitional;
+
+        <!ELEMENT dokumente (norm)*>
+        <!ATTLIST dokumente
+                builddate CDATA #REQUIRED
+                doknr CDATA #REQUIRED>
+        <!ELEMENT norm (metadaten|textdaten)*>
+        <!ATTLIST norm
+                builddate CDATA #REQUIRED
+                doknr CDATA #REQUIRED>
+        <!ELEMENT metadaten (jurabk|amtabk?|ausfertigung-datum?|gueltigab?|gueltigbis?|dokumenttyp?|fundstelle?|gliederungsnr?|kurzue?|langue?|titel?|enbez?|gliederungseinheit?|zitiervorschlag?)*>
+        <!ELEMENT jurabk (#PCDATA)>
+        <!ELEMENT amtabk (#PCDATA)>
+        <!ELEMENT ausfertigung-datum (#PCDATA)>
+        <!ELEMENT gueltigab (#PCDATA)>
+        <!ELEMENT gueltigbis (#PCDATA)>
+        <!ELEMENT dokumenttyp (#PCDATA)>
+        <!ELEMENT fundstelle (#PCDATA)>
+        <!ELEMENT gliederungsnr (#PCDATA)>
+        <!ELEMENT kurzue (#PCDATA)>
+        <!ELEMENT langue (#PCDATA)>
+        <!ELEMENT titel (#PCDATA)>
+        <!ELEMENT enbez (#PCDATA)>
+        <!ELEMENT gliederungseinheit (gliederungsbez?, gliederungstitel?)>
+        <!ELEMENT gliederungsbez (#PCDATA)>
+        <!ELEMENT gliederungstitel (#PCDATA)>
+        <!ELEMENT zitiervorschlag (#PCDATA)>
+        <!ELEMENT textdaten ANY>
+        ]>
+
+<dokumente builddate="20190222075217" doknr="jlr-EvalVBErahmen">
+
+<norm builddate="20190222075217" doknr="jlr-EvalVBErahmen"><metadaten><jurabk>EvalV BE</jurabk><ausfertigung-datum>29.11.2011</ausfertigung-datum><gueltigab>16.12.2011</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><fundstelle>GVBl. 2011, 728</fundstelle><gliederungsnr>2230-1-47</gliederungsnr><langue>Verordnung über schulische Qualitätssicherung und Evaluation vom 29. November 2011</langue><titel>Verordnung über schulische Qualitätssicherung und Evaluation vom 29. November 2011</titel></metadaten><textdaten>
+          <div class="jnhtml">
+            <table class="standangaben" width="100%">
+              <colgroup>
+                <col width="10%"/>
+                <col width="90%"/>
+              </colgroup>
+              <tr>
+                <td class="StandangabeStand">Stand:</td>
+                <td>letzte berücksichtigte Änderung: geändert durch Artikel VI der Verordnung vom 22.07.2013 (GVBl. S. 359)</td>
+              </tr>
+            </table>
+          </div>
+        </textdaten></norm>
+
+<norm builddate="20190222075217" doknr="jlr-EvalVBEpELS"><metadaten><jurabk>EvalV BE</jurabk><ausfertigung-datum>29.11.2011</ausfertigung-datum><gueltigab>16.12.2011</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-47</gliederungsnr><enbez>Eingangsformel</enbez></metadaten><textdaten>
+          <p>
+            Auf Grund des
+            § 9 Absatz 6
+            in Verbindung mit
+            § 66 des Schulgesetzes
+            vom 26. Januar 2004 (GVBl. S. 26), das zuletzt durch Artikel I des Gesetzes vom 13. Juli 2011 (GVBl. S. 344) und durch Artikel II des Gesetzes vom 13. Juli 2011 (GVBl. S. 347) geändert worden ist, wird verordnet:
+          </p>
+        </textdaten></norm>
+
+<norm builddate="20190222075217" doknr="jlr-EvalVBEV1P1"><metadaten><jurabk>EvalV BE</jurabk><ausfertigung-datum>22.07.2013</ausfertigung-datum><gueltigab>01.04.2013</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-47</gliederungsnr><zitiervorschlag>§ 1 EvalV BE in der Fassung vom 22.07.2013</zitiervorschlag><enbez>§ 1</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 1
+            <br/>
+            Regelungsgegenstand
+          </h3>
+          <p>
+            <a name="P1-A1"/>
+            Diese Verordnung regelt das Nähere zur Qualitätssicherung und Evaluation schulischer Arbeit, insbesondere das Verfahren der schulinternen und schulübergreifenden Auswertung von Vergleichsarbeiten, vergleichenden Arbeiten, Prüfungsarbeiten und der Feststellung der Lernausgangslagen sowie die Weitergabe und Veröffentlichung ihrer Ergebnisse einschließlich der Verarbeitung von personenbezogenen Daten. Dem Anwendungsbereich unterfällt weiterhin die Erstellung und Veröffentlichung von Schulinspektionsberichten.
+          </p>
+        </textdaten></norm>
+
+<norm builddate="20190222075217" doknr="jlr-EvalVBEV1P2"><metadaten><jurabk>EvalV BE</jurabk><ausfertigung-datum>22.07.2013</ausfertigung-datum><gueltigab>01.04.2013</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-47</gliederungsnr><zitiervorschlag>§ 2 EvalV BE in der Fassung vom 22.07.2013</zitiervorschlag><enbez>§ 2</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 2
+            <br/>
+            Verfahren bei Vergleichsarbeiten, vergleichenden Arbeiten, zentralen Prüfungsarbeiten
+            <br/>
+            und Feststellung der Lernausgangslagen
+          </h3>
+          <p>
+            <a name="P2-A1"/>
+            (1) Vergleichsarbeiten, vergleichende Arbeiten und zentrale Prüfungsarbeiten werden nach einem für alle Schulen gleichen Verfahren geschrieben. Die Schulaufsichtsbehörde legt die Fächer und Lernbereiche der Vergleichsarbeiten und vergleichenden Arbeiten sowie die Termine aller Vergleichsarbeiten, vergleichenden Arbeiten und zentralen Prüfungsarbeiten fest. Sie gibt den Schulen die Aufgaben und die Auswertungsvorgaben zentral vor und stellt diese als Kopiervorlage in Papierform, als zentral gedrucktes Material oder zum Herunterladen auf elektronischem Wege zur Verfügung. Für die Feststellung der Lernausgangslagen kann die Schulaufsichtsbehörde entsprechende Vorgaben zu Inhalt und Verfahren machen.
+          </p>
+          <p>
+            <a name="P2-A2"/>
+            (2) Die Schulleiterinnen und Schulleiter, die Lehrkräfte sowie die anderen schulischen Mitarbeiterinnen und Mitarbeiter, die Kenntnis von den Aufgaben und Auswertungsvorgaben erlangen, sind bis zur Durchführung der Vergleichsarbeiten, vergleichenden Arbeiten und zentralen Prüfungsarbeiten zur Geheimhaltung verpflichtet. Diese Pflicht gilt auch für alle anderen mit der Vorbereitung und Durchführung befassten und beauftragten Personen.
+          </p>
+        </textdaten></norm>
+
+<norm builddate="20190222075217" doknr="jlr-EvalVBEV1P3"><metadaten><jurabk>EvalV BE</jurabk><ausfertigung-datum>22.07.2013</ausfertigung-datum><gueltigab>01.04.2013</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-47</gliederungsnr><zitiervorschlag>§ 3 EvalV BE in der Fassung vom 22.07.2013</zitiervorschlag><enbez>§ 3</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 3
+            <br/>
+            Auswertung und Datenverarbeitung bei Vergleichsarbeiten, vergleichenden Arbeiten,
+            <br/>
+            Prüfungsarbeiten und Feststellung der Lernausgangslagen
+          </h3>
+          <p>
+            <a name="P3-A1"/>
+            (1) Die Korrektur, Bewertung und schulinterne Auswertung der Vergleichsarbeiten, vergleichenden Arbeiten und Prüfungsarbeiten sowie die Feststellung der Lernausgangslagen erfolgt an der jeweiligen Schule. Hierbei kann die Schulaufsichtsbehörde Vorgaben machen und festlegen, dass die Korrektur und Bewertung auch durch geeignete Lehrkräfte einer anderen Schule erfolgt.
+          </p>
+          <p>
+            <a name="P3-A2"/>
+            (2) Zum Zwecke der externen Auswertung kann zu einzelnen Schülerinnen und Schülern ein pseudonymisierter Schülerdatensatz erstellt und an einen von der Schulaufsichtsbehörde benannten wissenschaftlichen Projektträger übermittelt werden. Neben den Ergebnissen aus den Vergleichsarbeiten, vergleichenden Arbeiten und den Prüfungsarbeiten sowie der Feststellung der Lernausgangslagen mitsamt den zu berücksichtigenden Vorergebnissen kann der Schülerdatensatz weitere Stammdaten zur Person der Schülerin oder des Schülers enthalten. Es dürfen nur die folgenden Stammdaten verarbeitet werden:
+          </p>
+          <dl>
+            <dt style="float: left; min-width: 1em;">1.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>Identifikationscode,</p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">2.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>Geschlecht,</p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">3.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>Geburtsmonat und Geburtsjahr,</p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">4.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>Herkunftssprache,</p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">5.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>Kommunikationssprache in der Familie,</p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">6.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>Jahr der Einschulung,</p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">7.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>Angaben über Vornoten und Wiederholungen von Jahrgangsstufen,</p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">8.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>festgestellte Teilleistungsschwächen,</p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">9.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>Förderprognose der Grundschule sowie</p>
+            </dd>
+            <dt style="float: left; min-width: 1em;">10.</dt>
+            <dd style="margin-left: 2.5em; margin-bottom: 3ex;">
+              <p>Befreiung von der Zahlung eines Eigenanteils für Lernmittel.</p>
+            </dd>
+          </dl>
+          <p>Bei Vergleichsarbeiten in der Primarstufe kann zusätzlich das Merkmal „Besuch einer vorschulischen Einrichtung“ verarbeitet werden. Die Verarbeitung des in Satz 3 Nummer 10 genannten Datums hat für alle Schülerinnen und Schüler durch die Schulleiterin oder den Schulleiter oder durch eine von ihr oder ihm beauftragte Person zu erfolgen. Zur Zuordnung der Stammdaten dürfen die Schulnummer und die Lerngruppenbezeichnung übermittelt werden.</p>
+          <p>
+            <a name="P3-A3"/>
+            (3) Die bei der externen Auswertung vor der Übermittlung an den wissenschaftlichen Projektträger stattfindende Pseudonymisierung des Schülerdatensatzes mittels des Identifikationscodes nach Absatz 2 Satz 3 Nummer 1 nimmt die für das Fach oder den Lernbereich zuständige Lehrkraft oder die Klassenlehrerin oder der Klassenlehrer vor. Die Pseudonymisierung darf von der Schulaufsichtsbehörde nicht aufgehoben werden.
+          </p>
+          <p>
+            <a name="P3-A4"/>
+            (4) Die Übermittlung erfolgt in der Regel auf elektronischem Wege durch die für das Fach oder den Lernbereich zuständige Lehrkraft, durch die Klassenlehrerin oder den Klassenlehrer oder durch eine andere schulische Mitarbeiterin oder einen anderen schulischen Mitarbeiter, die oder der dazu von der Schulleiterin oder dem Schulleiter beauftragt wurde.
+          </p>
+          <p>
+            <a name="P3-A5"/>
+            (5) Die Übermittlung der Ergebnisse der Abiturprüfung mitsamt den zu berücksichtigenden Vorergebnissen darf, sofern und solange die Übermittlung in dem Verfahren nach Absatz 2 bis 4 technisch nicht möglich ist, durch Übermittlung der in der Schulaufsichtsbehörde aufbewahrten Berechnungsbögen über die zur allgemeinen Hochschulreife berechtigende Gesamtqualifikation mitsamt der darin enthaltenen personenbezogenen Daten an den wissenschaftlichen Projektträger erfolgen. Dieser wertet die Inhalte der Berechnungsbögen in entsprechender Anwendung von Absatz 6 aus. Dabei erfolgt die Auswertung in elektronischer Form unter Pseudonymisierung der Berechnungsbögen. Die dem wissenschaftlichen Projektträger vorliegenden Berechnungsbögen sind nach der Auswertung unverzüglich an die Schulaufsichtsbehörde zurückzugeben.
+          </p>
+          <p>
+            <a name="P3-A6"/>
+            (6) Der wissenschaftliche Projektträger wertet die Ergebnisse aus den Vergleichsarbeiten, den vergleichenden Arbeiten, den Prüfungsarbeiten und die Feststellung der Lernausgangslagen mitsamt den zu berücksichtigenden Vorergebnissen aus, um entsprechend den Zielen des
+            § 9 Absatz 3 des Schulgesetzes
+            Vergleichs- und Referenzwerte der Klasse oder Lerngruppe, der Schule, des Bezirks, des Landes Berlin und bei länderübergreifenden Arbeiten im Ländervergleich zu bestimmen. Bei der Auswertung ist sicherzustellen, dass die Pseudonymisierung der Daten gewahrt bleibt. Hierzu soll nach Vorgaben der Schulaufsichtsbehörde auf die Auswertung gewisser Stammdaten verzichtet oder die Ergebnisse mehrerer Klassen oder Lerngruppen zusammengefasst werden, wenn anderenfalls auf Grund der geringen Anzahl von Schülerdatensätzen Rückschlüsse auf einzelne Schülerinnen oder Schüler möglich wären. Der wissenschaftliche Projektträger stellt die Vergleichs- und Referenzwerte den Schulen und der Schulaufsichtsbehörde zur Verfügung. Die Schulaufsichtsbehörde darf die Vergleichs- und Referenzwerte nur zu Zwecken der Qualitätssicherung und Evaluation nach
+            § 9 des Schulgesetzes
+            , nicht jedoch für operative Aufgaben der Schulaufsicht verwenden. Die Schulaufsichtsbehörde veröffentlicht die Vergleichs- und Referenzwerte für die Bezirke, das Land Berlin und im Ländervergleich in geeigneter Weise.
+          </p>
+          <p>
+            <a name="P3-A7"/>
+            (7) Die Verarbeitung der Schülerdaten ist so vorzunehmen, dass Unbefugte keinen Zugriff erlangen können. Zugang zu den Daten und deren Verarbeitung sind durch Identifikationsverfahren zu sichern.
+          </p>
+          <p>
+            <a name="P3-A8"/>
+            (8) Bei Vergleichsarbeiten, vergleichenden Arbeiten und bei der Feststellung der Lernausgangslagen werden die Ergebnisse der einzelnen Schülerinnen und Schüler diesen und den jeweiligen Erziehungsberechtigten durch die Lehrkräfte bekannt gegeben. Den Erziehungsberechtigten wird Gelegenheit gegeben, die Vergleichsarbeit und die vergleichenden Arbeiten ihres Kindes einzusehen. Das Recht auf Bekanntgabe und Einsichtnahme bei Prüfungsarbeiten richtet sich nach den Ausbildungs- und Prüfungsbestimmungen für den jeweiligen Bildungsgang.
+          </p>
+          <p>
+            <a name="P3-A9"/>
+            (9) Die Schule stellt die zusammengefassten Ergebnisse der Lerngruppen und der Schule allen schulischen Gremien zur Verfügung. Die Veröffentlichung der Ergebnisse obliegt der jeweiligen Schule. Voraussetzung hierfür ist, dass die Schulkonferenz mit einer Mehrheit von zwei Dritteln der stimmberechtigten Mitglieder einen entsprechenden Beschluss fasst. Die Schule hat bei der Veröffentlichung sicherzustellen, dass kein Rückschluss auf die Ergebnisse individueller Schülerinnen oder Schüler möglich ist. Die Schulaufsichtsbehörde kann die zusammengefassten Ergebnisse der Schulen in geeigneter Form veröffentlichen.
+          </p>
+        </textdaten></norm>
+
+<norm builddate="20190222075217" doknr="jlr-EvalVBEpP4"><metadaten><jurabk>EvalV BE</jurabk><ausfertigung-datum>29.11.2011</ausfertigung-datum><gueltigab>16.12.2011</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-47</gliederungsnr><zitiervorschlag>§ 4 EvalV BE in der Fassung vom 29.11.2011</zitiervorschlag><enbez>§ 4</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 4
+            <br/>
+            Erstellung von Langzeitstudien
+          </h3>
+          <p>
+            <a name="P4-A1"/>
+            (1) Der Identifikationscode (
+            § 3 Absatz 2 Satz 3 Nummer 1)
+            ist spätestens nach einem Jahr zu löschen.
+          </p>
+          <p>
+            <a name="P4-A2"/>
+            (2) Die dem wissenschaftlichen Projektträger übermittelten Schülerdaten dürfen ohne Personenbezug zum Zwecke der Ermittlung von Langzeittrends oder für wissenschaftliche Re-Analysen zeitlich unbefristet verarbeitet werden. Die Wiederherstellung eines Personenbezugs ist unzulässig und durch technische und organisatorische Vorkehrungen zu verhindern.
+          </p>
+        </textdaten></norm>
+
+<norm builddate="20190222075217" doknr="jlr-EvalVBEpP5"><metadaten><jurabk>EvalV BE</jurabk><ausfertigung-datum>29.11.2011</ausfertigung-datum><gueltigab>16.12.2011</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-47</gliederungsnr><zitiervorschlag>§ 5 EvalV BE in der Fassung vom 29.11.2011</zitiervorschlag><enbez>§ 5</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 5
+            <br/>
+            Schulinspektionsberichte
+          </h3>
+          <p>
+            <a name="P5-A1"/>
+            (1) Zum Zwecke der Qualitätssicherung und externen Evaluation führt die Schulaufsichtsbehörde Schulinspektionen durch. Die Ergebnisse der Schulinspektion werden in einem Schulinspektionsbericht festgehalten. Bei der Erstellung der Schulinspektionsberichte dürfen personenbezogene Daten der Schulleiterin oder des Schulleiters verarbeitet werden, soweit dies nach Sinn und Zweck des Schulinspektionsberichts zwingend erforderlich ist.
+          </p>
+          <p>
+            <a name="P5-A2"/>
+            (2) Die Schulinspektionsberichte werden den jeweiligen Schulleiterinnen und Schulleitern unverzüglich nach ihrer Fertigstellung übermittelt. Anschließend wird der Schulinspektionsbericht in der Schulkonferenz vorgestellt. Den Mitgliedern der Schulkonferenz steht ein Einsichtsrecht in den Schulinspektionsbericht zu. Die Einsichtnahme hat in den Räumen der Schule zu erfolgen, eine Vervielfältigung des Berichts ist nicht zulässig.
+          </p>
+          <p>
+            <a name="P5-A3"/>
+            (3) Die Schule darf ihren jeweiligen Schulinspektionsbericht veröffentlichen. Die Entscheidung darüber trifft die Schulkonferenz mit einer Mehrheit von zwei Dritteln der stimmberechtigten Mitglieder im Einvernehmen mit der Schulleiterin oder dem Schulleiter. Bei der Veröffentlichung dürfen keine inhaltlichen Veränderungen an dem Bericht vorgenommen werden. Kürzungen sind nur zulässig, wenn dadurch die Gesamtaussage des Berichts nicht beeinflusst wird.
+          </p>
+          <p>
+            <a name="P5-A4"/>
+            (4) Die Schulaufsichtsbehörde veröffentlicht eine Zusammenfassung der wesentlichen Ergebnisse der Schulinspektionsberichte. Dabei werden das Qualitäts- und Unterrichtsprofil der jeweiligen Schule dargestellt sowie ihre Stärken und ihr Entwicklungsbedarf erläutert. Die Veröffentlichung erfolgt vier Monate nach der Vorstellung des Inspektionsberichts in der Schulkonferenz.
+          </p>
+        </textdaten></norm>
+
+<norm builddate="20190222075217" doknr="jlr-EvalVBEpP6"><metadaten><jurabk>EvalV BE</jurabk><ausfertigung-datum>29.11.2011</ausfertigung-datum><gueltigab>16.12.2011</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-47</gliederungsnr><zitiervorschlag>§ 6 EvalV BE in der Fassung vom 29.11.2011</zitiervorschlag><enbez>§ 6</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 6
+            <br/>
+            Evaluation von Lehrkräften
+          </h3>
+          <p>
+            <a name="P6-A1"/>
+            (1) Lehrkräfte sind verpflichtet, alle zwei Jahre an einer von Schülerinnen und Schülern durchzuführenden Evaluationsmaßnahme teilzunehmen, welche den von den Lehrkräften angebotenen Unterricht zum Gegenstand hat. Von dieser Verpflichtung ausgenommen sind Lehrkräfte, die nur Schülerinnen und Schüler unterrichten, welche sich in der Schulanfangsphase befinden oder auf Grund mangelnder geistiger Reife nicht in der Lage sind, ein Evaluationsverfahren durchzuführen. Die Entscheidung darüber trifft die Schulleitung nach Vorgaben der Schulaufsichtsbehörde.
+          </p>
+          <p>
+            <a name="P6-A2"/>
+            (2) Die Evaluation erfolgt in anonymisierter Form unter Nutzung eines automatisierten Datenverarbeitungssystems nach Vorgaben der Schulaufsichtsbehörde. Diese kann einen wissenschaftlichen Projektträger mit der Bereitstellung einer technischen Infrastruktur zur Durchführung und automatisierten Auswertung der Ergebnisse der Evaluationsmaßnahmen beauftragen. Dieser ist befugt, die Evaluationsergebnisse in anonymisierter Form für wissenschaftliche Zwecke zu nutzen.
+          </p>
+          <p>
+            <a name="P6-A3"/>
+            (3) Nur die betroffenen Lehrkräfte haben Zugang zu den Evaluationsergebnissen in individualisierter Form. Sie haben die Schulleitung über die Durchführung der Evaluationsmaßnahme zu informieren.
+          </p>
+          <p>
+            <a name="P6-A4"/>
+            (4) Die Ergebnisse der Evaluation dürfen an der Schule nicht dokumentiert oder aufbewahrt werden.
+          </p>
+        </textdaten></norm>
+
+<norm builddate="20190222075217" doknr="jlr-EvalVBEV1P7"><metadaten><jurabk>EvalV BE</jurabk><ausfertigung-datum>22.07.2013</ausfertigung-datum><gueltigab>01.04.2013</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-47</gliederungsnr><zitiervorschlag>§ 7 EvalV BE in der Fassung vom 22.07.2013</zitiervorschlag><enbez>§ 7</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 7
+            <br/>
+            Aufbewahrungsfristen
+          </h3>
+          <p>
+            <a name="P7-A1"/>
+            (1) Für die Aufbewahrung von Vergleichsarbeiten gelten die Regelungen zu Klassenarbeiten in den Ausbildungs- und Prüfungsbestimmungen für den jeweiligen Bildungsgang.
+          </p>
+          <p>
+            <a name="P7-A2"/>
+            (2) Für die Aufbewahrung von schriftlichen Prüfungsarbeiten gilt
+            § 13 der Schuldatenverordnung
+            vom 13. Oktober 1994 (GVBl. S. 435), die zuletzt durch Verordnung vom 15. September 2010 (GVBl. S. 446) geändert worden ist, in der jeweils geltenden Fassung.
+          </p>
+          <p>
+            <a name="P7-A3"/>
+            (3) Für die Aufbewahrung der vergleichenden Arbeiten und der Berechnungsbögen über die zum allgemeinen Hochschulabschluss berechtigende Gesamtqualifikation gilt die Regelung über Prüfungsunterlagen des
+            § 13 der Schuldatenverordnung
+            in der jeweils geltenden Fassung entsprechend.
+          </p>
+          <p>
+            <a name="P7-A4"/>
+            (4) Die Ergebnisse der Feststellung der Lernausgangslagen in der Jahrgangsstufe 1 und der Jahrgangsstufe 7 sind an den Schulen jeweils für drei Jahre aufzubewahren. Bei einem Schulwechsel innerhalb dieses Zeitraums werden sie der aufnehmenden Schule übermittelt.
+          </p>
+          <p>
+            <a name="P7-A5"/>
+            (5) Schulinspektionsberichte sind sowohl an den Schulen als auch in der Schulaufsichtsbehörde für zehn Jahre aufzubewahren.
+          </p>
+        </textdaten></norm>
+
+<norm builddate="20190222075217" doknr="jlr-EvalVBEpP8"><metadaten><jurabk>EvalV BE</jurabk><ausfertigung-datum>29.11.2011</ausfertigung-datum><gueltigab>16.12.2011</gueltigab><gueltigbis/><dokumenttyp>Verordnung</dokumenttyp><gliederungsnr>2230-1-47</gliederungsnr><zitiervorschlag>§ 8 EvalV BE in der Fassung vom 29.11.2011</zitiervorschlag><enbez>§ 8</enbez></metadaten><textdaten>
+          <h3 style="text-align: center; font-weight: bold;font-size: 100%; font-family: Arial, Helvetica, Sans-Serif;">
+            § 8
+            <br/>
+            Inkrafttreten, Außerkrafttreten
+          </h3>
+          <p>
+            <a name="P8-A1"/>
+            Diese Verordnung tritt am Tage nach der Verkündung im Gesetz- und Verordnungsblatt für Berlin in Kraft. Gleichzeitig tritt die Vergleichsauswertungsverordnung vom 25. April 2006 (GVBl. S. 375) außer Kraft.
+          </p>
+          <p>Berlin, den 29. November 2011</p>
+          <p align="center" style="text-align:center">
+            Senatsverwaltung für Bildung, Wissenschaft und Forschung
+            <br/>
+            Prof. Dr. E. Jürgen Zöllner
+          </p>
+        </textdaten></norm></dokumente>

@@ -1,0 +1,54 @@
+.progressive-blur-top {
+    --blur-strength: 24px; /* Blur-Stärke */
+    height: 120px; /* Blur-Distanz oben */
+    z-index: 1;
+
+    position: sticky;
+    pointer-events: none;
+
+    top: 0;
+    left: 0;
+    right: 0;
+}
+.progressive-blur-top > div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+.progressive-blur-top > div:nth-child(1) {
+    z-index: 7;
+    backdrop-filter: blur(calc(var(--blur-strength) / 64));
+    mask: linear-gradient(to bottom, rgba(0,0,0,1) 95%, rgba(0,0,0,0) 100%);
+}
+.progressive-blur-top > div:nth-child(2) {
+    z-index: 6;
+    backdrop-filter: blur(calc(var(--blur-strength) / 32));
+    mask: linear-gradient(to bottom, rgba(0,0,0,1) 90%, rgba(0,0,0,0) 95%);
+}
+.progressive-blur-top > div:nth-child(3) {
+    z-index: 5;
+    backdrop-filter: blur(calc(var(--blur-strength) / 16));
+    mask: linear-gradient(to bottom, rgba(0,0,0,1) 80%, rgba(0,0,0,0) 100%);
+}
+.progressive-blur-top > div:nth-child(4) {
+    z-index: 4;
+    backdrop-filter: blur(calc(var(--blur-strength) / 8));
+    mask: linear-gradient(to bottom, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 80%);
+}
+.progressive-blur-top > div:nth-child(5) {
+    z-index: 3;
+    backdrop-filter: blur(calc(var(--blur-strength) / 4));
+    mask: linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 60%);
+}
+.progressive-blur-top > div:nth-child(6) {
+    z-index: 2;
+    backdrop-filter: blur(calc(var(--blur-strength) / 2));
+    mask: linear-gradient(to bottom, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 40%);
+}
+.progressive-blur-top > div:nth-child(7) {
+    z-index: 1;
+    backdrop-filter: blur(calc(var(--blur-strength)));
+    mask: linear-gradient(to bottom, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 20%);
+}

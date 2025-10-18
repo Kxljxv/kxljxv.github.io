@@ -1,0 +1,9 @@
+# Jede Zeile: <Dateiname>.xml|<Anzeigename>
+# Beispiel: SchulG_BE.xml|Schulgesetz
+SchulG_BE.xml|Schulgesetz
+SchulGWahlO_BE.xml|Schulwahlordnung
+LernMV_BE_2010.xml|LernmittelVO
+EvalV_BE.xml|EvalV_BE.xml
+GymOstV_BE_2007.xml|GymOstV_BE_2007.xml
+LehrFV_BE.xml|LehrFV_BE.xml
+SchuldatenV.xml|SchuldatenV.xml

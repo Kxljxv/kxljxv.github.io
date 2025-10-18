@@ -1,0 +1,63 @@
+/* Theme variables for easy customization */
+:root {
+  --bg-color: #1e1f22;
+  --text-color: #e6e6e6;
+  --accent-color: #80bfff;
+  --accent-hover: #a6d1ff;
+  --border-color: rgba(255, 255, 255, 0.25);
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --popover-bg: rgba(255,255,255,0.10);
+  --popover-border: rgba(255,255,255,0.30);
+  --heading-color: #cfe2ff;
+  --subheading-color: #a0c4ff;
+  --highlight-bg: rgba(231, 76, 60, 0.12);
+  --highlight-border: #e74c3c;
+
+  --font-family-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --base-font-size: 16px;
+  --heading-font-weight: 700;
+}
+
+html, body {
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font-family-sans);
+  font-size: var(--base-font-size);
+}
+
+.section-title {
+  color: var(--heading-color);
+  font-weight: var(--heading-font-weight);
+}
+
+.paragraph-content h3,
+.paragraph-content h4,
+.paragraph-content h5,
+.paragraph-content h6 {
+  color: var(--subheading-color);
+}
+
+.law-link {
+  color: var(--accent-color);
+  border-bottom-color: color-mix(in oklab, var(--accent-color) 50%, transparent);
+}
+.law-link:hover {
+  color: var(--accent-hover);
+  border-bottom-color: color-mix(in oklab, var(--accent-hover) 80%, transparent);
+}
+
+.liquid-glass {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+
+.law-popover {
+  background: var(--popover-bg);
+  border-color: var(--popover-border);
+}
+
+.paragraph-content p.highlighted {
+  background: var(--highlight-bg);
+  border-left-color: var(--highlight-border);
+}
