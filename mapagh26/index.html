@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wahlkreise Berlin AGH 2026</title>
+  <title>AGH Wahlkreise Berlin 2026</title>
   <!-- Maplibre CSS -->
   <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
   <!-- Tailwind CSS -->
@@ -12,185 +12,116 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background-color: #2d2d2d;
+      margin: 0; padding: 0; height: 100%;
+      background: #2d2d2d;
       font-family: 'Poppins', sans-serif;
     }
     html { height: 100%; }
-    
-    #map { 
-      width: 100%; 
-      height: 100%; 
-    }
-
+    #map { width: 100vw; height: 100vh;}
     #info-box {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 300px;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(5px);
+      top: 20px; right: 20px;
+      min-width: 260px;
+      background: rgba(0, 0, 0, 0.56);
+      backdrop-filter: blur(4px);
       border-radius: 10px;
-      padding: 15px;
-      color: white;
+      padding: 16px 14px;
+      color: #fff;
       z-index: 10;
+      font-size: 1rem;
     }
-
-    #info-box h2 { 
-      margin-top: 0; 
-    }
-
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      margin: 5px 0;
-      padding: 5px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .info-label {
-      font-weight: 600;
-    }
-
-    .info-value {
-      text-align: right;
-    }
+    #info-box h2 { margin-top: 0; font-size: 1.15rem; font-weight: 600;}
+    #info-box .feld { font-size: 1.02rem; padding-bottom: 4px;}
   </style>
 </head>
 <body>
   <div id="map"></div>
-  <!-- Infobox-Overlay -->
   <div id="info-box">
     <h2 id="district-title">Wähle einen Wahlkreis</h2>
-    <div id="district-info"></div>
+    <div id="district-info">
+      <span class="feld">Nummer (AWK): –</span><br>
+      <span class="feld">Großregion (AWK2): –</span><br>
+      <span class="feld">Bezirk (BEZ): –</span>
+    </div>
   </div>
 
-  <!-- Bibliotheken -->
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
-  
   <script>
-    // Maplibre-Karte initialisieren
-    var map = new maplibregl.Map({
+    // Karte mit BasemapDE - bright style
+    const map = new maplibregl.Map({
       container: 'map',
-      style: 'https://sgx.geodatenzentrum.de/wmts_basemapde/1.0.0/WMTSCapabilities.xml',  // Basemapde
-      center: [13.40, 52.52], // Berlin Zentrum
-      zoom: 10,
-      pitch: 0,
-      bearing: 0
+      style: 'https://basemap.de/tiles/bright.json', // BasemapDE bright
+      center: [13.4050, 52.52], // Grob Berlin
+      zoom: 10
     });
-    
-    // Kartensteuerung einschränken
     map.dragRotate.disable();
     map.touchZoomRotate.disableRotation();
     map.keyboard.disable();
-    
-    // Bezirksnamen-Mapping
-    const bezirkMapping = {
-      '01': 'Mitte',
-      '02': 'Friedrichshain-Kreuzberg',
-      '03': 'Pankow',
-      '04': 'Charlottenburg-Wilmersdorf',
-      '05': 'Spandau',
-      '06': 'Steglitz-Zehlendorf',
-      '07': 'Tempelhof-Schöneberg',
-      '08': 'Neukölln',
-      '09': 'Treptow-Köpenick',
-      '10': 'Marzahn-Hellersdorf',
-      '11': 'Lichtenberg',
-      '12': 'Reinickendorf'
-    };
 
-    // GeoJSON laden und darstellen
     map.on('load', function() {
       fetch('./AWK_AH2026.json')
         .then(response => response.json())
         .then(function(geojson) {
-          // GeoJSON-Layer hinzufügen
+          // GeoJSON-Layer für Wahlkreise
           map.addSource('wahlkreise', {
             type: 'geojson',
             data: geojson
           });
 
-          // Füllungs-Layer für Wahlkreise
+          // Füllfarb-Layer (fixes blau)
           map.addLayer({
-            'id': 'wahlkreise-fill',
-            'type': 'fill',
-            'source': 'wahlkreise',
-            'paint': {
-              'fill-color': '#627BC1',
-              'fill-opacity': 0.5
+            id: 'wahlkreise-fill',
+            type: 'fill',
+            source: 'wahlkreise',
+            paint: {
+              'fill-color': '#0c87e7',
+              'fill-opacity': 0.32
             }
           });
 
-          // Umriss-Layer für Wahlkreise
+          // Umriss/Border-Layer
           map.addLayer({
-            'id': 'wahlkreise-line',
-            'type': 'line',
-            'source': 'wahlkreise',
-            'paint': {
-              'line-color': '#627BC1',
-              'line-width': 1
+            id: 'wahlkreise-line',
+            type: 'line',
+            source: 'wahlkreise',
+            paint: {
+              'line-color': '#175ae0',
+              'line-width': 2
             }
           });
         })
-        .catch(error => console.error('Fehler beim Laden der GeoJSON-Daten:', error));
+        .catch(error => console.error('Fehler beim Laden der GeoJSON:', error));
     });
-    
-    // Click-Event für Wahlkreise
+
     map.on('click', 'wahlkreise-fill', function(e) {
       if (!e.features.length) return;
-      var feature = e.features[0];
-      
-      // Highlight des ausgewählten Wahlkreises
+      const feature = e.features[0];
+      // Highlight zeichnen
       if (map.getLayer('highlight-layer')) {
         map.removeLayer('highlight-layer');
         map.removeSource('highlight-layer');
       }
-      
-      map.addSource('highlight-layer', {
-        type: 'geojson',
-        data: feature
-      });
-      
+      map.addSource('highlight-layer', { type: 'geojson', data: feature });
       map.addLayer({
         id: 'highlight-layer',
         type: 'line',
         source: 'highlight-layer',
-        paint: {
-          'line-color': '#ffffff',
-          'line-width': 3
-        }
+        paint: { 'line-color': '#fff', 'line-width': 4 }
       });
-      
+
       // Infobox aktualisieren
-      document.getElementById('district-title').textContent = 'Wahlkreis ' + feature.properties.AWK;
-      
-      // Bezirksnamen aus dem Mapping holen
-      const bezirksname = bezirkMapping[feature.properties.BEZ] || feature.properties.BEZ;
-      
+      document.getElementById('district-title').textContent =
+        'Wahlkreis ' + (feature.properties.AWK || "–");
       document.getElementById('district-info').innerHTML = `
-        <div class="info-row">
-          <span class="info-label">Wahlkreis:</span>
-          <span class="info-value">${feature.properties.AWK}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Wahlkreis (kurz):</span>
-          <span class="info-value">${feature.properties.AWK2}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Bezirk:</span>
-          <span class="info-value">${bezirksname}</span>
-        </div>
+        <span class="feld">Nummer (AWK): ${feature.properties.AWK || "–"}</span><br>
+        <span class="feld">Großregion (AWK2): ${feature.properties.AWK2 || "–"}</span><br>
+        <span class="feld">Bezirk (BEZ): ${feature.properties.BEZ || "–"}</span>
       `;
     });
-    
-    // Hover-Effekte
+
     map.on('mouseenter', 'wahlkreise-fill', function() {
       map.getCanvas().style.cursor = 'pointer';
     });
-    
     map.on('mouseleave', 'wahlkreise-fill', function() {
       map.getCanvas().style.cursor = '';
     });
