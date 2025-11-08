@@ -41,6 +41,22 @@
     #info-box h2 { 
       margin-top: 0; 
     }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 5px 0;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .info-label {
+      font-weight: 600;
+    }
+
+    .info-value {
+      text-align: right;
+    }
   </style>
 </head>
 <body>
@@ -58,7 +74,7 @@
     // Maplibre-Karte initialisieren
     var map = new maplibregl.Map({
       container: 'map',
-      style: 'https://sgx.geodatenzentrum.de/wmts_basemapde/1.0.0/WMTSCapabilities.xml', // Basemapde als Hintergrundkarte
+      style: 'https://sgx.geodatenzentrum.de/wmts_basemapde/1.0.0/WMTSCapabilities.xml',  // Basemapde
       center: [13.40, 52.52], // Berlin Zentrum
       zoom: 10,
       pitch: 0,
@@ -70,6 +86,22 @@
     map.touchZoomRotate.disableRotation();
     map.keyboard.disable();
     
+    // Bezirksnamen-Mapping
+    const bezirkMapping = {
+      '01': 'Mitte',
+      '02': 'Friedrichshain-Kreuzberg',
+      '03': 'Pankow',
+      '04': 'Charlottenburg-Wilmersdorf',
+      '05': 'Spandau',
+      '06': 'Steglitz-Zehlendorf',
+      '07': 'Tempelhof-Schöneberg',
+      '08': 'Neukölln',
+      '09': 'Treptow-Köpenick',
+      '10': 'Marzahn-Hellersdorf',
+      '11': 'Lichtenberg',
+      '12': 'Reinickendorf'
+    };
+
     // GeoJSON laden und darstellen
     map.on('load', function() {
       fetch('./AWK_AH2026.json')
@@ -132,28 +164,25 @@
         }
       });
       
-      // Bezirksnamen basierend auf BEZ-Code
-      const bezirkNamen = {
-        '01': 'Mitte',
-        '02': 'Friedrichshain-Kreuzberg',
-        '03': 'Pankow',
-        '04': 'Charlottenburg-Wilmersdorf',
-        '05': 'Spandau',
-        '06': 'Steglitz-Zehlendorf',
-        '07': 'Tempelhof-Schöneberg',
-        '08': 'Neukölln',
-        '09': 'Treptow-Köpenick',
-        '10': 'Marzahn-Hellersdorf',
-        '11': 'Lichtenberg',
-        '12': 'Reinickendorf'
-      };
-
       // Infobox aktualisieren
       document.getElementById('district-title').textContent = 'Wahlkreis ' + feature.properties.AWK;
+      
+      // Bezirksnamen aus dem Mapping holen
+      const bezirksname = bezirkMapping[feature.properties.BEZ] || feature.properties.BEZ;
+      
       document.getElementById('district-info').innerHTML = `
-        <p>Bezirk: ${bezirkNamen[feature.properties.BEZ] || feature.properties.BEZ}</p>
-        <p>Wahlkreis-ID: ${feature.properties.AWK}</p>
-        <p>Wahlkreis im Bezirk: ${feature.properties.AWK2}</p>
+        <div class="info-row">
+          <span class="info-label">Wahlkreis:</span>
+          <span class="info-value">${feature.properties.AWK}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Wahlkreis (kurz):</span>
+          <span class="info-value">${feature.properties.AWK2}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Bezirk:</span>
+          <span class="info-value">${bezirksname}</span>
+        </div>
       `;
     });
     
