@@ -47,71 +47,99 @@
 
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
   <script>
-    // Karte mit BasemapDE - bright style
+    // OSM-basierte Karte
     const map = new maplibregl.Map({
       container: 'map',
-      style: 'https://basemap.de/tiles/bright.json', // BasemapDE bright
-      center: [13.4050, 52.52], // Grob Berlin
+      style: {
+        version: 8,
+        sources: {
+          'osm': {
+            type: 'raster',
+            tiles: [
+              'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+            ],
+            tileSize: 256,
+            attribution: '© OpenStreetMap contributors'
+          }
+        },
+        layers: [{
+          id: 'osm',
+          type: 'raster',
+          source: 'osm',
+          minzoom: 0,
+          maxzoom: 19
+        }]
+      },
+      center: [13.4050, 52.52],
       zoom: 10
     });
+
     map.dragRotate.disable();
     map.touchZoomRotate.disableRotation();
     map.keyboard.disable();
 
     map.on('load', function() {
-      fetch('./AWK_AH2026.json')
-        .then(response => response.json())
-        .then(function(geojson) {
-          // GeoJSON-Layer für Wahlkreise
-          map.addSource('wahlkreise', {
-            type: 'geojson',
-            data: geojson
-          });
+      // Warte bis die Karte geladen ist
+      map.addSource('wahlkreise', {
+        type: 'geojson',
+        data: 'AWK_AH2026.json'  // Relative URL zur GeoJSON
+      });
 
-          // Füllfarb-Layer (fixes blau)
-          map.addLayer({
-            id: 'wahlkreise-fill',
-            type: 'fill',
-            source: 'wahlkreise',
-            paint: {
-              'fill-color': '#0c87e7',
-              'fill-opacity': 0.32
-            }
-          });
+      // Füllfarb-Layer
+      map.addLayer({
+        'id': 'wahlkreise-fill',
+        'type': 'fill',
+        'source': 'wahlkreise',
+        'layout': {},
+        'paint': {
+          'fill-color': '#0c87e7',
+          'fill-opacity': 0.32
+        }
+      });
 
-          // Umriss/Border-Layer
-          map.addLayer({
-            id: 'wahlkreise-line',
-            type: 'line',
-            source: 'wahlkreise',
-            paint: {
-              'line-color': '#175ae0',
-              'line-width': 2
-            }
-          });
-        })
-        .catch(error => console.error('Fehler beim Laden der GeoJSON:', error));
+      // Umriss-Layer
+      map.addLayer({
+        'id': 'wahlkreise-line',
+        'type': 'line',
+        'source': 'wahlkreise',
+        'layout': {},
+        'paint': {
+          'line-color': '#175ae0',
+          'line-width': 2
+        }
+      });
     });
 
+    // Click Handler
     map.on('click', 'wahlkreise-fill', function(e) {
       if (!e.features.length) return;
       const feature = e.features[0];
-      // Highlight zeichnen
+      
+      // Highlight-Layer aktualisieren
       if (map.getLayer('highlight-layer')) {
         map.removeLayer('highlight-layer');
         map.removeSource('highlight-layer');
       }
-      map.addSource('highlight-layer', { type: 'geojson', data: feature });
+      
+      map.addSource('highlight-layer', {
+        type: 'geojson',
+        data: feature.geometry
+      });
+
       map.addLayer({
-        id: 'highlight-layer',
-        type: 'line',
-        source: 'highlight-layer',
-        paint: { 'line-color': '#fff', 'line-width': 4 }
+        'id': 'highlight-layer',
+        'type': 'line',
+        'source': 'highlight-layer',
+        'paint': {
+          'line-color': '#ffffff',
+          'line-width': 4
+        }
       });
 
       // Infobox aktualisieren
-      document.getElementById('district-title').textContent =
+      document.getElementById('district-title').textContent = 
         'Wahlkreis ' + (feature.properties.AWK || "–");
+      
       document.getElementById('district-info').innerHTML = `
         <span class="feld">Nummer (AWK): ${feature.properties.AWK || "–"}</span><br>
         <span class="feld">Großregion (AWK2): ${feature.properties.AWK2 || "–"}</span><br>
@@ -119,11 +147,18 @@
       `;
     });
 
+    // Hover-Effekte
     map.on('mouseenter', 'wahlkreise-fill', function() {
       map.getCanvas().style.cursor = 'pointer';
     });
+
     map.on('mouseleave', 'wahlkreise-fill', function() {
       map.getCanvas().style.cursor = '';
+    });
+
+    // Error Handler
+    map.on('error', function(err) {
+      console.error('Maplibre Error:', err);
     });
   </script>
 </body>
