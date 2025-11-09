@@ -24,46 +24,547 @@
             position: relative;
         }
 
-        #graph-svg {
+        #graph-canvas {
             width: 100%;
             height: 100%;
             cursor: grab;
         }
 
-        #graph-svg:active {
+        #graph-canvas:active {
             cursor: grabbing;
         }
 
-        .link {
-            stroke: rgba(153, 153, 153, 0.3);
-            stroke-width: 1;
+        /* Controls Panel */
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(30, 30, 30, 0.95);
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 20px;
+            min-width: 280px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
 
-        .node {
+        #controls h3 {
+            margin-bottom: 15px;
+            color: #7f6df2;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #a0a0a0;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 8px 12px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            color: #dcddde;
+            font-size: 13px;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #7f6df2;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #7f6df2;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 13px;
             cursor: pointer;
-            transition: stroke-width 0.2s;
+            margin-top: 10px;
+            transition: background 0.2s;
         }
 
-        .node:hover {
-            stroke: #ffffff;
-            stroke-width: 2;
+        button:hover {
+            background: #6c5ce7;
         }
 
-        .node.selected {
-            stroke: #ffffff;
-            stroke-width: 2;
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
         }
 
-        .node-label {
-            fill: #ffffff;
-            font-family: Arial, sans-serif;
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        #stats {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(30, 30, 30, 0.95);
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 15px;
             font-size: 12px;
-            pointer-events: none;
-            user-select: none;
+            color: #a0a0a0;
+            z-index: 100;
         }
 
-        .node-sublabel {
-            fill: #a0a0a0;
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 30, 30, 0.98);
+            padding: 40px 60px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #3a3a3a;
+            z-index: 200;
+        }
+
+        #loading h2 {
+            color: #7f6df2;
+            margin-bottom: 15px;
+        }
+
+        .spinner {
+            border: 3px solid #3a3a3a;
+            border-top: 3px solid #7f6df2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+        }
+
+        .search-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #3a3a3a;
+            font-size: 12px;
+        }
+
+        .search-item:hover {
+            background: #3a3a3a;
+        }
+
+        .search-item:last-child {
+            border-bottom: none;
+        }
+
+        .highlight {
+            color: #7f6df2;
+            font-weight: bold;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2a2a2a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3a3a3a;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4a4a4a;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <canvas id="graph-canvas"></canvas>
+        
+        <div id="loading">
+            <h2>Graph wird vorbereitet...</h2>
+            <div class="spinner"></div>
+            <p id="loading-text">Simulation läuft...</p>
+        </div>
+
+        <div id="controls">
+            <h3>Graph Steuerung</h3>
+            
+            <div class="control-group">
+                <label for="search">Suche:</label>
+                <input type="text" id="search" placeholder="Node suchen...">
+                <div id="search-results"></div>
+            </div>
+
+            <div class="control-group">
+                <label for="node-type">Node Typ Filter:</label>
+                <select id="node-type">
+                    <option value="all">Alle anzeigen</option>
+                    <option value="antrag">Nur Anträge</option>
+                    <option value="supporter">Nur Supporter</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Darstellung:</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="show-labels" checked>
+                    <label for="show-labels">Labels anzeigen</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="show-links" checked>
+                    <label for="show-links">Verbindungen anzeigen</label>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="zoom-level">Zoom: <span id="zoom-value">1.0</span>x</label>
+                <input type="range" id="zoom-level" min="0.1" max="3" step="0.1" value="1">
+            </div>
+
+            <div class="control-group">
+                <label for="node-size">Node-Größe:</label>
+                <input type="range" id="node-size" min="0.5" max="2" step="0.1" value="1">
+            </div>
+
+            <button id="reset-view">Ansicht zurücksetzen</button>
+            <button id="center-graph">Graph zentrieren</button>
+        </div>
+
+        <div id="stats">
+            <div><strong>Nodes:</strong> <span id="node-count">0</span></div>
+            <div><strong>Verbindungen:</strong> <span id="link-count">0</span></div>
+            <div><strong>Ausgewählt:</strong> <span id="selected-node">-</span></div>
+        </div>
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        // Sample data - replace with your actual data from antragstellerinnen.txt
+        const sampleData = {
+            'VR-01-025': [['Anna Schmidt', 'KV Pankow'], ['Max Müller', 'KV Mitte']],
+            'E-05-032': [['Anna Schmidt', 'KV Pankow'], ['Lisa Weber', 'KV Friedrichshain']],
+            'T-12-045': [['Max Müller', 'KV Mitte'], ['Tom Fischer', 'KV Kreuzberg']],
+            'A-08-019': [['Lisa Weber', 'KV Friedrichshain'], ['Sarah Klein', 'KV Neukölln']],
+            'D-03-067': [['Tom Fischer', 'KV Kreuzberg'], ['Anna Schmidt', 'KV Pankow']],
+        };
+
+        class GraphVisualization {
+            constructor(data) {
+                this.data = data;
+                this.canvas = document.getElementById('graph-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.width = window.innerWidth;
+                this.height = window.innerHeight;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+
+                this.transform = { x: 0, y: 0, k: 1 };
+                this.isDragging = false;
+                this.lastMouse = { x: 0, y: 0 };
+                this.selectedNode = null;
+                this.hoveredNode = null;
+
+                this.settings = {
+                    showLabels: true,
+                    showLinks: true,
+                    nodeType: 'all',
+                    nodeSize: 1
+                };
+
+                this.processData();
+                this.setupEventListeners();
+                this.simulatePhysics();
+            }
+
+            processData() {
+                const nodeMap = new Map();
+                const links = [];
+
+                // Create nodes and links
+                Object.entries(this.data).forEach(([aea, supporters]) => {
+                    // Add AEA node
+                    if (!nodeMap.has(aea)) {
+                        nodeMap.set(aea, {
+                            id: aea,
+                            label: aea,
+                            type: 'antrag',
+                            color: '#e05252',
+                            linkCount: 0,
+                            x: Math.random() * this.width,
+                            y: Math.random() * this.height,
+                            vx: 0,
+                            vy: 0
+                        });
+                    }
+
+                    supporters.forEach(supporter => {
+                        const supporterId = `${supporter[0]} | ${supporter[1]}`;
+                        
+                        // Add supporter node
+                        if (!nodeMap.has(supporterId)) {
+                            nodeMap.set(supporterId, {
+                                id: supporterId,
+                                label: supporter[0],
+                                sublabel: supporter[1],
+                                type: 'supporter',
+                                color: '#52e069',
+                                linkCount: 0,
+                                x: Math.random() * this.width,
+                                y: Math.random() * this.height,
+                                vx: 0,
+                                vy: 0
+                            });
+                        }
+
+                        // Add link
+                        links.push({
+                            source: aea,
+                            target: supporterId
+                        });
+
+                        nodeMap.get(aea).linkCount++;
+                        nodeMap.get(supporterId).linkCount++;
+                    });
+                });
+
+                this.nodes = Array.from(nodeMap.values());
+                this.links = links.map(link => ({
+                    source: nodeMap.get(link.source),
+                    target: nodeMap.get(link.target)
+                }));
+
+                this.allNodes = [...this.nodes];
+                this.allLinks = [...this.links];
+
+                // Update stats
+                document.getElementById('node-count').textContent = this.nodes.length;
+                document.getElementById('link-count').textContent = this.links.length;
+            }
+
+            simulatePhysics() {
+                const simulation = d3.forceSimulation(this.nodes)
+                    .force("link", d3.forceLink(this.links).id(d => d.id).distance(100))
+                    .force("charge", d3.forceManyBody().strength(-300))
+                    .force("center", d3.forceCenter(this.width / 2, this.height / 2))
+                    .force("collision", d3.forceCollide().radius(30))
+                    .alphaDecay(0.02)
+                    .alphaMin(0.001);
+
+                let iterations = 0;
+                const maxIterations = 300;
+
+                simulation.on("tick", () => {
+                    iterations++;
+                    const progress = Math.min(100, (iterations / maxIterations) * 100);
+                    document.getElementById('loading-text').textContent = 
+                        `Simulation läuft... ${Math.round(progress)}%`;
+                });
+
+                simulation.on("end", () => {
+                    document.getElementById('loading').style.display = 'none';
+                    this.centerGraph();
+                    this.render();
+                });
+            }
+
+            setupEventListeners() {
+                // Mouse events
+                this.canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
+                this.canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
+                this.canvas.addEventListener('mouseup', () => this.onMouseUp());
+                this.canvas.addEventListener('wheel', (e) => this.onWheel(e));
+
+                // Window resize
+                window.addEventListener('resize', () => this.onResize());
+
+                // Controls
+                document.getElementById('search').addEventListener('input', (e) => this.onSearch(e));
+                document.getElementById('node-type').addEventListener('change', (e) => this.onFilterChange(e));
+                document.getElementById('show-labels').addEventListener('change', (e) => {
+                    this.settings.showLabels = e.target.checked;
+                    this.render();
+                });
+                document.getElementById('show-links').addEventListener('change', (e) => {
+                    this.settings.showLinks = e.target.checked;
+                    this.render();
+                });
+                document.getElementById('zoom-level').addEventListener('input', (e) => {
+                    this.transform.k = parseFloat(e.target.value);
+                    document.getElementById('zoom-value').textContent = this.transform.k.toFixed(1);
+                    this.render();
+                });
+                document.getElementById('node-size').addEventListener('input', (e) => {
+                    this.settings.nodeSize = parseFloat(e.target.value);
+                    this.render();
+                });
+                document.getElementById('reset-view').addEventListener('click', () => this.resetView());
+                document.getElementById('center-graph').addEventListener('click', () => this.centerGraph());
+            }
+
+            onMouseDown(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const clicked = this.getNodeAt(x, y);
+                if (clicked) {
+                    this.selectedNode = clicked;
+                    document.getElementById('selected-node').textContent = clicked.label;
+                } else {
+                    this.isDragging = true;
+                    this.lastMouse = { x: e.clientX, y: e.clientY };
+                }
+            }
+
+            onMouseMove(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                this.hoveredNode = this.getNodeAt(x, y);
+
+                if (this.isDragging) {
+                    const dx = e.clientX - this.lastMouse.x;
+                    const dy = e.clientY - this.lastMouse.y;
+                    this.transform.x += dx;
+                    this.transform.y += dy;
+                    this.lastMouse = { x: e.clientX, y: e.clientY };
+                    this.render();
+                }
+
+                this.canvas.style.cursor = this.hoveredNode ? 'pointer' : 'grab';
+            }
+
+            onMouseUp() {
+                this.isDragging = false;
+            }
+
+            onWheel(e) {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                this.transform.k = Math.max(0.1, Math.min(3, this.transform.k * delta));
+                document.getElementById('zoom-level').value = this.transform.k;
+                document.getElementById('zoom-value').textContent = this.transform.k.toFixed(1);
+                this.render();
+            }
+
+            onResize() {
+                this.width = window.innerWidth;
+                this.height = window.innerHeight;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+                this.render();
+            }
+
+            onSearch(e) {
+                const query = e.target.value.toLowerCase();
+                const resultsDiv = document.getElementById('search-results');
+                
+                if (!query) {
+                    resultsDiv.innerHTML = '';
+                    return;
+                }
+
+                const matches = this.allNodes.filter(node => 
+                    node.label.toLowerCase().includes(query) ||
+                    (node.sublabel && node.sublabel.toLowerCase().includes(query))
+                ).slice(0, 10);
+
+                resultsDiv.innerHTML = matches.map(node => 
+                    `<div class="search-item" data-id="${node.id}">
+                        ${node.label}${node.sublabel ? ` <span style="color: #a0a0a0">(${node.sublabel})</span>` : ''}
+                    </div>`
+                ).join('');
+
+                resultsDiv.querySelectorAll('.search-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const node = this.allNodes.find(n => n.id === item.dataset.id);
+                        this.focusOnNode(node);
+                        resultsDiv.innerHTML = '';
+                        document.getElementById('search').value = '';
+                    });
+                });
+            }
+
+            onFilterChange(e) {
+                this.settings.nodeType = e.target.value;
+                
+                if (this.settings.nodeType === 'all') {
+                    this.nodes = [...this.allNodes];
+                    this.links = [...this.allLinks];
+                } else {
+                    this.nodes = this.allNodes.filter(n => n.type === this.settings.nodeType);
+                    const nodeIds = new Set(this.nodes.map(n => n.id));
+                    this.links = this.allLinks.filter(l => 
+                        nodeIds.has(l.source.id) && nodeIds.has(l.target.id)
+                    );
+                }
+
+                document.getElementById('node-count').textContent = this.nodes.length;
+                document.getElementById('link-count').textContent = this.links.length;
+                this.render();
+            }
+
+            getNodeAt(x, y) {
+                const worldX = (x - this.transform.x) / this.transform.k;
+                const worldY = (y - this.transform.y) / this.transform.k;
+
+                for (let i = this.nodes.length - 1; i >= 0; i--) {
+                    const node = this.nodes[i];
+                    const radius = (5 + Math.sqrt(node.linkCount) * 2) * this.settings.nodeSize;
+                    const dx = node.x - worldX;
+                    const dy = node.y - worldY;
+                    if (dx * dx + dy * dy <= radius * radius) {
+                        return node;
+                    }
+                }
+                return null;
+            }
+
+            focusOnNode(node) {
+                this.selectedNode = node;
+                document.getElementById('selected-node').textContent = node.label;
+                
+                // Center on node
+                this.transform.x = this.width / 2 - node.x * this.transform.            fill: #a0a0a0;
             font-family: Arial, sans-serif;
             font-size: 10px;
             pointer-events: none;
