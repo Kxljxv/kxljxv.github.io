@@ -41,11 +41,12 @@
         .link {
             stroke: rgba(153, 153, 153, 0.3);
             stroke-width: 1;
+            transition: opacity 0.3s ease;
         }
 
         .node {
             cursor: pointer;
-            transition: stroke-width 0.15s;
+            transition: all 0.3s ease;
         }
 
         .node:hover {
@@ -58,12 +59,25 @@
             stroke-width: 2;
         }
 
+        .node.dimmed {
+            opacity: 0.2;
+        }
+
+        .link.dimmed {
+            opacity: 0.1;
+        }
+
+        .label.dimmed {
+            opacity: 0.2;
+        }
+
         .label {
             fill: #ffffff;
             font-family: Arial, sans-serif;
             font-size: 12px;
             pointer-events: none;
             user-select: none;
+            transition: opacity 0.3s ease;
         }
 
         .sublabel {
@@ -72,6 +86,7 @@
             font-size: 10px;
             pointer-events: none;
             user-select: none;
+            transition: opacity 0.3s ease;
         }
 
         /* Controls Panel */
@@ -88,6 +103,7 @@
             overflow-y: auto;
             z-index: 100;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
         }
 
         #controls h3 {
@@ -172,6 +188,7 @@
             font-size: 12px;
             color: #a0a0a0;
             z-index: 100;
+            backdrop-filter: blur(10px);
         }
 
         #loading {
@@ -185,6 +202,7 @@
             text-align: center;
             border: 1px solid #3a3a3a;
             z-index: 200;
+            backdrop-filter: blur(10px);
         }
 
         #loading h2 {
@@ -238,6 +256,7 @@
             padding: 20px;
             margin: 20px;
             color: #ff6b6b;
+            backdrop-filter: blur(10px);
         }
 
         ::-webkit-scrollbar {
@@ -336,7 +355,7 @@
 
                 this.settings = {
                     showLabels: true,
-                    showLinks: false,  // Changed to false by default
+                    showLinks: false,
                     nodeType: 'all',
                     nodeSize: 1
                 };
@@ -350,8 +369,24 @@
                     });
 
                 this.svg.call(this.zoom);
+                
+                // Add click handler to svg to deselect when clicking background
+                this.svg.on('click', (event) => {
+                    if (event.target === this.svg.node()) {
+                        this.deselectAll();
+                    }
+                });
 
                 this.loadData();
+            }
+
+            deselectAll() {
+                this.selectedNode = null;
+                document.getElementById('selected-node').textContent = '-';
+                this.nodeElements.classed('selected', false).classed('dimmed', false);
+                this.linkGroup.selectAll('.link').classed('dimmed', false);
+                this.labelElements.classed('dimmed', false);
+                this.updateLabelVisibility();
             }
 
             async loadData() {
@@ -558,30 +593,54 @@
                 // Store references
                 this.nodeElements = node;
                 this.labelElements = labelContainer;
+                this.linkElements = link;
             }
 
             onNodeClick(event, d) {
                 event.stopPropagation();
                 
-                // Remove previous selection
-                this.nodeElements.classed('selected', false);
-                
                 if (this.selectedNode === d) {
-                    // Deselect
-                    this.selectedNode = null;
-                    document.getElementById('selected-node').textContent = '-';
-                    this.updateLabelVisibility();
+                    this.deselectAll();
                 } else {
-                    // Select new node
+                    // Find connected nodes
+                    const connectedNodeIds = new Set();
+                    this.links.forEach(link => {
+                        if (link.source.id === d.id) {
+                            connectedNodeIds.add(link.target.id);
+                        } else if (link.target.id === d.id) {
+                            connectedNodeIds.add(link.source.id);
+                        }
+                    });
+
+                    // Update selection
                     this.selectedNode = d;
                     document.getElementById('selected-node').textContent = d.label;
-                    
-                    // Highlight selected node
-                    this.nodeElements.filter(node => node === d).classed('selected', true);
-                    
-                    // Update label visibility
+
+                    // Update visual states
+                    this.nodeElements
+                        .classed('selected', node => node === d)
+                        .classed('dimmed', node => node !== d && !connectedNodeIds.has(node.id));
+
+                    this.linkElements
+                        .classed('dimmed', link => 
+                            link.source.id !== d.id && link.target.id !== d.id
+                        );
+
+                    this.labelElements
+                        .classed('dimmed', node => 
+                            node.id !== d.id && !connectedNodeIds.has(node.id)
+                        );
+
                     this.updateLabelVisibility();
                 }
+            }
+
+            isConnectedToSelected(node) {
+                if (!this.selectedNode) return false;
+                return this.links.some(link => 
+                    (link.source.id === this.selectedNode.id && link.target.id === node.id) ||
+                    (link.target.id === this.selectedNode.id && link.source.id === node.id)
+                );
             }
 
             updateLabelVisibility() {
@@ -590,7 +649,7 @@
                 this.labelElements.style('display', d => {
                     if (this.settings.showLabels) {
                         return 'block';
-                    } else if (this.selectedNode === d) {
+                    } else if (this.selectedNode === d || this.isConnectedToSelected(d)) {
                         return 'block';
                     } else {
                         return 'none';
@@ -670,15 +729,7 @@
             }
 
             focusOnNode(node) {
-                this.selectedNode = node;
-                document.getElementById('selected-node').textContent = node.label;
-                
-                // Highlight selected node
-                this.nodeElements.classed('selected', false);
-                this.nodeElements.filter(n => n === node).classed('selected', true);
-                
-                // Update label visibility
-                this.updateLabelVisibility();
+                this.onNodeClick({ stopPropagation: () => {} }, node);
                 
                 // Center on node with animation
                 const transform = d3.zoomIdentity
@@ -692,6 +743,7 @@
             }
 
             resetView() {
+                this.deselectAll();
                 this.svg.transition()
                     .duration(750)
                     .call(this.zoom.transform, d3.zoomIdentity);
