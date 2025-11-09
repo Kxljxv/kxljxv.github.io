@@ -34,11 +34,6 @@
             cursor: grabbing;
         }
 
-        .link {
-            stroke: rgba(153, 153, 153, 0.3);
-            stroke-width: 1;
-        }
-
         .node {
             cursor: pointer;
             transition: stroke-width 0.15s;
@@ -70,7 +65,6 @@
             user-select: none;
         }
 
-        /* Controls Panel */
         #controls {
             position: absolute;
             top: 20px;
@@ -235,23 +229,6 @@
             margin: 20px;
             color: #ff6b6b;
         }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #2a2a2a;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #3a3a3a;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #4a4a4a;
-        }
     </style>
 </head>
 <body>
@@ -288,10 +265,6 @@
                     <input type="checkbox" id="show-labels" checked>
                     <label for="show-labels">Labels anzeigen</label>
                 </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="show-links" checked>
-                    <label for="show-links">Verbindungen anzeigen</label>
-                </div>
             </div>
 
             <div class="control-group">
@@ -305,7 +278,6 @@
 
         <div id="stats">
             <div><strong>Nodes:</strong> <span id="node-count">0</span></div>
-            <div><strong>Verbindungen:</strong> <span id="link-count">0</span></div>
             <div><strong>Ausgewählt:</strong> <span id="selected-node">-</span></div>
         </div>
     </div>
@@ -323,8 +295,7 @@
                 // Create main group for zoom/pan
                 this.g = this.svg.append('g');
                 
-                // Create groups for links and nodes
-                this.linkGroup = this.g.append('g').attr('class', 'links');
+                // Create groups for nodes and labels
                 this.nodeGroup = this.g.append('g').attr('class', 'nodes');
                 this.labelGroup = this.g.append('g').attr('class', 'labels');
 
@@ -332,7 +303,6 @@
 
                 this.settings = {
                     showLabels: true,
-                    showLinks: true,
                     nodeType: 'all',
                     nodeSize: 1
                 };
@@ -393,9 +363,8 @@
 
             processData() {
                 const nodeMap = new Map();
-                const links = [];
 
-                // Create nodes and links
+                // Create nodes
                 Object.entries(this.data).forEach(([aea, supporters]) => {
                     // Add AEA node
                     if (!nodeMap.has(aea)) {
@@ -423,47 +392,42 @@
                             });
                         }
 
-                        // Add link
-                        links.push({
-                            source: aea,
-                            target: supporterId
-                        });
-
+                        // Update link counts
                         nodeMap.get(aea).linkCount++;
                         nodeMap.get(supporterId).linkCount++;
                     });
                 });
 
                 this.nodes = Array.from(nodeMap.values());
-                this.links = links;
-
                 this.allNodes = [...this.nodes];
-                this.allLinks = [...this.links];
 
                 // Update stats
                 document.getElementById('node-count').textContent = this.nodes.length;
-                document.getElementById('link-count').textContent = this.links.length;
             }
 
             simulatePhysics() {
                 document.getElementById('loading-text').textContent = 'Simulation läuft...';
                 
                 const simulation = d3.forceSimulation(this.nodes)
-                    .force("link", d3.forceLink(this.links).id(d => d.id).distance(100))
-                    .force("charge", d3.forceManyBody().strength(-300))
+                    .force("charge", d3.forceManyBody().strength(-200))
                     .force("center", d3.forceCenter(this.width / 2, this.height / 2))
                     .force("collision", d3.forceCollide().radius(30))
-                    .alphaDecay(0.02)
+                    .alphaDecay(0.03) // Faster decay
                     .alphaMin(0.001);
 
                 let iterations = 0;
-                const maxIterations = 300;
+                const maxIterations = 200; // Reduced iterations
 
                 simulation.on("tick", () => {
                     iterations++;
                     const progress = Math.min(100, (iterations / maxIterations) * 100);
                     document.getElementById('loading-text').textContent = 
                         `Simulation läuft... ${Math.round(progress)}%`;
+
+                    // Only update visuals every few ticks
+                    if (iterations % 5 === 0) {
+                        this.render();
+                    }
                 });
 
                 simulation.on("end", () => {
@@ -475,7 +439,11 @@
 
             setupEventListeners() {
                 // Window resize
-                window.addEventListener('resize', () => this.onResize());
+                let resizeTimeout;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(() => this.onResize(), 250);
+                });
 
                 // Controls
                 document.getElementById('search').addEventListener('input', (e) => this.onSearch(e));
@@ -483,10 +451,6 @@
                 document.getElementById('show-labels').addEventListener('change', (e) => {
                     this.settings.showLabels = e.target.checked;
                     this.updateLabelVisibility();
-                });
-                document.getElementById('show-links').addEventListener('change', (e) => {
-                    this.settings.showLinks = e.target.checked;
-                    this.linkGroup.style('display', this.settings.showLinks ? 'block' : 'none');
                 });
                 document.getElementById('node-size').addEventListener('input', (e) => {
                     this.settings.nodeSize = parseFloat(e.target.value);
@@ -497,88 +461,70 @@
             }
 
             render() {
-                // Render links
-                const link = this.linkGroup.selectAll('line')
-                    .data(this.links)
-                    .join('line')
-                    .attr('class', 'link')
-                    .attr('x1', d => d.source.x)
-                    .attr('y1', d => d.source.y)
-                    .attr('x2', d => d.target.x)
-                    .attr('y2', d => d.target.y);
+                // Render nodes with requestAnimationFrame
+                requestAnimationFrame(() => {
+                    // Render nodes
+                    const node = this.nodeGroup.selectAll('circle')
+                        .data(this.nodes)
+                        .join('circle')
+                        .attr('class', 'node')
+                        .attr('cx', d => d.x)
+                        .attr('cy', d => d.y)
+                        .attr('r', d => (5 + Math.sqrt(d.linkCount) * 2) * this.settings.nodeSize)
+                        .attr('fill', d => d.color)
+                        .on('click', (event, d) => this.onNodeClick(event, d));
 
-                if (!this.settings.showLinks) {
-                    this.linkGroup.style('display', 'none');
-                }
+                    // Render labels with less frequency
+                    const labelContainer = this.labelGroup.selectAll('g')
+                        .data(this.nodes)
+                        .join('g')
+                        .attr('transform', d => `translate(${d.x}, ${d.y})`);
 
-                // Render nodes
-                const node = this.nodeGroup.selectAll('circle')
-                    .data(this.nodes)
-                    .join('circle')
-                    .attr('class', 'node')
-                    .attr('cx', d => d.x)
-                    .attr('cy', d => d.y)
-                    .attr('r', d => (5 + Math.sqrt(d.linkCount) * 2) * this.settings.nodeSize)
-                    .attr('fill', d => d.color)
-                    .on('click', (event, d) => this.onNodeClick(event, d));
+                    labelContainer.each(function(d) {
+                        const g = d3.select(this);
+                        if (!g.select('text').size()) { // Only create labels if they don't exist
+                            const radius = (5 + Math.sqrt(d.linkCount) * 2);
+                            
+                            g.append('text')
+                                .attr('class', 'label')
+                                .attr('x', radius + 5)
+                                .attr('y', 0)
+                                .attr('dy', '0.35em')
+                                .text(d.label);
 
-                // Render labels
-                const labelContainer = this.labelGroup.selectAll('g')
-                    .data(this.nodes)
-                    .join('g')
-                    .attr('transform', d => `translate(${d.x}, ${d.y})`);
+                            if (d.sublabel) {
+                                g.append('text')
+                                    .attr('class', 'sublabel')
+                                    .attr('x', radius + 5)
+                                    .attr('y', 12)
+                                    .text(d.sublabel);
+                            }
+                        }
+                    });
 
-                labelContainer.each(function(d) {
-                    const g = d3.select(this);
-                    g.selectAll('*').remove();
-
-                    const radius = (5 + Math.sqrt(d.linkCount) * 2);
+                    // Store references
+                    this.nodeElements = node;
+                    this.labelElements = labelContainer;
                     
-                    g.append('text')
-                        .attr('class', 'label')
-                        .attr('x', radius + 5)
-                        .attr('y', 0)
-                        .attr('dy', '0.35em')
-                        .text(d.label);
-
-                    if (d.sublabel) {
-                        g.append('text')
-                            .attr('class', 'sublabel')
-                            .attr('x', radius + 5)
-                            .attr('y', 12)
-                            .text(d.sublabel);
-                    }
+                    this.updateLabelVisibility();
                 });
-
-                this.updateLabelVisibility();
-
-                // Store references
-                this.nodeElements = node;
-                this.labelElements = labelContainer;
             }
 
             onNodeClick(event, d) {
                 event.stopPropagation();
                 
-                // Remove previous selection
                 this.nodeElements.classed('selected', false);
                 
                 if (this.selectedNode === d) {
-                    // Deselect
                     this.selectedNode = null;
                     document.getElementById('selected-node').textContent = '-';
-                    this.updateLabelVisibility();
                 } else {
-                    // Select new node
                     this.selectedNode = d;
                     document.getElementById('selected-node').textContent = d.label;
-                    
-                    // Highlight selected node
                     this.nodeElements.filter(node => node === d).classed('selected', true);
-                    
-                    // Update label visibility
-                    this.updateLabelVisibility();
                 }
+                
+                this.updateLabelVisibility();
             }
 
             updateLabelVisibility() {
@@ -598,17 +544,13 @@
             updateNodeSizes() {
                 if (!this.nodeElements) return;
 
-                this.nodeElements.attr('r', d => (5 + Math.sqrt(d.linkCount) * 2) * this.settings.nodeSize);
-                
-                if (this.labelElements) {
-                    this.labelElements.attr('transform', d => `translate(${d.x}, ${d.y})`);
-                    this.labelElements.each(function(d) {
-                        const g = d3.select(this);
-                        const radius = (5 + Math.sqrt(d.linkCount) * 2);
-                        g.selectAll('.label').attr('x', radius + 5);
-                        g.selectAll('.sublabel').attr('x', radius + 5);
-                    });
-                }
+                requestAnimationFrame(() => {
+                    this.nodeElements.attr('r', d => (5 + Math.sqrt(d.linkCount) * 2) * this.settings.nodeSize);
+                    
+                    if (this.labelElements) {
+                        this.labelElements.attr('transform', d => `translate(${d.x}, ${d.y})`);
+                    }
+                });
             }
 
             onResize() {
@@ -652,17 +594,11 @@
                 
                 if (this.settings.nodeType === 'all') {
                     this.nodes = [...this.allNodes];
-                    this.links = [...this.allLinks];
                 } else {
                     this.nodes = this.allNodes.filter(n => n.type === this.settings.nodeType);
-                    const nodeIds = new Set(this.nodes.map(n => n.id));
-                    this.links = this.allLinks.filter(l => 
-                        nodeIds.has(l.source.id) && nodeIds.has(l.target.id)
-                    );
                 }
 
                 document.getElementById('node-count').textContent = this.nodes.length;
-                document.getElementById('link-count').textContent = this.links.length;
                 this.render();
             }
 
@@ -670,14 +606,11 @@
                 this.selectedNode = node;
                 document.getElementById('selected-node').textContent = node.label;
                 
-                // Highlight selected node
                 this.nodeElements.classed('selected', false);
                 this.nodeElements.filter(n => n === node).classed('selected', true);
                 
-                // Update label visibility
                 this.updateLabelVisibility();
                 
-                // Center on node with animation
                 const transform = d3.zoomIdentity
                     .translate(this.width / 2, this.height / 2)
                     .scale(1.5)
