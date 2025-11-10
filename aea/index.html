@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Netzwerk Graph</title>
-    
-    <!-- Flowbite and Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
-    
     <style>
         * {
             margin: 0;
@@ -104,48 +99,82 @@
             border-radius: 8px;
             padding: 20px;
             min-width: 280px;
-            max-width: 90vw;
             max-height: 80vh;
             overflow-y: auto;
             z-index: 100;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
-            transition: transform 0.3s ease;
         }
 
-        @media (max-width: 768px) {
-            #controls {
-                transform: translateX(-100%);
-            }
-            
-            #controls.show {
-                transform: translateX(0);
-            }
-            
-            .control-toggle {
-                position: absolute;
-                top: 20px;
-                left: 20px;
-                z-index: 101;
-                background: rgba(30, 30, 30, 0.95);
-                border: 1px solid #3a3a3a;
-                border-radius: 8px;
-                padding: 10px;
-                cursor: pointer;
-                backdrop-filter: blur(10px);
-            }
+        #controls h3 {
+            margin-bottom: 15px;
+            color: #7f6df2;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .flowbite-input {
-            @apply bg-gray-800 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500;
+        .control-group {
+            margin-bottom: 20px;
         }
 
-        .flowbite-select {
-            @apply bg-gray-800 border-gray-600 text-white focus:ring-blue-500 focus:border-blue-500;
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #a0a0a0;
         }
 
-        .flowbite-button {
-            @apply text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none;
+        input[type="text"], select {
+            width: 100%;
+            padding: 8px 12px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            color: #dcddde;
+            font-size: 13px;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #7f6df2;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #7f6df2;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #6c5ce7;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
         }
 
         #stats {
@@ -176,36 +205,60 @@
             backdrop-filter: blur(10px);
         }
 
-        /* Search Results Styling */
+        #loading h2 {
+            color: #7f6df2;
+            margin-bottom: 15px;
+        }
+
+        .spinner {
+            border: 3px solid #3a3a3a;
+            border-top: 3px solid #7f6df2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         #search-results {
-            @apply mt-2 bg-gray-800 border border-gray-600 rounded-lg overflow-hidden;
             max-height: 200px;
             overflow-y: auto;
+            margin-top: 10px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
         }
 
         .search-item {
-            @apply px-4 py-2 hover:bg-gray-700 cursor-pointer border-b border-gray-600 last:border-b-0;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #3a3a3a;
+            font-size: 12px;
         }
 
-        /* Checkbox styling */
-        .checkbox-group {
-            @apply flex items-center mb-4;
+        .search-item:hover {
+            background: #3a3a3a;
         }
 
-        .checkbox-group input[type="checkbox"] {
-            @apply w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-600;
+        .search-item:last-child {
+            border-bottom: none;
         }
 
-        .checkbox-group label {
-            @apply ml-2 text-sm font-medium text-gray-300;
+        .error-message {
+            background: rgba(224, 82, 82, 0.2);
+            border: 1px solid #e05252;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px;
+            color: #ff6b6b;
+            backdrop-filter: blur(10px);
         }
 
-        /* Range input styling */
-        input[type="range"] {
-            @apply w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer;
-        }
-
-        /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -228,39 +281,32 @@
     <div id="container">
         <svg id="graph-svg"></svg>
         
-        <!-- Mobile Toggle Button -->
-        <button id="controls-toggle" type="button" class="control-toggle md:hidden">
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-            </svg>
-        </button>
-        
         <div id="loading">
-            <h2 class="text-xl font-bold text-blue-500 mb-4">Graph wird vorbereitet...</h2>
+            <h2>Graph wird vorbereitet...</h2>
             <div class="spinner"></div>
-            <p id="loading-text" class="mt-4">Lade Daten...</p>
+            <p id="loading-text">Lade Daten...</p>
         </div>
 
         <div id="controls">
-            <h3 class="text-lg font-semibold text-blue-500 mb-6">Graph Steuerung</h3>
+            <h3>Graph Steuerung</h3>
             
-            <div class="mb-6">
-                <label for="search" class="block mb-2 text-sm font-medium text-gray-300">Suche:</label>
-                <input type="text" id="search" class="flowbite-input w-full rounded-lg" placeholder="Node suchen...">
+            <div class="control-group">
+                <label for="search">Suche:</label>
+                <input type="text" id="search" placeholder="Node suchen...">
                 <div id="search-results"></div>
             </div>
 
-            <div class="mb-6">
-                <label for="node-type" class="block mb-2 text-sm font-medium text-gray-300">Node Typ Filter:</label>
-                <select id="node-type" class="flowbite-select w-full rounded-lg">
+            <div class="control-group">
+                <label for="node-type">Node Typ Filter:</label>
+                <select id="node-type">
                     <option value="all">Alle anzeigen</option>
                     <option value="antrag">Nur Anträge</option>
                     <option value="supporter">Nur Supporter</option>
                 </select>
             </div>
 
-            <div class="mb-6">
-                <label class="block mb-2 text-sm font-medium text-gray-300">Darstellung:</label>
+            <div class="control-group">
+                <label>Darstellung:</label>
                 <div class="checkbox-group">
                     <input type="checkbox" id="show-labels" checked>
                     <label for="show-labels">Labels anzeigen</label>
@@ -271,31 +317,24 @@
                 </div>
             </div>
 
-            <div class="mb-6">
-                <label for="node-size" class="block mb-2 text-sm font-medium text-gray-300">Node-Größe:</label>
+            <div class="control-group">
+                <label for="node-size">Node-Größe:</label>
                 <input type="range" id="node-size" min="0.5" max="2" step="0.1" value="1">
             </div>
 
-            <button id="reset-view" class="flowbite-button w-full mb-2">Ansicht zurücksetzen</button>
-            <button id="center-graph" class="flowbite-button w-full">Graph zentrieren</button>
+            <button id="reset-view">Ansicht zurücksetzen</button>
+            <button id="center-graph">Graph zentrieren</button>
         </div>
 
         <div id="stats">
-            <div class="mb-1"><strong>Nodes:</strong> <span id="node-count">0</span></div>
-            <div class="mb-1"><strong>Verbindungen:</strong> <span id="link-count">0</span></div>
+            <div><strong>Nodes:</strong> <span id="node-count">0</span></div>
+            <div><strong>Verbindungen:</strong> <span id="link-count">0</span></div>
             <div><strong>Ausgewählt:</strong> <span id="selected-node">-</span></div>
         </div>
     </div>
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
     <script>
-        // Add mobile controls toggle functionality
-        document.getElementById('controls-toggle').addEventListener('click', () => {
-            const controls = document.getElementById('controls');
-            controls.classList.toggle('show');
-        });
-
         class GraphVisualization {
             constructor() {
                 this.svg = d3.select('#graph-svg');
@@ -341,8 +380,304 @@
                 this.loadData();
             }
 
-            // Rest of the GraphVisualization class methods remain the same
-            // ... (include all the previous methods without changes)
+            deselectAll() {
+                this.selectedNode = null;
+                document.getElementById('selected-node').textContent = '-';
+                this.nodeElements.classed('selected', false).classed('dimmed', false);
+                this.linkGroup.selectAll('.link').classed('dimmed', false);
+                this.labelElements.classed('dimmed', false);
+                this.updateLabelVisibility();
+            }
+
+            async loadData() {
+                try {
+                    document.getElementById('loading-text').textContent = 'Lade graph_data.json...';
+                    
+                    const response = await fetch('graph_data.json');
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status} - Stelle sicher, dass graph_data.json im selben Verzeichnis liegt`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (!data.support_map) {
+                        throw new Error('Ungültiges Datenformat: support_map fehlt');
+                    }
+
+                    document.getElementById('loading-text').textContent = 'Verarbeite Daten...';
+                    this.data = data.support_map;
+                    this.metadata = data.metadata || {};
+                    
+                    this.processData();
+                    this.setupEventListeners();
+                    this.simulatePhysics();
+                    
+                } catch (error) {
+                    console.error('Fehler beim Laden der Daten:', error);
+                    document.getElementById('loading').innerHTML = `
+                        <div class="error-message">
+                            <h2>❌ Fehler beim Laden</h2>
+                            <p><strong>${error.message}</strong></p>
+                            <p style="margin-top: 15px;">Bitte stelle sicher, dass:</p>
+                            <ul style="text-align: left; margin-top: 10px;">
+                                <li>Das Python-Skript ausgeführt wurde</li>
+                                <li>Die Datei <code>graph_data.json</code> existiert</li>
+                                <li>Die HTML-Datei im selben Verzeichnis liegt</li>
+                                <li>Du einen lokalen Webserver verwendest (z.B. <code>python -m http.server</code>)</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+            }
+
+            processData() {
+                const nodeMap = new Map();
+                const links = [];
+
+                // Create nodes and links
+                Object.entries(this.data).forEach(([aea, supporters]) => {
+                    // Add AEA node
+                    if (!nodeMap.has(aea)) {
+                        nodeMap.set(aea, {
+                            id: aea,
+                            label: aea,
+                            type: 'antrag',
+                            color: '#e05252',
+                            linkCount: 0
+                        });
+                    }
+
+                    supporters.forEach(supporter => {
+                        const supporterId = `${supporter[0]} | ${supporter[1]}`;
+                        
+                        // Add supporter node
+                        if (!nodeMap.has(supporterId)) {
+                            nodeMap.set(supporterId, {
+                                id: supporterId,
+                                label: supporter[0],
+                                sublabel: supporter[1],
+                                type: 'supporter',
+                                color: '#52e069',
+                                linkCount: 0
+                            });
+                        }
+
+                        // Add link
+                        links.push({
+                            source: aea,
+                            target: supporterId
+                        });
+
+                        nodeMap.get(aea).linkCount++;
+                        nodeMap.get(supporterId).linkCount++;
+                    });
+                });
+
+                this.nodes = Array.from(nodeMap.values());
+                this.links = links;
+
+                this.allNodes = [...this.nodes];
+                this.allLinks = [...this.links];
+
+                // Update stats
+                document.getElementById('node-count').textContent = this.nodes.length;
+                document.getElementById('link-count').textContent = this.links.length;
+            }
+
+            simulatePhysics() {
+                document.getElementById('loading-text').textContent = 'Simulation läuft...';
+                
+                const simulation = d3.forceSimulation(this.nodes)
+                    .force("link", d3.forceLink(this.links).id(d => d.id).distance(100))
+                    .force("charge", d3.forceManyBody().strength(-300))
+                    .force("center", d3.forceCenter(this.width / 2, this.height / 2))
+                    .force("collision", d3.forceCollide().radius(30))
+                    .alphaDecay(0.02)
+                    .alphaMin(0.001);
+
+                let iterations = 0;
+                const maxIterations = 300;
+
+                simulation.on("tick", () => {
+                    iterations++;
+                    const progress = Math.min(100, (iterations / maxIterations) * 100);
+                    document.getElementById('loading-text').textContent = 
+                        `Simulation läuft... ${Math.round(progress)}%`;
+                });
+
+                simulation.on("end", () => {
+                    document.getElementById('loading').style.display = 'none';
+                    this.render();
+                    this.centerGraph();
+                });
+            }
+
+            setupEventListeners() {
+                // Window resize
+                window.addEventListener('resize', () => this.onResize());
+
+                // Controls
+                document.getElementById('search').addEventListener('input', (e) => this.onSearch(e));
+                document.getElementById('node-type').addEventListener('change', (e) => this.onFilterChange(e));
+                document.getElementById('show-labels').addEventListener('change', (e) => {
+                    this.settings.showLabels = e.target.checked;
+                    this.updateLabelVisibility();
+                });
+                document.getElementById('show-links').addEventListener('change', (e) => {
+                    this.settings.showLinks = e.target.checked;
+                    this.linkGroup.classed('hidden', !this.settings.showLinks);
+                });
+                document.getElementById('node-size').addEventListener('input', (e) => {
+                    this.settings.nodeSize = parseFloat(e.target.value);
+                    this.updateNodeSizes();
+                });
+                document.getElementById('reset-view').addEventListener('click', () => this.resetView());
+                document.getElementById('center-graph').addEventListener('click', () => this.centerGraph());
+            }
+
+            render() {
+                // Render links (but they'll be hidden by default)
+                const link = this.linkGroup.selectAll('line')
+                    .data(this.links)
+                    .join('line')
+                    .attr('class', 'link')
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                // Ensure link group is hidden by default
+                this.linkGroup.classed('hidden', !this.settings.showLinks);
+
+                // Render nodes
+                const node = this.nodeGroup.selectAll('circle')
+                    .data(this.nodes)
+                    .join('circle')
+                    .attr('class', 'node')
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y)
+                    .attr('r', d => (5 + Math.sqrt(d.linkCount) * 2) * this.settings.nodeSize)
+                    .attr('fill', d => d.color)
+                    .on('click', (event, d) => this.onNodeClick(event, d));
+
+                // Render labels
+                const labelContainer = this.labelGroup.selectAll('g')
+                    .data(this.nodes)
+                    .join('g')
+                    .attr('transform', d => `translate(${d.x}, ${d.y})`);
+
+                labelContainer.each(function(d) {
+                    const g = d3.select(this);
+                    g.selectAll('*').remove();
+
+                    const radius = (5 + Math.sqrt(d.linkCount) * 2);
+                    
+                    g.append('text')
+                        .attr('class', 'label')
+                        .attr('x', radius + 5)
+                        .attr('y', 0)
+                        .attr('dy', '0.35em')
+                        .text(d.label);
+
+                    if (d.sublabel) {
+                        g.append('text')
+                            .attr('class', 'sublabel')
+                            .attr('x', radius + 5)
+                            .attr('y', 12)
+                            .text(d.sublabel);
+                    }
+                });
+
+                this.updateLabelVisibility();
+
+                // Store references
+                this.nodeElements = node;
+                this.labelElements = labelContainer;
+                this.linkElements = link;
+            }
+
+            onNodeClick(event, d) {
+                event.stopPropagation();
+                
+                if (this.selectedNode === d) {
+                    this.deselectAll();
+                } else {
+                    // Find connected nodes
+                    const connectedNodeIds = new Set();
+                    this.links.forEach(link => {
+                        if (link.source.id === d.id) {
+                            connectedNodeIds.add(link.target.id);
+                        } else if (link.target.id === d.id) {
+                            connectedNodeIds.add(link.source.id);
+                        }
+                    });
+
+                    // Update selection
+                    this.selectedNode = d;
+                    document.getElementById('selected-node').textContent = d.label;
+
+                    // Update visual states
+                    this.nodeElements
+                        .classed('selected', node => node === d)
+                        .classed('dimmed', node => node !== d && !connectedNodeIds.has(node.id));
+
+                    this.linkElements
+                        .classed('dimmed', link => 
+                            link.source.id !== d.id && link.target.id !== d.id
+                        );
+
+                    this.labelElements
+                        .classed('dimmed', node => 
+                            node.id !== d.id && !connectedNodeIds.has(node.id)
+                        );
+
+                    this.updateLabelVisibility();
+                }
+            }
+
+            isConnectedToSelected(node) {
+                if (!this.selectedNode) return false;
+                return this.links.some(link => 
+                    (link.source.id === this.selectedNode.id && link.target.id === node.id) ||
+                    (link.target.id === this.selectedNode.id && link.source.id === node.id)
+                );
+            }
+
+            updateLabelVisibility() {
+                if (!this.labelElements) return;
+
+                this.labelElements.style('display', d => {
+                    if (this.settings.showLabels) {
+                        return 'block';
+                    } else if (this.selectedNode === d || this.isConnectedToSelected(d)) {
+                        return 'block';
+                    } else {
+                        return 'none';
+                    }
+                });
+            }
+
+            updateNodeSizes() {
+                if (!this.nodeElements) return;
+
+                this.nodeElements.attr('r', d => (5 + Math.sqrt(d.linkCount) * 2) * this.settings.nodeSize);
+                
+                if (this.labelElements) {
+                    this.labelElements.attr('transform', d => `translate(${d.x}, ${d.y})`);
+                    this.labelElements.each(function(d) {
+                        const g = d3.select(this);
+                        const radius = (5 + Math.sqrt(d.linkCount) * 2);
+                        g.selectAll('.label').attr('x', radius + 5);
+                        g.selectAll('.sublabel').attr('x', radius + 5);
+                    });
+                }
+            }
+
+            onResize() {
+                this.width = window.innerWidth;
+                this.height = window.innerHeight;
+                this.svg.attr('width', this.width).attr('height', this.height);
+            }
 
             onSearch(e) {
                 const query = e.target.value.toLowerCase();
@@ -360,19 +695,73 @@
 
                 resultsDiv.innerHTML = matches.map(node => 
                     `<div class="search-item" data-id="${node.id}">
-                        ${node.label}${node.sublabel ? ` <span class="text-gray-400">(${node.sublabel})</span>` : ''}
+                        ${node.label}${node.sublabel ? ` <span style="color: #a0a0a0">(${node.sublabel})</span>` : ''}
                     </div>`
                 ).join('');
 
                 resultsDiv.querySelectorAll('.search-item').forEach(item => {
                     item.addEventListener('click', () => {
                         const node = this.allNodes.find(n => n.id === item.dataset.id);
-                        // Just highlight the node without zooming
-                        this.onNodeClick({ stopPropagation: () => {} }, node);
+                        this.focusOnNode(node);
                         resultsDiv.innerHTML = '';
                         document.getElementById('search').value = '';
                     });
                 });
+            }
+
+            onFilterChange(e) {
+                this.settings.nodeType = e.target.value;
+                
+                if (this.settings.nodeType === 'all') {
+                    this.nodes = [...this.allNodes];
+                    this.links = [...this.allLinks];
+                } else {
+                    this.nodes = this.allNodes.filter(n => n.type === this.settings.nodeType);
+                    const nodeIds = new Set(this.nodes.map(n => n.id));
+                    this.links = this.allLinks.filter(l => 
+                        nodeIds.has(l.source.id) && nodeIds.has(l.target.id)
+                    );
+                }
+
+                document.getElementById('node-count').textContent = this.nodes.length;
+                document.getElementById('link-count').textContent = this.links.length;
+                this.render();
+            }
+
+            focusOnNode(node) {
+                this.onNodeClick({ stopPropagation: () => {} }, node);
+                
+                // Center on node with animation
+                const transform = d3.zoomIdentity
+                    .translate(this.width / 2, this.height / 2)
+                    .scale(1.5)
+                    .translate(-node.x, -node.y);
+                
+                this.svg.transition()
+                    .duration(750)
+                    .call(this.zoom.transform, transform);
+            }
+
+            resetView() {
+                this.deselectAll();
+                this.svg.transition()
+                    .duration(750)
+                    .call(this.zoom.transform, d3.zoomIdentity);
+            }
+
+            centerGraph() {
+                if (this.nodes.length === 0) return;
+
+                const centerX = this.nodes.reduce((sum, n) => sum + n.x, 0) / this.nodes.length;
+                const centerY = this.nodes.reduce((sum, n) => sum + n.y, 0) / this.nodes.length;
+
+                const transform = d3.zoomIdentity
+                    .translate(this.width / 2, this.height / 2)
+                    .translate(-centerX, -centerY);
+
+                this.svg.transition()
+                    .duration(750)
+                    .call(this.zoom.transform, transform);
             }
         }
 
