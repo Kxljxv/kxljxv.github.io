@@ -332,7 +332,9 @@
         }
 
         .group-item:hover {
-            background-color: #0BA1DD;
+            box-shadow:
+                    0 0.25rem 1.25rem hsl(var(--always-black) / 5%),
+                    0 0 0 0.5px hsla(var(--border-200) / 0.4);
         }
 
         /* Panel Collapse */
@@ -374,53 +376,57 @@
         }
 
         .bright-container {
+            background-color: transparent;
             box-shadow:
                     0 0.25rem 1.25rem hsl(var(--always-black) / 3.5%),
                     0 0 0 0.5px hsla(var(--border-300) / 0.15);
-            color: var(--text-200-full)
+            color: var(--text-200-full);
+            border-radius: 0.5rem;
         }
 
         .bright-container:hover {
             box-shadow:
                     0 0.25rem 1.25rem hsl(var(--always-black) / 3.5%),
                     0 0 0 0.5px hsla(var(--border-200) / 0.3);
-            color: var(--text-000-full)
+            color: var(--text-000-full);
         }
 
         .bright-container:focus-within {
             box-shadow:
                     0 0.25rem 1.25rem hsl(var(--always-black) / 7.5%),
                     0 0 0 0.5px hsla(var(--border-200) / 0.3);
-            color: var(--text-000-full)
+            color: var(--text-000-full);
         }
 
         .bright-container:hover:focus-within {
             box-shadow:
                     0 0.25rem 1.25rem hsl(var(--always-black) / 7.5%),
                     0 0 0 0.5px hsla(var(--border-200) / 0.3);
-            color: var(--text-000-full)
-
-
+            color: var(--text-000-full);
         }
 
         .fancy-button {
-            background-color: rgba(0,0,0,0);
-            color: var(--text-200-full)
+            background-color: transparent;
+            color: var(--text-200-full);
+            border-radius: 0.5rem;
         }
 
         .fancy-button:hover {
             background-color: var(--bg-300-full);
-            color: var(--text-000-full)
+            color: var(--text-000-full);
         }
 
-        .fancy-button:focus-within {
+        .fancy-button:focus,
+        .fancy-button:focus-visible {
             background-color: var(--bg-200-full);
-            color: var(--text-200-full)
+            color: var(--text-200-full);
+            outline: none;
         }
 
-        .fancy-button:hover:focus-within {
+        .fancy-button:hover:focus,
+        .fancy-button:hover:focus-visible {
             background-color: var(--bg-200-full);
-            color: var(--text-200-full)
+            color: var(--text-200-full);
         }
 
 
@@ -440,14 +446,14 @@
     <!-- Controls Panel -->
     <div id="controls-panel" class="absolute top-5 left-5 w-80 overflow-hidden z-40 rounded-2xl border-width:0 bg-[hsl(var(--bg-100))] border-transparent shadow-[0_0.25rem_1.25rem_hsl(var(--always-black)/3.5%),0_0_0_0.5px_hsla(var(--border-300)/0.15)] hover:shadow-[0_0.25rem_1.25rem_hsl(var(--always-black)/3.5%),0_0_0_0.5px_hsla(var(--border-200)/0.3)] focus-within:shadow-[0_0.25rem_1.25rem_hsl(var(--always-black)/7.5%),0_0_0_0.5px_hsla(var(--border-200)/0.3)] hover:focus-within:shadow-[0_0.25rem_1.25rem_hsl(var(--always-black)/7.5%),0_0_0_0.5px_hsla(var(--border-200)/0.3)]">
         <!-- Collapse Button -->
-        <button id="collapse-btn" class="absolute top-4 -right-10 z-50 rounded-r-lg border border-gray-700 bg-gray-800 p-2 transition-all hover:bg-gray-700">
-            <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button id="collapse-btn" class="absolute top-4 -right-10 z-50 rounded-r-lg p-2 transition-all fancy-button">
+            <svg class="h-5 w-5 text-[hsl(var(--text-200))]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
         </button>
 
         <!-- Mobile Toggle Button -->
-        <button id="mobile-toggle" class="flex w-full items-center justify-between p-4 text-white md:hidden">
+        <button id="mobile-toggle" class="flex w-full items-center justify-between p-4 text-[hsl(var(--text-200))] md:hidden fancy-button">
             <span class="font-semibold">Steuerung</span>
             <svg class="h-5 w-5 transition-transform" id="mobile-toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -457,15 +463,15 @@
         <div id="controls-content" class="md:block">
             <!-- Tabs -->
             <div class="border-b border-[hsl(var(--text-500)/0.2)]">
-                <ul class="flex flex-wrap text-center text-sm font-medium text-gray-400" role="tablist">
+                <ul class="flex flex-wrap text-center text-sm font-medium" role="tablist">
                     <li class="flex-1" role="presentation">
-                        <button class="inline-block w-full rounded-t-lg transition-colors px-1 h-[3rem] text-base tracking-wider" id="view-tab" type="button" role="tab">Ansicht</button>
+                        <button class="inline-block w-full rounded-t-lg transition-colors px-1 h-[3rem] text-base tracking-wider text-[hsl(var(--text-500))] border-b-2 border-[hsl(var(--text-100)/0)] hover:text-[hsl(var(--text-200))]" id="view-tab" type="button" role="tab">Ansicht</button>
                     </li>
                     <li class="flex-1" role="presentation">
-                        <button class="inline-block w-full rounded-t-lg transition-colors px-1 h-[3rem] text-base tracking-wider" id="search-tab" type="button" role="tab">Suche</button>
+                        <button class="inline-block w-full rounded-t-lg transition-colors px-1 h-[3rem] text-base tracking-wider text-[hsl(var(--text-500))] border-b-2 border-[hsl(var(--text-100)/0)] hover:text-[hsl(var(--text-200))]" id="search-tab" type="button" role="tab">Suche</button>
                     </li>
                     <li class="flex-1" role="presentation">
-                        <button class="inline-block w-full rounded-t-lg transition-colors px-1 h-[3rem] text-base tracking-wider" id="groups-tab" type="button" role="tab">Gruppen</button>
+                        <button class="inline-block w-full rounded-t-lg transition-colors px-1 h-[3rem] text-base tracking-wider text-[hsl(var(--text-500))] border-b-2 border-[hsl(var(--text-100)/0)] hover:text-[hsl(var(--text-200))]" id="groups-tab" type="button" role="tab">Gruppen</button>
                     </li>
                 </ul>
             </div>
@@ -475,37 +481,38 @@
                 <div class="tab-content hidden p-4" id="view-content" role="tabpanel">
                     <h3 class="mb-2 text-[hsl(var(--text-200))] flex items-center text-center min-w-0 font-serif text-2xl">Darstellung</h3>
 
-                    <hr style="border-color: --text-500; opacity: 0.5;" class="mb-2 mt-2">
+                    <hr class="mb-2 mt-2 border-[hsl(var(--text-500)/0.2)]">
 
 
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="flex items-center ps-4 w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button">
-                            <input id="bordered-checkbox-1" type="checkbox" value="" name="bordered-checkbox" class="w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft">
-                            <label for="bordered-checkbox-1" class="select-none w-full py-4 ms-2 text-sm font-medium text-heading">Default checkbox</label>
-                        </div>
-                        <div class="flex items-center ps-4 bg-neutral-primary-soft border border-default rounded-base shadow-xs">
-                            <input checked id="bordered-checkbox-2" type="checkbox" value="" name="bordered-checkbox" class="w-4 h-4 border border-default-medium rounded-xs bg-neutral-secondary-medium focus:ring-2 focus:ring-brand-soft">
-                            <label for="bordered-checkbox-2" class="select-none w-full py-4 ms-2 text-sm font-medium text-heading">Checked state</label>
-                        </div>
+
+                    <div class="mb-2 mt-2">
+                        <label class="mb-2 block text-sm font-medium text-[hsl(var(--text-000))]">Node Typ</label>
+                        <select id="node-type" class="w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent bright-container focus:ring-2 focus:ring-[hsl(var(--bg-200))]">
+                             <option value="all">Alle anzeigen</option>
+                             <option value="antrag">Nur Anträge</option>
+                             <option value="supporter">Nur Supporter</option>
+                         </select>
                     </div>
+
+
 
 
 
                     <div class="mb-4 space-y-2">
                         <div class="flex items-center">
-                            <input id="show-labels" type="checkbox" checked class="h-4 w-4 rounded border-gray-600 bg-gray-700 text-orange-600 focus:ring-2 focus:ring-orange-500" />
-                            <label for="show-labels" class="ml-2 text-sm font-medium text-gray-300">Labels anzeigen</label>
+                            <input id="show-labels" type="checkbox" checked class="h-4 w-4 rounded border-[hsl(var(--border-300)/0.3)] bg-[hsl(var(--bg-200))] text-[hsl(var(--accent-main-100))] focus:ring-2 focus:ring-[hsl(var(--accent-main-100)/0.3)]" />
+                            <label for="show-labels" class="ml-2 text-sm font-medium text-[hsl(var(--text-200))]">Labels anzeigen</label>
                         </div>
                         <div class="flex items-center">
-                            <input id="show-links" type="checkbox" class="h-4 w-4 rounded border-gray-600 bg-gray-700 text-orange-600 focus:ring-2 focus:ring-orange-500" />
-                            <label for="show-links" class="ml-2 text-sm font-medium text-gray-300">Verbindungen anzeigen</label>
+                            <input id="show-links" type="checkbox" class="h-4 w-4 rounded border-[hsl(var(--border-300)/0.3)] bg-[hsl(var(--bg-200))] text-[hsl(var(--accent-main-100))] focus:ring-2 focus:ring-[hsl(var(--accent-main-100)/0.3)]" />
+                            <label for="show-links" class="ml-2 text-sm font-medium text-[hsl(var(--text-200))]">Verbindungen anzeigen</label>
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="mb-2 block text-sm font-medium text-gray-400">Node-Größe</label>
-                        <input id="node-size" type="range" min="0.5" max="2" step="0.1" value="1" class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-700" />
+                        <label class="mb-2 block text-sm font-medium text-[hsl(var(--text-200))]">Node-Größe</label>
+                        <input id="node-size" type="range" min="0.5" max="2" step="0.1" value="1" class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-[hsl(var(--bg-200))] accent-[hsl(var(--accent-main-100))]" />
                     </div>
 
                     <button id="reset-view" class="w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button">Ansicht zurücksetzen</button>
@@ -517,12 +524,12 @@
 
                     <h3 class="mb-2 text-[hsl(var(--text-200))] flex items-center text-center min-w-0 font-serif text-2xl">Suche</h3>
 
-                    <hr style="border-color: --text-500; opacity: 0.5;" class="mb-2 mt-2">
+                    <hr class="mb-2 mt-2 border-[hsl(var(--text-500)/0.2)]">
 
 
                     <div class="mb-4">
-                        <label for="search" class="mb-2 block text-sm font-medium text-gray-400">Node suchen</label>
-                        <input type="text" id="search" class="block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white focus:border-orange-500 focus:ring-orange-500" placeholder="Name oder KV eingeben..." />
+                        <label for="search" class="mb-2 block text-sm font-medium text-[hsl(var(--text-200))]">Node suchen</label>
+                        <input type="text" id="search" class="block w-full rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent bright-container focus:ring-2 focus:ring-[hsl(var(--bg-200))]" placeholder="Name oder KV eingeben..." />
                     </div>
 
                     <div id="search-results" class="space-y-1"></div>
@@ -532,35 +539,35 @@
                 <div class="tab-content hidden p-4" id="groups-content" role="tabpanel">
                     <h3 class="mb-2 text-[hsl(var(--text-200))] flex items-center text-center min-w-0 font-serif text-2xl">Gruppen</h3>
 
-                    <hr style="border-color: --text-500; opacity: 0.5;" class="mb-2 mt-2">
+                    <hr class="mb-2 mt-2 border-[hsl(var(--text-500)/0.2)]">
 
 
                     <!-- Create Group -->
-                    <div class="mb-4 rounded-lg bg-gray-700/50 p-3">
-                        <label class="mb-2 block text-sm font-medium text-gray-300">Neue Gruppe erstellen</label>
-                        <input type="text" id="group-name" placeholder="Gruppenname" class="mb-2 block w-full rounded-lg border border-gray-600 bg-gray-700 p-2 text-sm text-white focus:border-orange-500 focus:ring-orange-500" />
-                        <button id="select-color-btn" class="mb-2 w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300">
+                    <div class="mb-4 rounded-lg p-3 bright-container">
+                        <label class="mb-2 block text-sm font-medium text-[hsl(var(--text-200))]">Neue Gruppe erstellen</label>
+                        <input type="text" id="group-name" placeholder="Gruppenname" class="mb-2 block w-full rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent bright-container focus:ring-2 focus:ring-[hsl(var(--bg-200))]" />
+                        <button id="select-color-btn" class="mb-2 w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button">
                             <span id="selected-color-indicator" class="mr-2 inline-block h-4 w-4 rounded" style="background: #7f6df2;"></span>
                             Farbe wählen
                         </button>
-                        <button id="create-group" class="w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-green-700 focus:ring-4 focus:ring-green-300">Gruppe erstellen</button>
+                        <button id="create-group" class="w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button">Gruppe erstellen</button>
                     </div>
 
                     <!-- Group List -->
                     <div class="mb-4">
-                        <h4 class="mb-2 text-sm font-medium text-gray-400">Aktive Gruppen</h4>
+                        <h4 class="mb-2 text-sm font-medium text-[hsl(var(--text-200))]">Aktive Gruppen</h4>
                         <div id="group-list" class="max-h-48 space-y-2 overflow-y-auto"></div>
                     </div>
 
                     <!-- Import/Export -->
                     <div class="space-y-2">
-                        <button id="export-groups" class="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-blue-700 focus:ring-4 focus:ring-blue-300">
+                        <button id="export-groups" class="w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button">
                             <svg class="mr-2 inline h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                             </svg>
                             Gruppen exportieren
                         </button>
-                        <label class="block w-full cursor-pointer rounded-lg bg-indigo-600 px-4 py-2 text-center text-sm font-medium text-white transition-all hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300">
+                        <label class="block w-full cursor-pointer font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button text-center">
                             <svg class="mr-2 inline h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                             </svg>
@@ -589,28 +596,28 @@
     </div>
 
     <!-- Info Button with Popover -->
-    <button id="info-button" data-popover-target="stats-popover" type="button" class="absolute bottom-5 left-5 z-40 rounded-lg border border-gray-700 bg-gray-800 p-3 font-medium text-white transition-all hover:bg-gray-700 focus:ring-4 focus:ring-gray-300">
-        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <button id="info-button" data-popover-target="stats-popover" type="button" class="absolute bottom-5 left-5 z-40 rounded-lg p-3 font-medium transition-all fancy-button">
+        <svg class="h-6 w-6 text-[hsl(var(--text-200))]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
     </button>
 
-    <div data-popover id="stats-popover" role="tooltip" class="invisible absolute z-50 inline-block w-64 rounded-lg border border-gray-700 bg-gray-800 text-sm text-gray-400 opacity-0 shadow-xl transition-opacity duration-300">
-        <div class="rounded-t-lg border-b border-gray-600 bg-gray-700 px-3 py-2">
-            <h3 class="font-semibold text-white">Graph Statistiken</h3>
+    <div data-popover id="stats-popover" role="tooltip" class="invisible absolute z-50 inline-block w-64 rounded-lg bg-[hsl(var(--bg-100))] text-sm text-[hsl(var(--text-200))] opacity-0 shadow-[0_0.25rem_1.25rem_hsl(var(--always-black)/3.5%),0_0_0_0.5px_hsla(var(--border-300)/0.15)] transition-opacity duration-300">
+        <div class="rounded-t-lg border-b border-[hsl(var(--text-500)/0.2)] px-3 py-2">
+            <h3 class="font-semibold text-[hsl(var(--text-000))]">Graph Statistiken</h3>
         </div>
         <div class="space-y-2 px-3 py-2">
             <div class="flex justify-between">
-                <span class="font-medium">Nodes:</span>
-                <span id="node-count" class="font-mono text-white">0</span>
+                <span class="font-medium text-[hsl(var(--text-200))]">Nodes:</span>
+                <span id="node-count" class="font-mono text-[hsl(var(--text-000))]">0</span>
             </div>
             <div class="flex justify-between">
-                <span class="font-medium">Verbindungen:</span>
-                <span id="link-count" class="font-mono text-white">0</span>
+                <span class="font-medium text-[hsl(var(--text-200))]">Verbindungen:</span>
+                <span id="link-count" class="font-mono text-[hsl(var(--text-000))]">0</span>
             </div>
             <div class="flex justify-between">
-                <span class="font-medium">Ausgewählt:</span>
-                <span id="selected-node" class="text-xs text-white">-</span>
+                <span class="font-medium text-[hsl(var(--text-200))]">Ausgewählt:</span>
+                <span id="selected-node" class="text-xs text-[hsl(var(--text-000))]">-</span>
             </div>
         </div>
         <div data-popper-arrow></div>
@@ -619,18 +626,18 @@
     <!-- Color Picker Modal -->
     <div id="color-modal" tabindex="-1" aria-hidden="true" class="fixed top-0 right-0 left-0 z-50 hidden h-[calc(100%-1rem)] max-h-full w-full items-center justify-center overflow-x-hidden overflow-y-auto md:inset-0">
         <div class="relative max-h-full w-full max-w-md p-4">
-            <div class="relative rounded-lg border border-gray-700 bg-gray-800 shadow">
-                <div class="flex items-center justify-between rounded-t border-b border-gray-600 p-4 md:p-5">
-                    <h3 class="text-xl font-semibold text-white">Farbe wählen</h3>
-                    <button type="button" class="ms-auto inline-flex h-8 w-8 items-center justify-center rounded-lg bg-transparent text-sm text-gray-400 hover:bg-gray-700 hover:text-white" data-modal-hide="color-modal">
-                        <svg class="h-3 w-3" aria-hidden="true" fill="none" viewBox="0 0 14 14">
+            <div class="relative rounded-lg bg-[hsl(var(--bg-100))] shadow-[0_0.25rem_1.25rem_hsl(var(--always-black)/3.5%),0_0_0_0.5px_hsla(var(--border-300)/0.15)]">
+                <div class="flex items-center justify-between rounded-t border-b border-[hsl(var(--text-500)/0.2)] p-4 md:p-5">
+                    <h3 class="text-xl font-semibold text-[hsl(var(--text-000))]">Farbe wählen</h3>
+                    <button type="button" class="ms-auto inline-flex h-8 w-8 items-center justify-center rounded-lg fancy-button text-sm" data-modal-hide="color-modal">
+                        <svg class="h-3 w-3 text-[hsl(var(--text-200))]" aria-hidden="true" fill="none" viewBox="0 0 14 14">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                         </svg>
                     </button>
                 </div>
                 <div class="p-4 md:p-5">
                     <div class="mb-4">
-                        <label class="mb-3 block text-sm font-medium text-gray-300">Voreinstellungen</label>
+                        <label class="mb-3 block text-sm font-medium text-[hsl(var(--text-200))]">Voreinstellungen</label>
                         <div class="flex flex-wrap gap-3">
                             <div class="color-preset" style="background: #e05252;" data-color="#e05252"></div>
                             <div class="color-preset" style="background: #52e069;" data-color="#52e069"></div>
@@ -640,10 +647,10 @@
                         </div>
                     </div>
                     <div class="mb-4">
-                        <label class="mb-2 block text-sm font-medium text-gray-300">Eigene Farbe (HEX)</label>
-                        <input type="text" id="custom-color-input" placeholder="#000000" class="block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white focus:border-orange-500 focus:ring-orange-500" />
+                        <label class="mb-2 block text-sm font-medium text-[hsl(var(--text-200))]">Eigene Farbe (HEX)</label>
+                        <input type="text" id="custom-color-input" placeholder="#000000" class="block w-full rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent bright-container focus:ring-2 focus:ring-[hsl(var(--bg-200))]" />
                     </div>
-                    <button id="confirm-color" class="w-full rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-orange-700 focus:ring-4 focus:ring-orange-300">Farbe bestätigen</button>
+                    <button id="confirm-color" class="w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button">Farbe bestätigen</button>
                 </div>
             </div>
         </div>
@@ -652,17 +659,17 @@
     <!-- Group Node Search Modal -->
     <div id="group-search-modal" tabindex="-1" aria-hidden="true" class="fixed top-0 right-0 left-0 z-50 hidden h-[calc(100%-1rem)] max-h-full w-full items-center justify-center overflow-x-hidden overflow-y-auto md:inset-0">
         <div class="relative max-h-full w-full max-w-2xl p-4">
-            <div class="relative rounded-lg border border-gray-700 bg-gray-800 shadow">
-                <div class="flex items-center justify-between rounded-t border-b border-gray-600 p-4 md:p-5">
-                    <h3 class="text-xl font-semibold text-white">Nodes zu Gruppe hinzufügen</h3>
-                    <button type="button" class="ms-auto inline-flex h-8 w-8 items-center justify-center rounded-lg bg-transparent text-sm text-gray-400 hover:bg-gray-700 hover:text-white" data-modal-hide="group-search-modal">
-                        <svg class="h-3 w-3" aria-hidden="true" fill="none" viewBox="0 0 14 14">
+            <div class="relative rounded-lg bg-[hsl(var(--bg-100))] shadow-[0_0.25rem_1.25rem_hsl(var(--always-black)/3.5%),0_0_0_0.5px_hsla(var(--border-300)/0.15)]">
+                <div class="flex items-center justify-between rounded-t border-b border-[hsl(var(--text-500)/0.2)] p-4 md:p-5">
+                    <h3 class="text-xl font-semibold text-[hsl(var(--text-000))]">Nodes zu Gruppe hinzufügen</h3>
+                    <button type="button" class="ms-auto inline-flex h-8 w-8 items-center justify-center rounded-lg fancy-button text-sm" data-modal-hide="group-search-modal">
+                        <svg class="h-3 w-3 text-[hsl(var(--text-200))]" aria-hidden="true" fill="none" viewBox="0 0 14 14">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                         </svg>
                     </button>
                 </div>
                 <div class="p-4 md:p-5">
-                    <input type="text" id="group-node-search" placeholder="Node suchen..." class="mb-4 block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-sm text-white focus:border-orange-500 focus:ring-orange-500" />
+                    <input type="text" id="group-node-search" placeholder="Node suchen..." class="mb-4 block w-full rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent bright-container focus:ring-2 focus:ring-[hsl(var(--bg-200))]" />
                     <div id="group-search-results" class="max-h-96 space-y-1 overflow-y-auto"></div>
                 </div>
             </div>
@@ -1216,7 +1223,7 @@
             const listContainer = document.getElementById('group-list');
 
             if (this.groups.length === 0) {
-                listContainer.innerHTML = '<p class="text-gray-500 text-sm text-center py-4">Keine Gruppen vorhanden</p>';
+                listContainer.innerHTML = '<p class="text-[hsl(var(--text-400))] text-sm text-center py-4">Keine Gruppen vorhanden</p>';
                 return;
             }
 
@@ -1224,27 +1231,27 @@
                 const nodeCount = Array.from(this.nodeGroups.entries()).filter(([_, gId]) => gId === group.id).length;
 
                 return `
-                      <div class="group-item p-3 bg-gray-700/30 rounded-lg border border-gray-600">
+                      <div class="group-item p-3 rounded-lg bright-container">
                           <div class="flex items-center justify-between mb-2">
                               <div class="flex items-center gap-2 flex-1">
                                   <div style="width: 16px; height: 16px; background: ${group.color}; border-radius: 4px;"></div>
-                                  <span class="text-white font-medium text-sm">${group.name}</span>
-                                  <span class="text-gray-400 text-xs">(${nodeCount})</span>
+                                  <span class="text-[hsl(var(--text-000))] font-medium text-sm">${group.name}</span>
+                                  <span class="text-[hsl(var(--text-400))] text-xs">(${nodeCount})</span>
                               </div>
                               <div class="flex gap-2">
-                                  <button onclick="graph.showGroupSearchModal(${group.id})" class="text-blue-400 hover:text-blue-300 text-xs" title="Nodes hinzufügen">
+                                  <button onclick="graph.showGroupSearchModal(${group.id})" class="text-[hsl(var(--accent-secondary-100-full))] hover:text-[hsl(var(--accent-secondary-000-full))] text-xs fancy-button p-1 rounded" title="Nodes hinzufügen">
                                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                       </svg>
                                   </button>
-                                  <button onclick="graph.deleteGroup(${group.id})" class="text-red-400 hover:text-red-300 text-xs" title="Gruppe löschen">
+                                  <button onclick="graph.deleteGroup(${group.id})" class="text-[hsl(var(--danger-100-full))] hover:text-[hsl(var(--danger-000-full))] text-xs fancy-button p-1 rounded" title="Gruppe löschen">
                                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                       </svg>
                                   </button>
                               </div>
                           </div>
-                          <div class="text-xs text-gray-400">Rechtsklick auf Nodes zum Hinzufügen</div>
+                          <div class="text-xs text-[hsl(var(--text-400))]">Rechtsklick auf Nodes zum Hinzufügen</div>
                       </div>
                   `;
             }).join('');
@@ -1275,19 +1282,19 @@
             ).slice(0, 20);
 
             if (matches.length === 0) {
-                resultsDiv.innerHTML = '<p class="text-gray-500 text-sm p-2">Keine Ergebnisse gefunden</p>';
+                resultsDiv.innerHTML = '<p class="text-[hsl(var(--text-400))] text-sm p-2">Keine Ergebnisse gefunden</p>';
                 return;
             }
 
             resultsDiv.innerHTML = matches.map(node => {
                 const inGroup = this.nodeGroups.get(node.id) === this.currentGroupForSearch;
                 return `
-                      <div class="p-2 rounded hover:bg-gray-700 cursor-pointer text-sm border border-gray-600 mb-1 flex justify-between items-center" onclick="graph.toggleNodeInCurrentGroup('${node.id.replace(/'/g, "\\'")}')">
+                      <div class="p-2 rounded cursor-pointer text-sm mb-1 flex justify-between items-center bright-container" onclick="graph.toggleNodeInCurrentGroup('${node.id.replace(/'/g, "\\'")}')">
                           <div>
-                              <span class="text-white">${node.label}</span>
-                              ${node.sublabel ? `<span class="text-gray-400 text-xs ml-2">(${node.sublabel})</span>` : ''}
+                              <span class="text-[hsl(var(--text-000))]">${node.label}</span>
+                              ${node.sublabel ? `<span class="text-[hsl(var(--text-400))] text-xs ml-2">(${node.sublabel})</span>` : ''}
                           </div>
-                          <span class="text-xs ${inGroup ? 'text-green-400' : 'text-gray-500'}">${inGroup ? '✓' : '+'}</span>
+                          <span class="text-xs ${inGroup ? 'text-[hsl(var(--success-100-full))]' : 'text-[hsl(var(--text-400))]'}">${inGroup ? '✓' : '+'}</span>
                       </div>
                   `;
             }).join('');
@@ -1430,14 +1437,14 @@
             ).slice(0, 10);
 
             if (matches.length === 0) {
-                resultsDiv.innerHTML = '<p class="text-gray-500 text-sm p-2">Keine Ergebnisse gefunden</p>';
+                resultsDiv.innerHTML = '<p class="text-[hsl(var(--text-400))] text-sm p-2">Keine Ergebnisse gefunden</p>';
                 return;
             }
 
             resultsDiv.innerHTML = matches.map(node =>
-                `<div class="p-2 rounded hover:bg-gray-700 cursor-pointer text-sm border border-gray-600 mb-1" onclick="graph.highlightNode('${node.id.replace(/'/g, "\\'")}')">
-                      <span class="text-white">${node.label}</span>
-                      ${node.sublabel ? `<span class="text-gray-400 text-xs ml-2">(${node.sublabel})</span>` : ''}
+                `<div class="p-2 rounded cursor-pointer text-sm mb-1 bright-container" onclick="graph.highlightNode('${node.id.replace(/'/g, "\\'")}')">
+                      <span class="text-[hsl(var(--text-000))]">${node.label}</span>
+                      ${node.sublabel ? `<span class="text-[hsl(var(--text-400))] text-xs ml-2">(${node.sublabel})</span>` : ''}
                   </div>`
             ).join('');
         }
