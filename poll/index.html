@@ -574,7 +574,7 @@
           .filter(([partyId, value]) => {
             const partyObj = this.data.Parties[partyId];
             const name = partyObj?.Name || '';
-            return Number(value) > 5 && name !== "sonstige Parteien";
+            return Number(value) >= 5 && name !== "sonstige Parteien";
           })
           .map(([partyId, value]) => {
             const partyObj = this.data.Parties[partyId];
