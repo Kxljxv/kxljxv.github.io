@@ -406,22 +406,13 @@
             data: data
           });
 
-          map.addLayer({
-            'id': 'wahlkreise-fill',
-            'type': 'fill',
-            'source': 'wahlkreise',
-            'paint': {
-              'fill-color': '#0c87e7',
-              'fill-opacity': 0.2
-            }
-          });
 
           map.addLayer({
             'id': 'wahlkreise-line',
             'type': 'line',
             'source': 'wahlkreise',
             'paint': {
-              'line-color': '#175ae0',
+              'line-color': '#444444',
               'line-width': 2
             }
           });
