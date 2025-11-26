@@ -398,7 +398,7 @@
     function loadWahlkreise() {
       if (map.getSource('wahlkreise')) return;
       
-      fetch('https://kxljxv.github.io/AWK_AH2026.json')
+      fetch('https://kxljxv.github.io/mapagh26/AWK_AH2026.json')
         .then(response => response.json())
         .then(data => {
           map.addSource('wahlkreise', {
