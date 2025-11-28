@@ -1,24 +1,24 @@
 {
   "files": {
-    "main.css": "/static/css/main.e9ecdbae.css",
-    "main.js": "/static/js/main.985b41e7.js",
-    "static/js/453.00e5e0b3.chunk.js": "/static/js/453.00e5e0b3.chunk.js",
-    "static/media/serif.woff2": "/static/media/serif.c8fec6c25ee696c71e2c.woff2",
-    "static/media/serif_italic.woff2": "/static/media/serif_italic.413c68a2dba1d70afd68.woff2",
-    "static/media/modern_dense.woff2": "/static/media/modern_dense.168fb008be4ff17d2172.woff2",
-    "static/media/modern_dense_italic.woff2": "/static/media/modern_dense_italic.2a7c69a43ba9b3a3980d.woff2",
-    "static/media/modern_wide.woff2": "/static/media/modern_wide.1d9e47ce7f6576ce7bae.woff2",
-    "static/media/dyslexic_italic_bold.woff2": "/static/media/dyslexic_italic_bold.69e4edc58806f0c3677f.woff2",
-    "static/media/dyslexic_italic.woff2": "/static/media/dyslexic_italic.64625ba503a14996d76f.woff2",
-    "static/media/dyslexic.woff2": "/static/media/dyslexic.9ae0cc14550246b76109.woff2",
-    "static/media/dyslexic_bold.woff2": "/static/media/dyslexic_bold.1c4db6f5dd53da7a620b.woff2",
-    "index.html": "/index.html",
-    "main.e9ecdbae.css.map": "/static/css/main.e9ecdbae.css.map",
-    "main.985b41e7.js.map": "/static/js/main.985b41e7.js.map",
-    "453.00e5e0b3.chunk.js.map": "/static/js/453.00e5e0b3.chunk.js.map"
+    "main.css": "/aea/static/css/main.31885392.css",
+    "main.js": "/aea/static/js/main.29793739.js",
+    "static/js/453.00e5e0b3.chunk.js": "/aea/static/js/453.00e5e0b3.chunk.js",
+    "static/media/serif.woff2": "/aea/static/media/serif.c8fec6c25ee696c71e2c.woff2",
+    "static/media/serif_italic.woff2": "/aea/static/media/serif_italic.413c68a2dba1d70afd68.woff2",
+    "static/media/modern_dense.woff2": "/aea/static/media/modern_dense.168fb008be4ff17d2172.woff2",
+    "static/media/modern_dense_italic.woff2": "/aea/static/media/modern_dense_italic.2a7c69a43ba9b3a3980d.woff2",
+    "static/media/modern_wide.woff2": "/aea/static/media/modern_wide.1d9e47ce7f6576ce7bae.woff2",
+    "static/media/dyslexic_italic_bold.woff2": "/aea/static/media/dyslexic_italic_bold.69e4edc58806f0c3677f.woff2",
+    "static/media/dyslexic_italic.woff2": "/aea/static/media/dyslexic_italic.64625ba503a14996d76f.woff2",
+    "static/media/dyslexic.woff2": "/aea/static/media/dyslexic.9ae0cc14550246b76109.woff2",
+    "static/media/dyslexic_bold.woff2": "/aea/static/media/dyslexic_bold.1c4db6f5dd53da7a620b.woff2",
+    "index.html": "/aea/index.html",
+    "main.31885392.css.map": "/aea/static/css/main.31885392.css.map",
+    "main.29793739.js.map": "/aea/static/js/main.29793739.js.map",
+    "453.00e5e0b3.chunk.js.map": "/aea/static/js/453.00e5e0b3.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.e9ecdbae.css",
-    "static/js/main.985b41e7.js"
+    "static/css/main.31885392.css",
+    "static/js/main.29793739.js"
   ]
 }
