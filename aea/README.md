@@ -1,64 +1,76 @@
-# Netzwerk Graph - Deployment-Paket
+# Netzwerk Graph - Deployment-Paket (KORRIGIERTE VERSION)
 
-Dieser Ordner enthält alle Dateien, die Sie direkt in Ihr GitHub Pages Repository kopieren können.
+## ✅ Was wurde korrigiert?
 
-## 📦 Was ist enthalten?
+Diese Version wurde speziell angepasst, um das Problem mit der hängenden Simulation zu beheben:
 
-- `index.html` - Haupt-HTML-Datei (mit relativen Pfaden)
-- `static/` - Alle JavaScript- und CSS-Dateien
-- `fonts/` - Schriftarten
-- `graph_data.json` - Die Daten für den Graph
-- Alle anderen Assets (Icons, Manifest, etc.)
+- ✅ **Alle Pfade sind jetzt relativ** - funktioniert in jedem Ordner
+- ✅ **DATA_URL verwendet relative Pfade** - graph_data.json wird korrekt geladen
+- ✅ **index.html wurde korrigiert** - alle Pfade sind relativ
+- ✅ **JavaScript-Dateien wurden angepasst** - keine absoluten Pfade mehr
 
-## 🚀 So verwenden Sie es:
+## 🚀 Schnellstart
 
-### Option 1: Als Unterordner in Ihrem Pages Repo
+1. **Kopieren Sie ALLE Dateien** aus diesem Ordner
+2. **Fügen Sie sie in einen neuen Ordner** in Ihrem GitHub Pages Repository ein
+3. **Committen und pushen** Sie die Änderungen
+4. **Fertig!** Die App sollte jetzt vollständig funktionieren
 
-1. **Kopieren Sie den gesamten Inhalt** dieses Ordners (`pages-deploy/`)
-2. **Erstellen Sie einen neuen Ordner** in Ihrem GitHub Pages Repository (z.B. `aea` oder `netzwerk-graph`)
-3. **Fügen Sie alle Dateien** in diesen neuen Ordner ein
-4. **Commiten und pushen** Sie die Änderungen
-5. **Die App ist erreichbar unter**: `https://ihr-username.github.io/repo-name/ordner-name/`
+## 📁 Ordnerstruktur
 
-### Option 2: Als Root-Verzeichnis
+Nach dem Kopieren sollte es so aussehen:
 
-1. **Kopieren Sie den gesamten Inhalt** dieses Ordners (`pages-deploy/`)
-2. **Fügen Sie alle Dateien** direkt in das Root-Verzeichnis Ihres GitHub Pages Repository ein
-3. **Commiten und pushen** Sie die Änderungen
-4. **Die App ist erreichbar unter**: `https://ihr-username.github.io/repo-name/`
+```
+Ihr-Pages-Repo/
+└── aea/ (oder wie Sie den Ordner nennen)
+    ├── index.html
+    ├── graph_data.json
+    ├── static/
+    │   ├── js/
+    │   ├── css/
+    │   └── media/
+    ├── fonts/
+    └── ...
+```
 
-## ✅ Wichtige Hinweise:
+## 🔍 Troubleshooting
+
+### Simulation bleibt hängen?
+
+1. Öffnen Sie die Browser-Konsole (F12)
+2. Prüfen Sie, ob es Fehler gibt
+3. Prüfen Sie, ob `graph_data.json` geladen wird:
+   - Öffnen Sie: `https://ihr-username.github.io/repo-name/ordner-name/graph_data.json`
+   - Sollte die JSON-Datei anzeigen
+
+### App lädt nicht?
+
+- Warten Sie 2-3 Minuten nach dem Push
+- Prüfen Sie die URL (muss mit `/ordner-name/` enden)
+- Stellen Sie sicher, dass `index.html` im Ordner liegt
+
+### Daten werden nicht geladen?
+
+- Prüfen Sie, ob `graph_data.json` im Ordner liegt
+- Prüfen Sie die Browser-Konsole auf 404-Fehler
+- Stellen Sie sicher, dass alle Dateien kopiert wurden
+
+## 📝 Wichtige Hinweise
 
 - **Alle Pfade sind relativ** - Die App funktioniert in jedem Ordner
 - **Keine Anpassungen nötig** - Einfach kopieren und fertig!
 - **graph_data.json** ist bereits enthalten
 - **Alle Assets** (Fonts, Icons, etc.) sind enthalten
 
-## 📁 Ordnerstruktur nach dem Kopieren:
+## ✅ Checkliste
 
-```
-Ihr-Pages-Repo/
-├── index.html (Ihr Haupt-Index, falls vorhanden)
-└── aea/ (oder wie Sie den Ordner nennen)
-    ├── index.html
-    ├── graph_data.json
-    ├── fonts/
-    ├── static/
-    └── ...
-```
-
-## 🔍 Troubleshooting:
-
-- **App lädt nicht**: Stellen Sie sicher, dass alle Dateien kopiert wurden
-- **Daten werden nicht geladen**: Prüfen Sie, ob `graph_data.json` im richtigen Ordner liegt
-- **Styles fehlen**: Prüfen Sie, ob der `static/` Ordner vollständig kopiert wurde
-
-## 📝 Beispiel-URLs:
-
-- Als Unterordner: `https://kxljxv.github.io/mein-repo/aea/`
-- Als Root: `https://kxljxv.github.io/mein-repo/`
+- [ ] Alle Dateien wurden kopiert
+- [ ] graph_data.json ist im Ordner
+- [ ] index.html ist im Ordner
+- [ ] static/ Ordner ist vollständig
+- [ ] Änderungen wurden committed und gepusht
+- [ ] 2-3 Minuten gewartet nach dem Push
 
 ---
 
-**Fertig!** Nach dem Kopieren und Pushen sollte die App sofort funktionieren.
-
+**Nach dem Kopieren sollte die App sofort funktionieren!**
