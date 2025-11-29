@@ -247,6 +247,22 @@ def main():
         json.dump(out, f, ensure_ascii=False, indent=2)
     print(f"JSON mit {len(motions)} Anträgen gespeichert → {out_path}")
 
+    supporters_index: Dict[str, List[str]] = {}
+    for m in motions:
+        code = m.get('code')
+        app = m.get('applicant') or []
+        if len(app) >= 1:
+            key = f"{app[0]} | {app[1] if len(app) > 1 else ''}"
+            supporters_index.setdefault(key, []).append(code)
+        for s in m.get('supporters') or []:
+            key = f"{s[0]} | {s[1] if len(s) > 1 else ''}"
+            supporters_index.setdefault(key, []).append(code)
+
+    idx_path = os.path.join(os.getcwd(), 'supporters_index.json')
+    with open(idx_path, 'w', encoding='utf-8') as f:
+        json.dump({ 'index': supporters_index }, f, ensure_ascii=False, indent=2)
+    print(f"Supporter-Index mit {len(supporters_index)} Personen gespeichert → {idx_path}")
+
 
 if __name__ == '__main__':
     main()

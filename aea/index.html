@@ -870,6 +870,7 @@
                 this.metadata = data.metadata || {};
 
                 await this.loadAmendmentUrls();
+                await this.loadSupportersIndex();
                 this.processData();
                 this.setupEventListeners();
                 this.simulatePhysics();
@@ -1480,7 +1481,13 @@
         highlightNode(nodeId) {
             const node = this.allNodes.find(n => n.id === nodeId);
             if (node) {
-                this.onNodeClick({ stopPropagation: () => {} }, node);
+                this.hoveredNode = node;
+                this.centerOnNode(node);
+                if (node.type === 'antrag') {
+                    this.onNodeClick({ stopPropagation: () => {} }, node);
+                } else {
+                    this.render();
+                }
             }
         }
 
@@ -1525,6 +1532,15 @@
                 .call(this.zoom.transform, transform);
         }
 
+        centerOnNode(node) {
+            const transform = d3.zoomIdentity
+                .translate(this.width / 2, this.height / 2)
+                .translate(-node.x, -node.y);
+            this.canvas.transition()
+                .duration(750)
+                .call(this.zoom.transform, transform);
+        }
+
         findNodeAt(event) {
             const rect = this.canvas.node().getBoundingClientRect();
             const px = event.clientX - rect.left;
@@ -1558,6 +1574,15 @@
                         selectEl.appendChild(opt);
                     }
                 });
+            } catch {}
+        }
+
+        async loadSupportersIndex() {
+            try {
+                const res = await fetch('supporters_index.json');
+                if (!res.ok) return;
+                const obj = await res.json();
+                this.supportersIndex = obj.index || {};
             } catch {}
         }
     }
