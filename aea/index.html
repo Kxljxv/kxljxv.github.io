@@ -738,6 +738,14 @@
                     this.deselectAll();
                 }
             });
+            this.canvas.on('touchstart', (event) => {
+                const node = this.findNodeAt(event);
+                if (node) {
+                    this.onNodeClick({ stopPropagation: () => {} }, node);
+                } else {
+                    this.deselectAll();
+                }
+            });
             this.canvas.on('mousemove', (event) => {
                 const node = this.findNodeAt(event);
                 if (node !== this.hoveredNode) {
@@ -967,6 +975,15 @@
             this.allNodes = [...this.nodes];
             this.allLinks = [...this.links];
 
+            this.adj = new Map();
+            this.nodes.forEach(n => this.adj.set(n.id, new Set()));
+            this.links.forEach(l => {
+                const a = l.source.id || l.source;
+                const b = l.target.id || l.target;
+                if (this.adj.has(a)) this.adj.get(a).add(b);
+                if (this.adj.has(b)) this.adj.get(b).add(a);
+            });
+
             document.getElementById('node-count').textContent = this.nodes.length;
             document.getElementById('link-count').textContent = this.links.length;
         }
@@ -1060,13 +1077,20 @@
 
             const linkColor = getComputedStyle(document.documentElement).getPropertyValue('--link-color').trim() || 'rgba(153,153,153,0.3)';
 
-            const isDimmed = () => false;
+            const isDimmed = (node) => {
+                if (!this.selectedNode) return false;
+                if (node.id === this.selectedNode.id) return false;
+                const neighbors = this.adj && this.adj.get(this.selectedNode.id);
+                if (!neighbors) return true;
+                return !neighbors.has(node.id);
+            };
 
             if (this.settings.showLinks) {
                 ctx.strokeStyle = linkColor;
                 this.links.forEach(l => {
                     ctx.save();
-                    ctx.globalAlpha = 1.0;
+                    const dim = this.selectedNode && l.source.id !== this.selectedNode.id && l.target.id !== this.selectedNode.id;
+                    ctx.globalAlpha = dim ? 0.15 : 1.0;
                     ctx.lineWidth = (l.weight || 1) * 0.6;
                     ctx.beginPath();
                     ctx.moveTo(l.source.x, l.source.y);
@@ -1086,7 +1110,7 @@
                 ctx.fill();
                 ctx.restore();
 
-                const showLabel = this.settings.showLabels || n === this.hoveredNode;
+                const showLabel = this.settings.showLabels || n === this.selectedNode || n === this.hoveredNode || (this.selectedNode && this.adj && this.adj.get(this.selectedNode.id) && this.adj.get(this.selectedNode.id).has(n.id));
                 if (showLabel) {
                     ctx.save();
                     ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-000-full').trim() || '#faf9f5';
@@ -1126,14 +1150,14 @@
 
         onNodeClick(event, d) {
             event.stopPropagation();
+            this.selectedNode = d;
+            document.getElementById('selected-node').textContent = d.label;
             const btn = document.getElementById('open-selected-antrag-btn');
             if (d.type === 'antrag') {
                 this.selectedAntragCode = d.id;
-                document.getElementById('selected-node').textContent = d.label;
                 if (btn) btn.style.display = 'block';
             } else {
                 this.selectedAntragCode = null;
-                document.getElementById('selected-node').textContent = '-';
                 if (btn) btn.style.display = 'none';
             }
             this.render();
@@ -1483,11 +1507,7 @@
             if (node) {
                 this.hoveredNode = node;
                 this.centerOnNode(node);
-                if (node.type === 'antrag') {
-                    this.onNodeClick({ stopPropagation: () => {} }, node);
-                } else {
-                    this.render();
-                }
+                this.onNodeClick({ stopPropagation: () => {} }, node);
             }
         }
 
@@ -1543,8 +1563,10 @@
 
         findNodeAt(event) {
             const rect = this.canvas.node().getBoundingClientRect();
-            const px = event.clientX - rect.left;
-            const py = event.clientY - rect.top;
+            const clientX = event.touches && event.touches.length ? event.touches[0].clientX : event.clientX;
+            const clientY = event.touches && event.touches.length ? event.touches[0].clientY : event.clientY;
+            const px = clientX - rect.left;
+            const py = clientY - rect.top;
             const x = (px - this.transform.x) / this.transform.k;
             const y = (py - this.transform.y) / this.transform.k;
             for (let i = this.nodes.length - 1; i >= 0; i--) {
