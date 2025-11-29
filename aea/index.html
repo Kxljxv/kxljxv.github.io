@@ -715,14 +715,14 @@
             this.motionUrlMap = {};
 
             this.settings = {
-                showLabels: true,
-                showLinks: false,
+                showLabels: false,
+                showLinks: ture,
                 nodeType: 'all',
                 nodeSize: 1
             };
 
             this.zoom = d3.zoom()
-                .scaleExtent([0.1, 4])
+                .scaleExtent([0.05, 4])
                 .on('zoom', (event) => {
                     this.transform = event.transform;
                     this.render();
@@ -991,16 +991,17 @@
         simulatePhysics() {
             document.getElementById('loading-text').textContent = 'Simulation läuft...';
 
+            let iterations = 0;
+            const maxIterations = 5000;            
+
             const simulation = d3.forceSimulation(this.nodes)
                 .force('link', d3.forceLink(this.links).id(d => d.id).distance(100))
                 .force('charge', d3.forceManyBody().strength(-300))
                 .force('center', d3.forceCenter(this.width / 2, this.height / 2))
                 .force('collision', d3.forceCollide().radius(30))
-                .alphaDecay(0.02)
-                .alphaMin(0.001);
+                .alphaDecay(1/maxIterations)
+                .alphaMin(1/maxIterations);
 
-            let iterations = 0;
-            const maxIterations = 1000;
 
             simulation.on("tick", () => {
                 iterations++;
