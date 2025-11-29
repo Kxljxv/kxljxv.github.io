@@ -1,21 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Extract supporters (weitere Antragsteller*innen) from saved Antragsgrün HTML pages
-and write them to antragstellerinnen.csv with columns:
-motion_code,motion_title,role,name,kv,source
+Erzeugt die finale graph_data.json mit folgendem Format:
 
-Usage:
-    python extract_supporters.py [HTML_FILE ...]
-If no files are provided, scans all *.html in the current directory.
+{
+  "motions": [
+    {
+      "code": "VR-01-025",
+      "applicant": ["Name", "KV …"],
+      "supporters": [["Name", "KV …"], ...],
+      "url": "https://…"
+    },
+    ...
+  ]
+}
+
+Quelle ist die Datei amendments_url.json mit einer Liste von Objekten
+{ "title": "VR-01-025", "url": "https://…" }.
+
+Benutzung:
+    python extract_supporters.py
 """
 import os
 import re
 import sys
-import csv
-import glob
+import json
 import html
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict, Any
 import urllib.request
 import urllib.error
 import time
@@ -121,30 +132,16 @@ def parse_supporters(list_html: str) -> List[Tuple[str, str]]:
     return supporters
 
 
-def read_amendments_csv(path: str) -> List[str]:
-    urls: List[str] = []
-    with open(path, 'r', encoding='utf-8', newline='') as f:
-        reader = csv.DictReader(f)
-        field_candidates = ['url', 'href', 'link']
-        chosen_field = None
-        for c in field_candidates:
-            if c in reader.fieldnames:
-                chosen_field = c
-                break
-        if not chosen_field:
-            raise ValueError(f"Keine URL-Spalte in {path} gefunden. Erwartet eine der {field_candidates}.")
-        for row in reader:
-            u = (row.get(chosen_field) or '').strip()
-            if not u:
-                continue
-            urls.append(u)
-    seen = set()
-    unique_urls: List[str] = []
-    for u in urls:
-        if u not in seen:
-            seen.add(u)
-            unique_urls.append(u)
-    return unique_urls
+def read_amendments_json(path: str) -> List[Dict[str, str]]:
+    with open(path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    items: List[Dict[str, str]] = []
+    for item in data:
+        title = (item.get('title') or '').strip()
+        url = (item.get('url') or '').strip()
+        if title and url:
+            items.append({ 'title': title, 'url': url })
+    return items
 
 
 def fetch_url(url: str, timeout: float = 20.0) -> str:
@@ -164,27 +161,24 @@ def fetch_url(url: str, timeout: float = 20.0) -> str:
             return data.decode('utf-8', errors='ignore')
 
 
-def process_url(url: str) -> Tuple[Optional[str], List[Tuple[str, str]]]:
+def process_url(url: str) -> Tuple[Optional[str], Optional[Tuple[str, str]], List[Tuple[str, str]]]:
     doc = fetch_url(url)
     code, _title = get_motion_info(doc)
-    supporters: List[Tuple[str, str]] = []
-    # Initiator first
-    initiator = parse_initiator(doc)
-    if initiator:
-        supporters.append(initiator)
-    # Weitere Antragsteller*innen
+    applicant = parse_initiator(doc)
     list_html = find_supporters_list_html(doc)
     sups = parse_supporters(list_html or '')
-    # Deduplicate by (name, kv)
+    # Deduplicate supporters (exclude applicant from supporters)
     seen = set()
     result: List[Tuple[str, str]] = []
-    for pair in supporters + sups:
-        key = (pair[0].strip(), pair[1].strip())
+    for pair in sups:
+        key = (pair[0].strip(), (pair[1] or '').strip())
+        if applicant and key == (applicant[0].strip(), (applicant[1] or '').strip()):
+            continue
         if key in seen:
             continue
         seen.add(key)
         result.append(key)
-    return code, result
+    return code, applicant, result
 
 
 def parse_initiator(doc: str) -> Optional[Tuple[str, str]]:
@@ -220,34 +214,26 @@ def parse_initiator(doc: str) -> Optional[Tuple[str, str]]:
 
 
 def main():
-    import pprint
-    args = sys.argv[1:]
-    urls: List[str] = []
-    if not args:
-        default_csv = os.path.join(os.getcwd(), 'amendments.csv')
-        if not os.path.isfile(default_csv):
-            print('amendments.csv nicht gefunden. Übergib entweder eine CSV-Datei oder URL(s).')
-            sys.exit(1)
-        urls = read_amendments_csv(default_csv)
-        print(f"Lese {len(urls)} URLs aus {default_csv}")
-    else:
-        if len(args) == 1 and args[0].lower().endswith('.csv') and os.path.isfile(args[0]):
-            urls = read_amendments_csv(args[0])
-            print(f"Lese {len(urls)} URLs aus {args[0]}")
-        else:
-            urls = [a for a in args if a.startswith('http')]
-            if not urls:
-                print('Keine gültigen URLs übergeben. Übergib eine CSV mit URLs oder mindestens eine http(s)-URL.')
-                sys.exit(1)
-    support_map: dict = {}
-    total = len(urls)
-    for i, url in enumerate(urls, 1):
+    items = []
+    json_path = os.path.join(os.getcwd(), 'amendments_url.json')
+    if not os.path.isfile(json_path):
+        print('amendments_url.json nicht gefunden.')
+        sys.exit(1)
+    items = read_amendments_json(json_path)
+    total = len(items)
+    motions: List[Dict[str, Any]] = []
+    for i, item in enumerate(items, 1):
+        url = item['url']
         try:
-            code, lst = process_url(url)
-            print(f"[{i}/{total}] {url}: {len(lst)} Personen")
-            if code:
-                # Store as list of [name, kv]
-                support_map[code] = [[name, kv] for name, kv in lst]
+            code, applicant, supporters = process_url(url)
+            code = code or item['title']
+            print(f"[{i}/{total}] {code}: {1 if applicant else 0} Antragsteller*in, {len(supporters)} Supporter")
+            motions.append({
+                'code': code,
+                'applicant': [applicant[0], applicant[1]] if applicant else None,
+                'supporters': [[n, kv] for n, kv in supporters],
+                'url': url
+            })
         except urllib.error.HTTPError as e:
             print(f"[{i}/{total}] HTTP-Fehler {e.code} bei {url}")
         except urllib.error.URLError as e:
@@ -255,10 +241,11 @@ def main():
         except Exception as e:
             print(f"[{i}/{total}] Fehler bei {url}: {e}")
         time.sleep(0.2)
-    out_path = os.path.join(os.getcwd(), 'antragstellerinnen.txt')
+    out = { 'motions': motions, 'metadata': { 'generated_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()) } }
+    out_path = os.path.join(os.getcwd(), 'graph_data.json')
     with open(out_path, 'w', encoding='utf-8') as f:
-        f.write(pprint.pformat(support_map, width=120, compact=True, sort_dicts=True))
-    print(f"Wrote dict with {len(support_map)} keys to {out_path}")
+        json.dump(out, f, ensure_ascii=False, indent=2)
+    print(f"JSON mit {len(motions)} Anträgen gespeichert → {out_path}")
 
 
 if __name__ == '__main__':
