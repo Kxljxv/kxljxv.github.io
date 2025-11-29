@@ -71,13 +71,7 @@ def main():
     supporter_map = {}
     for aea, supporters in support_map.items():
         for supporter in supporters:
-            # Handle both old format [name, kv] and new format [name, kv, is_initiator]
-            if len(supporter) == 2:
-                name, kv = supporter
-                is_initiator = False
-            else:
-                name, kv, is_initiator = supporter
-            supporter_id = (name, kv)  # ("Name", "KV ...")
+            supporter_id = tuple(supporter)  # ["Name", "KV ..."] -> ("Name", "KV ...")
             if supporter_id not in supporter_map:
                 supporter_map[supporter_id] = []
             supporter_map[supporter_id].append(aea)
@@ -87,33 +81,6 @@ def main():
     pprint.pp(supporter_map_json)
 
     #save_dict_to_json(supporter_map_json, "supporter_map.json")
-    
-    # Erstelle graph_data.json mit Gewichtungen
-    # Struktur: support_map mit [name, kv, is_initiator] für jeden Supporter
-    graph_data = {
-        "support_map": {},
-        "metadata": {
-            "total_aeas": len(support_map),
-            "total_supporters": len(supporter_map)
-        }
-    }
-    
-    # Konvertiere support_map zu neuer Struktur mit is_initiator Flag
-    for aea, supporters in support_map.items():
-        graph_data["support_map"][aea] = []
-        for supporter in supporters:
-            # Handle both old format [name, kv] and new format [name, kv, is_initiator]
-            if len(supporter) == 2:
-                name, kv = supporter
-                is_initiator = False
-            else:
-                name, kv, is_initiator = supporter
-            graph_data["support_map"][aea].append([name, kv, is_initiator])
-    
-    # Speichere graph_data.json
-    graph_data_path = os.path.join(os.getcwd(), 'graph_data.json')
-    save_dict_to_json(graph_data, graph_data_path)
-    print(f"graph_data.json erfolgreich erstellt mit {len(graph_data['support_map'])} Anträgen.")
 
     # Sicherstellen, dass das Verzeichnis existiert
     output_dir = "./supporter/AEA5"

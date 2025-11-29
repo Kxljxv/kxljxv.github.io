@@ -164,33 +164,26 @@ def fetch_url(url: str, timeout: float = 20.0) -> str:
             return data.decode('utf-8', errors='ignore')
 
 
-def process_url(url: str) -> Tuple[Optional[str], List[Tuple[str, str, bool]]]:
+def process_url(url: str) -> Tuple[Optional[str], List[Tuple[str, str]]]:
     doc = fetch_url(url)
     code, _title = get_motion_info(doc)
-    supporters: List[Tuple[str, str, bool]] = []
-    # Initiator first (marked as initiator)
+    supporters: List[Tuple[str, str]] = []
+    # Initiator first
     initiator = parse_initiator(doc)
     if initiator:
-        supporters.append((initiator[0], initiator[1], True))  # True = is_initiator
+        supporters.append(initiator)
     # Weitere Antragsteller*innen
     list_html = find_supporters_list_html(doc)
     sups = parse_supporters(list_html or '')
     # Deduplicate by (name, kv)
     seen = set()
-    result: List[Tuple[str, str, bool]] = []
-    for pair in supporters:
+    result: List[Tuple[str, str]] = []
+    for pair in supporters + sups:
         key = (pair[0].strip(), pair[1].strip())
         if key in seen:
             continue
         seen.add(key)
-        result.append(pair)
-    # Add other supporters (not initiators)
-    for pair in sups:
-        key = (pair[0].strip(), pair[1].strip())
-        if key in seen:
-            continue
-        seen.add(key)
-        result.append((pair[0], pair[1], False))  # False = is_supporter
+        result.append(key)
     return code, result
 
 
@@ -253,8 +246,8 @@ def main():
             code, lst = process_url(url)
             print(f"[{i}/{total}] {url}: {len(lst)} Personen")
             if code:
-                # Store as list of [name, kv, is_initiator]
-                support_map[code] = [[name, kv, is_initiator] for name, kv, is_initiator in lst]
+                # Store as list of [name, kv]
+                support_map[code] = [[name, kv] for name, kv in lst]
         except urllib.error.HTTPError as e:
             print(f"[{i}/{total}] HTTP-Fehler {e.code} bei {url}")
         except urllib.error.URLError as e:
