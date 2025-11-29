@@ -223,13 +223,14 @@
 
         }
 
-        #graph-svg {
+        #graph-canvas {
             width: 100%;
             height: 100%;
             cursor: grab;
+            display: block;
         }
 
-        #graph-svg:active {
+        #graph-canvas:active {
             cursor: grabbing;
         }
 
@@ -439,7 +440,7 @@
 </head>
 <body>
 <div class="relative h-screen w-screen">
-    <svg id="graph-svg"></svg>
+    <canvas id="graph-canvas"></canvas>
 
 
 
@@ -550,7 +551,18 @@
                             <span id="selected-color-indicator" class="mr-2 inline-block h-4 w-4 rounded" style="background: #7f6df2;"></span>
                             Farbe wählen
                         </button>
-                        <button id="create-group" class="w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button">Gruppe erstellen</button>
+                        <button id="create-group" class="mb-2 w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button">Gruppe erstellen</button>
+                    </div>
+                    
+                    <!-- Create Kreisverband Group -->
+                    <div class="mb-4 rounded-lg p-3 bright-container">
+                        <label class="mb-2 block text-sm font-medium text-[hsl(var(--text-200))]">Kreisverbandsgruppe erstellen</label>
+                        <input type="text" id="kv-group-name" placeholder="Kreisverband (z.B. KV München)" class="mb-2 block w-full rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent bright-container focus:ring-2 focus:ring-[hsl(var(--bg-200))]" />
+                        <button id="select-kv-color-btn" class="mb-2 w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button">
+                            <span id="selected-kv-color-indicator" class="mr-2 inline-block h-4 w-4 rounded" style="background: #7f6df2;"></span>
+                            Farbe wählen
+                        </button>
+                        <button id="create-kv-group" class="w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button">Kreisverbandsgruppe erstellen</button>
                     </div>
 
                     <!-- Group List -->
@@ -682,16 +694,13 @@
 <script>
     class GraphVisualization {
         constructor() {
-            this.svg = d3.select('#graph-svg');
+            this.canvas = document.getElementById('graph-canvas');
+            this.ctx = this.canvas.getContext('2d');
             this.width = window.innerWidth;
             this.height = window.innerHeight;
-
-            this.svg.attr('width', this.width).attr('height', this.height);
-
-            this.g = this.svg.append('g');
-            this.linkGroup = this.g.append('g').attr('class', 'links hidden');
-            this.nodeGroup = this.g.append('g').attr('class', 'nodes');
-            this.labelGroup = this.g.append('g').attr('class', 'labels');
+            
+            this.canvas.width = this.width;
+            this.canvas.height = this.height;
 
             this.selectedNode = null;
             this.hoveredNode = null;
@@ -700,6 +709,8 @@
             this.selectedColor = '#7f6df2';
             this.defaultFont = 'modern_dense';
             this.currentGroupForSearch = null;
+            this.amendmentsUrlMap = new Map();
+            this.currentTransform = d3.zoomIdentity;
 
             this.settings = {
                 showLabels: true,
@@ -711,14 +722,14 @@
             this.zoom = d3.zoom()
                 .scaleExtent([0.1, 4])
                 .on('zoom', (event) => {
-                    this.g.attr('transform', event.transform);
                     this.currentTransform = event.transform;
+                    this.render();
                 });
 
-            this.svg.call(this.zoom);
+            d3.select(this.canvas).call(this.zoom);
 
-            this.svg.on('click', (event) => {
-                if (event.target === this.svg.node()) {
+            this.canvas.addEventListener('click', (event) => {
+                if (event.target === this.canvas) {
                     this.deselectAll();
                 }
             });
@@ -728,6 +739,20 @@
             this.setupColorModal();
             this.setupCollapsePanel();
             this.loadData();
+            this.loadAmendmentsUrls();
+        }
+        
+        loadAmendmentsUrls() {
+            fetch('amendments_url.json')
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(item => {
+                        this.amendmentsUrlMap.set(item.title, item.url);
+                    });
+                })
+                .catch(error => {
+                    console.error('Fehler beim Laden der amendments_url.json:', error);
+                });
         }
 
         setupCollapsePanel() {
@@ -745,8 +770,18 @@
             const customInput = document.getElementById('custom-color-input');
             const confirmBtn = document.getElementById('confirm-color');
             const selectBtn = document.getElementById('select-color-btn');
+            const selectKvBtn = document.getElementById('select-kv-color-btn');
+            let isKvColorSelection = false;
 
             selectBtn.addEventListener('click', () => {
+                isKvColorSelection = false;
+                const modalEl = document.getElementById('color-modal');
+                const modal = new Modal(modalEl);
+                modal.show();
+            });
+            
+            selectKvBtn.addEventListener('click', () => {
+                isKvColorSelection = true;
                 const modalEl = document.getElementById('color-modal');
                 const modal = new Modal(modalEl);
                 modal.show();
@@ -770,7 +805,11 @@
             });
 
             confirmBtn.addEventListener('click', () => {
-                document.getElementById('selected-color-indicator').style.background = this.selectedColor;
+                if (isKvColorSelection) {
+                    document.getElementById('selected-kv-color-indicator').style.background = this.selectedColor;
+                } else {
+                    document.getElementById('selected-color-indicator').style.background = this.selectedColor;
+                }
                 const modalEl = document.getElementById('color-modal');
                 const modal = Modal.getInstance(modalEl);
                 if (modal) modal.hide();
@@ -820,12 +859,14 @@
         deselectAll() {
             this.selectedNode = null;
             document.getElementById('selected-node').textContent = '-';
-            if (this.nodeElements) {
-                this.nodeElements.classed('selected', false).classed('dimmed', false);
-                this.linkGroup.selectAll('.link').classed('dimmed', false);
-                this.labelElements.classed('dimmed', false);
+            
+            // Entferne URL-Button
+            const urlButton = document.getElementById('url-button');
+            if (urlButton) {
+                urlButton.remove();
             }
-            this.updateLabelVisibility();
+            
+            this.render();
         }
 
         async loadData() {
@@ -872,40 +913,101 @@
             const nodeMap = new Map();
             const links = [];
 
-            Object.entries(this.data).forEach(([aea, supporters]) => {
+            Object.entries(this.data).forEach(([aea, aeaData]) => {
+                // Erstelle Antrag-Node
                 if (!nodeMap.has(aea)) {
+                    const antragColor = getComputedStyle(document.documentElement).getPropertyValue('--node-antrag').trim();
                     nodeMap.set(aea, {
                         id: aea,
                         label: aea,
                         type: 'antrag',
-                        color: getComputedStyle(document.documentElement).getPropertyValue('--node-antrag').trim(),
+                        color: antragColor || '#d86b74',
                         linkCount: 0,
                         font: this.defaultFont
                     });
                 }
 
-                supporters.forEach(supporter => {
-                    const supporterId = `${supporter[0]} | ${supporter[1]}`;
+                // Handle both old format (array) and new format (object with initiator/supporters)
+                let initiator = null;
+                let supporters = [];
+                
+                if (Array.isArray(aeaData)) {
+                    // Alte Struktur: Array von [name, kv] oder [name, kv, is_initiator]
+                    aeaData.forEach(item => {
+                        if (item.length > 2 && item[2]) {
+                            // is_initiator flag
+                            initiator = [item[0], item[1]];
+                        } else {
+                            supporters.push([item[0], item[1]]);
+                        }
+                    });
+                } else if (aeaData && typeof aeaData === 'object') {
+                    // Neue Struktur: {initiator: [name, kv] oder null, supporters: [[name, kv], ...]}
+                    initiator = aeaData.initiator || null;
+                    supporters = aeaData.supporters || [];
+                }
 
-                    if (!nodeMap.has(supporterId)) {
-                        nodeMap.set(supporterId, {
-                            id: supporterId,
-                            label: supporter[0],
-                            sublabel: supporter[1],
+                // Verbindung zu Initiator (Antragsteller) - 5x stärker gewichtet
+                if (initiator && initiator[0] && initiator[1]) {
+                    const [name, kv] = initiator;
+                    const initiatorId = `${name} | ${kv}`;
+
+                    if (!nodeMap.has(initiatorId)) {
+                        const supporterColor = getComputedStyle(document.documentElement).getPropertyValue('--node-supporter').trim();
+                        nodeMap.set(initiatorId, {
+                            id: initiatorId,
+                            label: name,
+                            sublabel: kv,
                             type: 'supporter',
-                            color: getComputedStyle(document.documentElement).getPropertyValue('--node-supporter').trim(),
+                            color: supporterColor || '#7dff00',
                             linkCount: 0,
-                            font: this.defaultFont
+                            font: this.defaultFont,
+                            kv: kv
                         });
                     }
 
                     links.push({
                         source: aea,
-                        target: supporterId
+                        target: initiatorId,
+                        weight: 5,  // Antragsteller 5x stärker gewichtet
+                        is_initiator: true
                     });
 
-                    nodeMap.get(aea).linkCount++;
-                    nodeMap.get(supporterId).linkCount++;
+                    nodeMap.get(aea).linkCount += 5;
+                    nodeMap.get(initiatorId).linkCount += 5;
+                }
+
+                // Verbindungen zu Supporters - normal gewichtet
+                supporters.forEach(supporter => {
+                    const name = supporter[0];
+                    const kv = supporter[1];
+                    if (!name || !kv) return;
+                    
+                    const supporterId = `${name} | ${kv}`;
+
+                    if (!nodeMap.has(supporterId)) {
+                        const supporterColor = getComputedStyle(document.documentElement).getPropertyValue('--node-supporter').trim();
+                        nodeMap.set(supporterId, {
+                            id: supporterId,
+                            label: name,
+                            sublabel: kv,
+                            type: 'supporter',
+                            color: supporterColor || '#7dff00',
+                            linkCount: 0,
+                            font: this.defaultFont,
+                            kv: kv
+                        });
+                    }
+
+                    links.push({
+                        source: aea,
+                        target: supporterId,
+                        weight: 1,  // Supporter normal gewichtet
+                        is_initiator: false
+                    });
+
+                    nodeMap.get(aea).linkCount += 1;
+                    nodeMap.get(supporterId).linkCount += 1;
                 });
             });
 
@@ -923,7 +1025,10 @@
             document.getElementById('loading-text').textContent = 'Simulation läuft...';
 
             const simulation = d3.forceSimulation(this.nodes)
-                .force("link", d3.forceLink(this.links).id(d => d.id).distance(100))
+                .force("link", d3.forceLink(this.links).id(d => d.id).distance(d => {
+                    // Stärkere Verbindungen haben kürzere Distanz
+                    return 100 / (d.weight || 1);
+                }))
                 .force("charge", d3.forceManyBody().strength(-300))
                 .force("center", d3.forceCenter(this.width / 2, this.height / 2))
                 .force("collision", d3.forceCollide().radius(30))
@@ -937,13 +1042,69 @@
                 iterations++;
                 const progress = Math.min(100, (iterations / maxIterations) * 100);
                 document.getElementById('loading-text').textContent = `Simulation läuft... ${Math.round(progress)}%`;
+                this.render();
             });
 
             simulation.on("end", () => {
                 document.getElementById('loading').style.display = 'none';
                 this.render();
                 this.centerGraph();
+                this.setupCanvasEvents();
             });
+        }
+        
+        setupCanvasEvents() {
+            this.canvas.addEventListener('mousemove', (event) => {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = (event.clientX - rect.left - this.currentTransform.x) / this.currentTransform.k;
+                const y = (event.clientY - rect.top - this.currentTransform.y) / this.currentTransform.k;
+                
+                const node = this.getNodeAt(x, y);
+                if (node !== this.hoveredNode) {
+                    this.hoveredNode = node;
+                    this.render();
+                }
+            });
+            
+            this.canvas.addEventListener('click', (event) => {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = (event.clientX - rect.left - this.currentTransform.x) / this.currentTransform.k;
+                const y = (event.clientY - rect.top - this.currentTransform.y) / this.currentTransform.k;
+                
+                const node = this.getNodeAt(x, y);
+                if (node) {
+                    this.onNodeClick(event, node);
+                }
+            });
+            
+            this.canvas.addEventListener('contextmenu', (event) => {
+                event.preventDefault();
+                const rect = this.canvas.getBoundingClientRect();
+                const x = (event.clientX - rect.left - this.currentTransform.x) / this.currentTransform.k;
+                const y = (event.clientY - rect.top - this.currentTransform.y) / this.currentTransform.k;
+                
+                const node = this.getNodeAt(x, y);
+                if (node) {
+                    this.onNodeRightClick(event, node);
+                }
+            });
+            
+            this.canvas.addEventListener('mouseleave', () => {
+                this.hoveredNode = null;
+                this.render();
+            });
+        }
+        
+        getNodeAt(x, y) {
+            for (const node of this.nodes) {
+                const radius = (5 + Math.sqrt(node.linkCount) * 2) * this.settings.nodeSize;
+                const dx = x - node.x;
+                const dy = y - node.y;
+                if (dx * dx + dy * dy <= radius * radius) {
+                    return node;
+                }
+            }
+            return null;
         }
 
         setupEventListeners() {
@@ -968,6 +1129,7 @@
 
 
             document.getElementById('create-group').addEventListener('click', () => this.createGroup());
+            document.getElementById('create-kv-group').addEventListener('click', () => this.createKreisverbandGroup());
             document.getElementById('export-groups').addEventListener('click', () => this.exportGroups());
             document.getElementById('import-groups').addEventListener('change', (e) => this.importGroups(e));
 
@@ -975,81 +1137,117 @@
         }
 
         updateAllFonts() {
-            if (this.labelElements) {
-                const fontClass = this.getFontClass(this.defaultFont);
-                this.labelElements.selectAll('.label').attr('class', `label ${fontClass}`);
-                this.labelElements.selectAll('.sublabel').attr('class', `sublabel ${fontClass}`);
-            }
+            this.render();
         }
 
         render() {
-            const link = this.linkGroup.selectAll('line')
-                .data(this.links)
-                .join('line')
-                .attr('class', 'link')
-                .attr('x1', d => d.source.x)
-                .attr('y1', d => d.source.y)
-                .attr('x2', d => d.target.x)
-                .attr('y2', d => d.target.y);
-
-            this.linkGroup.classed('hidden', !this.settings.showLinks);
-
-            const node = this.nodeGroup.selectAll('circle')
-                .data(this.nodes)
-                .join('circle')
-                .attr('class', 'node')
-                .attr('cx', d => d.x)
-                .attr('cy', d => d.y)
-                .attr('r', d => (5 + Math.sqrt(d.linkCount) * 2) * this.settings.nodeSize)
-                .attr('fill', d => this.getNodeColor(d))
-                .on('click', (event, d) => this.onNodeClick(event, d))
-                .on('contextmenu', (event, d) => this.onNodeRightClick(event, d))
-                .on('mouseenter', (event, d) => this.onNodeHover(event, d))
-                .on('mouseleave', () => this.onNodeLeave());
-
-            const labelContainer = this.labelGroup.selectAll('g')
-                .data(this.nodes)
-                .join('g')
-                .attr('transform', d => `translate(${d.x}, ${d.y})`);
-
-            labelContainer.each((d, i, nodes) => {
-                const g = d3.select(nodes[i]);
-                g.selectAll('*').remove();
-
-                const radius = (5 + Math.sqrt(d.linkCount) * 2);
-                const fontClass = this.getFontClass(d.font);
-
-                g.append('text')
-                    .attr('class', `label ${fontClass}`)
-                    .attr('x', radius + 5)
-                    .attr('y', 0)
-                    .attr('dy', '0.35em')
-                    .text(d.label);
-
-                if (d.sublabel) {
-                    g.append('text')
-                        .attr('class', `sublabel ${fontClass}`)
-                        .attr('x', radius + 5)
-                        .attr('y', 12)
-                        .text(d.sublabel);
+            const ctx = this.ctx;
+            const transform = this.currentTransform;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, this.width, this.height);
+            
+            // Apply transform
+            ctx.save();
+            ctx.translate(transform.x, transform.y);
+            ctx.scale(transform.k, transform.k);
+            
+            // Draw links
+            if (this.settings.showLinks) {
+                this.links.forEach(link => {
+                    let source = typeof link.source === 'object' ? link.source : this.nodes.find(n => n.id === link.source);
+                    let target = typeof link.target === 'object' ? link.target : this.nodes.find(n => n.id === link.target);
+                    
+                    // Fallback: finde in allNodes falls nicht in gefilterten nodes
+                    if (!source) {
+                        source = this.allNodes.find(n => n.id === (typeof link.source === 'object' ? link.source.id : link.source));
+                    }
+                    if (!target) {
+                        target = this.allNodes.find(n => n.id === (typeof link.target === 'object' ? link.target.id : link.target));
+                    }
+                    
+                    if (!source || !target) return;
+                    
+                    const isDimmed = this.selectedNode && 
+                        source.id !== this.selectedNode.id && 
+                        target.id !== this.selectedNode.id;
+                    
+                    ctx.strokeStyle = isDimmed ? 'rgba(153, 153, 153, 0.1)' : 'rgba(153, 153, 153, 0.3)';
+                    ctx.lineWidth = (link.weight || 1) * (isDimmed ? 0.5 : 1);
+                    ctx.beginPath();
+                    ctx.moveTo(source.x, source.y);
+                    ctx.lineTo(target.x, target.y);
+                    ctx.stroke();
+                });
+            }
+            
+            // Draw nodes
+            this.nodes.forEach(node => {
+                const radius = (5 + Math.sqrt(node.linkCount) * 2) * this.settings.nodeSize;
+                const isSelected = this.selectedNode && this.selectedNode.id === node.id;
+                const isDimmed = this.selectedNode && 
+                    this.selectedNode.id !== node.id && 
+                    !this.isConnectedToSelected(node);
+                
+                ctx.save();
+                
+                // Draw node
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = isDimmed ? this.getNodeColor(node).replace(')', ', 0.2)').replace('rgb', 'rgba') : this.getNodeColor(node);
+                ctx.fill();
+                
+                // Draw border
+                if (isSelected || this.hoveredNode && this.hoveredNode.id === node.id) {
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = isSelected ? 2 : 1.5;
+                    ctx.stroke();
                 }
+                
+                ctx.restore();
             });
-
-            this.updateLabelVisibility();
-
-            this.nodeElements = node;
-            this.labelElements = labelContainer;
-            this.linkElements = link;
+            
+            // Draw labels
+            if (this.settings.showLabels) {
+                this.nodes.forEach(node => {
+                    const shouldShow = !this.selectedNode || 
+                        this.selectedNode.id === node.id || 
+                        this.isConnectedToSelected(node) ||
+                        (this.hoveredNode && this.hoveredNode.id === node.id);
+                    
+                    if (!shouldShow) return;
+                    
+                    const radius = (5 + Math.sqrt(node.linkCount) * 2) * this.settings.nodeSize;
+                    const isDimmed = this.selectedNode && 
+                        this.selectedNode.id !== node.id && 
+                        !this.isConnectedToSelected(node);
+                    
+                    ctx.save();
+                    ctx.fillStyle = isDimmed ? 'rgba(250, 249, 245, 0.2)' : 'rgba(250, 249, 245, 1)';
+                    ctx.font = '12px ' + this.defaultFont;
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(node.label, node.x + radius + 5, node.y);
+                    
+                    if (node.sublabel) {
+                        ctx.font = '10px ' + this.defaultFont;
+                        ctx.fillText(node.sublabel, node.x + radius + 5, node.y + 12);
+                    }
+                    ctx.restore();
+                });
+            }
+            
+            ctx.restore();
         }
 
         onNodeHover(event, d) {
             this.hoveredNode = d;
-            this.updateLabelVisibility();
+            this.render();
         }
 
         onNodeLeave() {
             this.hoveredNode = null;
-            this.updateLabelVisibility();
+            this.render();
         }
 
         getNodeColor(node) {
@@ -1058,7 +1256,16 @@
                 const group = this.groups.find(g => g.id === groupId);
                 if (group) return group.color;
             }
-            return node.color;
+            // node.color ist bereits ein CSS-Wert oder Hex-Code
+            if (node.color.startsWith('#')) {
+                return node.color;
+            }
+            // Wenn es eine CSS-Variable ist, lese sie aus
+            if (node.color.startsWith('--')) {
+                const color = getComputedStyle(document.documentElement).getPropertyValue(node.color).trim();
+                return color || '#ffffff';
+            }
+            return node.color || '#ffffff';
         }
 
         onNodeClick(event, d) {
@@ -1069,31 +1276,50 @@
             } else {
                 const connectedNodeIds = new Set();
                 this.links.forEach(link => {
-                    if (link.source.id === d.id) {
-                        connectedNodeIds.add(link.target.id);
-                    } else if (link.target.id === d.id) {
-                        connectedNodeIds.add(link.source.id);
+                    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                    if (sourceId === d.id) {
+                        connectedNodeIds.add(targetId);
+                    } else if (targetId === d.id) {
+                        connectedNodeIds.add(sourceId);
                     }
                 });
 
                 this.selectedNode = d;
                 document.getElementById('selected-node').textContent = d.label;
+                
+                // Zeige URL-Button wenn es ein Antrag ist
+                this.showUrlButton(d);
 
-                this.nodeElements
-                    .classed('selected', node => node === d)
-                    .classed('dimmed', node => node !== d && !connectedNodeIds.has(node.id));
-
-                this.linkElements
-                    .classed('dimmed', link =>
-                        link.source.id !== d.id && link.target.id !== d.id
-                    );
-
-                this.labelElements
-                    .classed('dimmed', node =>
-                        node.id !== d.id && !connectedNodeIds.has(node.id)
-                    );
-
-                this.updateLabelVisibility();
+                this.render();
+            }
+        }
+        
+        showUrlButton(node) {
+            // Entferne alten Button falls vorhanden
+            const oldButton = document.getElementById('url-button');
+            if (oldButton) {
+                oldButton.remove();
+            }
+            
+            // Nur für Anträge
+            if (node.type === 'antrag') {
+                const url = this.amendmentsUrlMap.get(node.id);
+                if (url) {
+                    const button = document.createElement('button');
+                    button.id = 'url-button';
+                    button.className = 'absolute top-20 left-5 z-40 rounded-lg p-3 font-medium transition-all fancy-button';
+                    button.innerHTML = `
+                        <svg class="h-5 w-5 text-[hsl(var(--text-200))] inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                        </svg>
+                        Antrag öffnen
+                    `;
+                    button.addEventListener('click', () => {
+                        window.open(url, '_blank');
+                    });
+                    document.body.appendChild(button);
+                }
             }
         }
 
@@ -1187,13 +1413,13 @@
 
         addNodeToGroup(nodeId, groupId) {
             this.nodeGroups.set(nodeId, groupId);
-            this.nodeElements.attr('fill', d => this.getNodeColor(d));
+            this.render();
             this.updateGroupList();
         }
 
         removeNodeFromGroup(nodeId) {
             this.nodeGroups.delete(nodeId);
-            this.nodeElements.attr('fill', d => this.getNodeColor(d));
+            this.render();
             this.updateGroupList();
         }
 
@@ -1217,6 +1443,48 @@
             this.updateGroupList();
 
             document.getElementById('group-name').value = '';
+        }
+        
+        createKreisverbandGroup() {
+            const kvName = document.getElementById('kv-group-name').value.trim();
+            const color = this.selectedColor;
+
+            if (!kvName) {
+                alert('Bitte einen Kreisverband eingeben');
+                return;
+            }
+
+            // Finde alle Supporter mit diesem Kreisverband
+            const kvNodes = this.allNodes.filter(node => 
+                node.type === 'supporter' && 
+                node.kv && 
+                node.kv.toLowerCase().includes(kvName.toLowerCase())
+            );
+
+            if (kvNodes.length === 0) {
+                alert(`Keine Supporter mit Kreisverband "${kvName}" gefunden.`);
+                return;
+            }
+
+            const group = {
+                id: Date.now(),
+                name: `KV ${kvName}`,
+                color: color,
+                nodes: []
+            };
+
+            this.groups.push(group);
+
+            // Füge alle gefundenen Nodes zur Gruppe hinzu
+            kvNodes.forEach(node => {
+                this.nodeGroups.set(node.id, group.id);
+            });
+
+            this.render();
+            this.updateGroupList();
+
+            document.getElementById('kv-group-name').value = '';
+            alert(`${kvNodes.length} Supporter aus "${kvName}" zur Gruppe hinzugefügt.`);
         }
 
         updateGroupList() {
@@ -1321,9 +1589,7 @@
             });
             nodesToRemove.forEach(nodeId => this.nodeGroups.delete(nodeId));
 
-            if (this.nodeElements) {
-                this.nodeElements.attr('fill', d => this.getNodeColor(d));
-            }
+            this.render();
             this.updateGroupList();
         }
 
@@ -1381,45 +1647,29 @@
 
         isConnectedToSelected(node) {
             if (!this.selectedNode) return false;
-            return this.links.some(link =>
-                (link.source.id === this.selectedNode.id && link.target.id === node.id) ||
-                (link.target.id === this.selectedNode.id && link.source.id === node.id)
-            );
-        }
-
-        updateLabelVisibility() {
-            if (!this.labelElements) return;
-
-            this.labelElements.style('display', d => {
-                if (this.settings.showLabels) {
-                    return 'block';
-                } else if (this.selectedNode === d || this.hoveredNode === d || this.isConnectedToSelected(d)) {
-                    return 'block';
-                } else {
-                    return 'none';
-                }
+            return this.links.some(link => {
+                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                return (sourceId === this.selectedNode.id && targetId === node.id) ||
+                       (targetId === this.selectedNode.id && sourceId === node.id);
             });
         }
 
+        updateLabelVisibility() {
+            // Labels werden jetzt in render() gehandhabt
+            this.render();
+        }
+
         updateNodeSizes() {
-            if (!this.nodeElements) return;
-
-            this.nodeElements.attr('r', d => (5 + Math.sqrt(d.linkCount) * 2) * this.settings.nodeSize);
-
-            if (this.labelElements) {
-                this.labelElements.each(function(d) {
-                    const g = d3.select(this);
-                    const radius = (5 + Math.sqrt(d.linkCount) * 2);
-                    g.selectAll('.label').attr('x', radius + 5);
-                    g.selectAll('.sublabel').attr('x', radius + 5);
-                });
-            }
+            this.render();
         }
 
         onResize() {
             this.width = window.innerWidth;
             this.height = window.innerHeight;
-            this.svg.attr('width', this.width).attr('height', this.height);
+            this.canvas.width = this.width;
+            this.canvas.height = this.height;
+            this.render();
         }
 
         onSearch(e) {
@@ -1465,9 +1715,11 @@
             } else {
                 this.nodes = this.allNodes.filter(n => n.type === this.settings.nodeType);
                 const nodeIds = new Set(this.nodes.map(n => n.id));
-                this.links = this.allLinks.filter(l =>
-                    nodeIds.has(l.source.id) && nodeIds.has(l.target.id)
-                );
+                this.links = this.allLinks.filter(l => {
+                    const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
+                    const targetId = typeof l.target === 'object' ? l.target.id : l.target;
+                    return nodeIds.has(sourceId) && nodeIds.has(targetId);
+                });
             }
 
             document.getElementById('node-count').textContent = this.nodes.length;
@@ -1477,7 +1729,7 @@
 
         resetView() {
             this.deselectAll();
-            this.svg.transition()
+            d3.select(this.canvas).transition()
                 .duration(750)
                 .call(this.zoom.transform, d3.zoomIdentity);
         }
@@ -1492,7 +1744,7 @@
                 .translate(this.width / 2, this.height / 2)
                 .translate(-centerX, -centerY);
 
-            this.svg.transition()
+            d3.select(this.canvas).transition()
                 .duration(750)
                 .call(this.zoom.transform, transform);
         }

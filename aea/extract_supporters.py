@@ -13,6 +13,7 @@ import os
 import re
 import sys
 import csv
+import json
 import glob
 import html
 from typing import List, Tuple, Optional
@@ -146,6 +147,33 @@ def read_amendments_csv(path: str) -> List[str]:
             unique_urls.append(u)
     return unique_urls
 
+def read_amendments_json(path: str) -> List[str]:
+    urls: List[str] = []
+    with open(path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+        if isinstance(data, list):
+            for item in data:
+                if isinstance(item, dict) and 'url' in item:
+                    u = item['url'].strip()
+                    if u:
+                        urls.append(u)
+        elif isinstance(data, dict):
+            # Falls es ein dict mit einer Liste ist
+            for key in data:
+                if isinstance(data[key], list):
+                    for item in data[key]:
+                        if isinstance(item, dict) and 'url' in item:
+                            u = item['url'].strip()
+                            if u:
+                                urls.append(u)
+    seen = set()
+    unique_urls: List[str] = []
+    for u in urls:
+        if u not in seen:
+            seen.add(u)
+            unique_urls.append(u)
+    return unique_urls
+
 
 def fetch_url(url: str, timeout: float = 20.0) -> str:
     req = urllib.request.Request(url, headers={
@@ -164,27 +192,32 @@ def fetch_url(url: str, timeout: float = 20.0) -> str:
             return data.decode('utf-8', errors='ignore')
 
 
-def process_url(url: str) -> Tuple[Optional[str], List[Tuple[str, str]]]:
+def process_url(url: str) -> Tuple[Optional[str], Optional[Tuple[str, str]], List[Tuple[str, str]]]:
     doc = fetch_url(url)
     code, _title = get_motion_info(doc)
-    supporters: List[Tuple[str, str]] = []
-    # Initiator first
+    # Initiator separat extrahieren
     initiator = parse_initiator(doc)
+    initiator_tuple = None
     if initiator:
-        supporters.append(initiator)
+        initiator_tuple = (initiator[0].strip(), initiator[1].strip())
+    
     # Weitere Antragsteller*innen
     list_html = find_supporters_list_html(doc)
     sups = parse_supporters(list_html or '')
-    # Deduplicate by (name, kv)
+    
+    # Deduplicate supporters (exclude initiator if present)
     seen = set()
-    result: List[Tuple[str, str]] = []
-    for pair in supporters + sups:
-        key = (pair[0].strip(), pair[1].strip())
-        if key in seen:
-            continue
-        seen.add(key)
-        result.append(key)
-    return code, result
+    if initiator_tuple:
+        seen.add((initiator_tuple[0], initiator_tuple[1]))
+    
+    supporters: List[Tuple[str, str]] = []
+    for name, kv in sups:
+        key = (name.strip(), kv.strip())
+        if key not in seen:
+            seen.add(key)
+            supporters.append((name.strip(), kv.strip()))
+    
+    return code, initiator_tuple, supporters
 
 
 def parse_initiator(doc: str) -> Optional[Tuple[str, str]]:
@@ -224,30 +257,49 @@ def main():
     args = sys.argv[1:]
     urls: List[str] = []
     if not args:
+        # Versuche zuerst JSON, dann CSV
+        default_json = os.path.join(os.getcwd(), 'amendments_url.json')
         default_csv = os.path.join(os.getcwd(), 'amendments.csv')
-        if not os.path.isfile(default_csv):
-            print('amendments.csv nicht gefunden. Übergib entweder eine CSV-Datei oder URL(s).')
+        if os.path.isfile(default_json):
+            urls = read_amendments_json(default_json)
+            print(f"Lese {len(urls)} URLs aus {default_json}")
+        elif os.path.isfile(default_csv):
+            urls = read_amendments_csv(default_csv)
+            print(f"Lese {len(urls)} URLs aus {default_csv}")
+        else:
+            print('amendments_url.json oder amendments.csv nicht gefunden. Übergib entweder eine Datei oder URL(s).')
             sys.exit(1)
-        urls = read_amendments_csv(default_csv)
-        print(f"Lese {len(urls)} URLs aus {default_csv}")
     else:
-        if len(args) == 1 and args[0].lower().endswith('.csv') and os.path.isfile(args[0]):
-            urls = read_amendments_csv(args[0])
-            print(f"Lese {len(urls)} URLs aus {args[0]}")
+        if len(args) == 1:
+            if args[0].lower().endswith('.json') and os.path.isfile(args[0]):
+                urls = read_amendments_json(args[0])
+                print(f"Lese {len(urls)} URLs aus {args[0]}")
+            elif args[0].lower().endswith('.csv') and os.path.isfile(args[0]):
+                urls = read_amendments_csv(args[0])
+                print(f"Lese {len(urls)} URLs aus {args[0]}")
+            elif args[0].startswith('http'):
+                urls = [args[0]]
+            else:
+                print('Keine gültige Datei oder URL übergeben.')
+                sys.exit(1)
         else:
             urls = [a for a in args if a.startswith('http')]
             if not urls:
-                print('Keine gültigen URLs übergeben. Übergib eine CSV mit URLs oder mindestens eine http(s)-URL.')
+                print('Keine gültigen URLs übergeben. Übergib eine JSON/CSV-Datei oder mindestens eine http(s)-URL.')
                 sys.exit(1)
     support_map: dict = {}
     total = len(urls)
     for i, url in enumerate(urls, 1):
         try:
-            code, lst = process_url(url)
-            print(f"[{i}/{total}] {url}: {len(lst)} Personen")
+            code, initiator, supporters = process_url(url)
+            total_people = (1 if initiator else 0) + len(supporters)
+            print(f"[{i}/{total}] {url}: {total_people} Personen (1 Initiator, {len(supporters)} Supporters)")
             if code:
-                # Store as list of [name, kv]
-                support_map[code] = [[name, kv] for name, kv in lst]
+                # Store as dict with initiator and supporters
+                support_map[code] = {
+                    "initiator": list(initiator) if initiator else None,
+                    "supporters": [[name, kv] for name, kv in supporters]
+                }
         except urllib.error.HTTPError as e:
             print(f"[{i}/{total}] HTTP-Fehler {e.code} bei {url}")
         except urllib.error.URLError as e:
