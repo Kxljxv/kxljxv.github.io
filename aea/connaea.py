@@ -48,65 +48,72 @@ def main():
 
     support_map = load_support_map(txt_path)
 
-    # Erstelle graph_data.json mit neuer Struktur
-    # Struktur: Jeder Antrag hat initiator und supporters Liste
+    # Filter AEA mit mehr als einem Supporter
+    aea_without_1 = {aea: supporters for aea, supporters in support_map.items() if len(supporters) > 1}
+
+    # Berechnung der gemeinsamen Supporter zwischen AEAs
+    aea_connections = {}
+    for aea_perspective in aea_without_1:
+        aea_perspective_connections = {}
+        for aea_target in aea_without_1:
+            if aea_perspective != aea_target:
+                common_supporters = 0
+                for supporter_perspective in aea_without_1[aea_perspective]:
+                    for supporter_target in aea_without_1[aea_target]:
+                        if supporter_perspective == supporter_target:
+                            common_supporters += 1
+                aea_perspective_connections[aea_target] = common_supporters
+        aea_connections[aea_perspective] = aea_perspective_connections
+
+    #save_dict_to_json(aea_connections, "aea_connections.json")
+
+    # Mapping Supporter -> Liste der AEAs, die sie supporten
+    supporter_map = {}
+    for aea, supporters in support_map.items():
+        for supporter in supporters:
+            # Handle both old format [name, kv] and new format [name, kv, is_initiator]
+            if len(supporter) == 2:
+                name, kv = supporter
+                is_initiator = False
+            else:
+                name, kv, is_initiator = supporter
+            supporter_id = (name, kv)  # ("Name", "KV ...")
+            if supporter_id not in supporter_map:
+                supporter_map[supporter_id] = []
+            supporter_map[supporter_id].append(aea)
+
+    # JSON kann keine Tuples als Key, also wandeln wir sie in Strings um
+    supporter_map_json = {f"{k[0]} | {k[1]}": v for k, v in supporter_map.items()}
+    pprint.pp(supporter_map_json)
+
+    #save_dict_to_json(supporter_map_json, "supporter_map.json")
+    
+    # Erstelle graph_data.json mit Gewichtungen
+    # Struktur: support_map mit [name, kv, is_initiator] für jeden Supporter
     graph_data = {
         "support_map": {},
         "metadata": {
-            "total_aeas": len(support_map)
+            "total_aeas": len(support_map),
+            "total_supporters": len(supporter_map)
         }
     }
     
-    all_supporters_set = set()
-    
-    # Konvertiere zu neuer Struktur
-    for aea, data in support_map.items():
-        # Handle both old format (list) and new format (dict)
-        if isinstance(data, dict):
-            # Neue Struktur: {"initiator": [name, kv] oder None, "supporters": [[name, kv], ...]}
-            graph_data["support_map"][aea] = {
-                "initiator": data.get("initiator"),
-                "supporters": data.get("supporters", [])
-            }
-            # Sammle alle Supporter für Metadata
-            if data.get("initiator"):
-                all_supporters_set.add(tuple(data["initiator"]))
-            for sup in data.get("supporters", []):
-                all_supporters_set.add(tuple(sup))
-        else:
-            # Alte Struktur: Liste von [name, kv] oder [name, kv, is_initiator]
-            # Konvertiere zu neuer Struktur
-            initiator = None
-            supporters = []
-            for item in data:
-                if len(item) == 2:
-                    name, kv = item
-                    is_initiator = False
-                else:
-                    name, kv, is_initiator = item
-                
-                if is_initiator and initiator is None:
-                    initiator = [name, kv]
-                else:
-                    supporters.append([name, kv])
-            
-            graph_data["support_map"][aea] = {
-                "initiator": initiator,
-                "supporters": supporters
-            }
-            # Sammle alle Supporter für Metadata
-            if initiator:
-                all_supporters_set.add(tuple(initiator))
-            for sup in supporters:
-                all_supporters_set.add(tuple(sup))
-    
-    graph_data["metadata"]["total_supporters"] = len(all_supporters_set)
+    # Konvertiere support_map zu neuer Struktur mit is_initiator Flag
+    for aea, supporters in support_map.items():
+        graph_data["support_map"][aea] = []
+        for supporter in supporters:
+            # Handle both old format [name, kv] and new format [name, kv, is_initiator]
+            if len(supporter) == 2:
+                name, kv = supporter
+                is_initiator = False
+            else:
+                name, kv, is_initiator = supporter
+            graph_data["support_map"][aea].append([name, kv, is_initiator])
     
     # Speichere graph_data.json
     graph_data_path = os.path.join(os.getcwd(), 'graph_data.json')
     save_dict_to_json(graph_data, graph_data_path)
     print(f"graph_data.json erfolgreich erstellt mit {len(graph_data['support_map'])} Anträgen.")
-    print(f"Gesamt: {graph_data['metadata']['total_supporters']} eindeutige Personen.")
 
     # Sicherstellen, dass das Verzeichnis existiert
     output_dir = "./supporter/AEA5"

@@ -913,8 +913,7 @@
             const nodeMap = new Map();
             const links = [];
 
-            Object.entries(this.data).forEach(([aea, aeaData]) => {
-                // Erstelle Antrag-Node
+            Object.entries(this.data).forEach(([aea, supporters]) => {
                 if (!nodeMap.has(aea)) {
                     const antragColor = getComputedStyle(document.documentElement).getPropertyValue('--node-antrag').trim();
                     nodeMap.set(aea, {
@@ -927,62 +926,11 @@
                     });
                 }
 
-                // Handle both old format (array) and new format (object with initiator/supporters)
-                let initiator = null;
-                let supporters = [];
-                
-                if (Array.isArray(aeaData)) {
-                    // Alte Struktur: Array von [name, kv] oder [name, kv, is_initiator]
-                    aeaData.forEach(item => {
-                        if (item.length > 2 && item[2]) {
-                            // is_initiator flag
-                            initiator = [item[0], item[1]];
-                        } else {
-                            supporters.push([item[0], item[1]]);
-                        }
-                    });
-                } else if (aeaData && typeof aeaData === 'object') {
-                    // Neue Struktur: {initiator: [name, kv] oder null, supporters: [[name, kv], ...]}
-                    initiator = aeaData.initiator || null;
-                    supporters = aeaData.supporters || [];
-                }
-
-                // Verbindung zu Initiator (Antragsteller) - 5x stärker gewichtet
-                if (initiator && initiator[0] && initiator[1]) {
-                    const [name, kv] = initiator;
-                    const initiatorId = `${name} | ${kv}`;
-
-                    if (!nodeMap.has(initiatorId)) {
-                        const supporterColor = getComputedStyle(document.documentElement).getPropertyValue('--node-supporter').trim();
-                        nodeMap.set(initiatorId, {
-                            id: initiatorId,
-                            label: name,
-                            sublabel: kv,
-                            type: 'supporter',
-                            color: supporterColor || '#7dff00',
-                            linkCount: 0,
-                            font: this.defaultFont,
-                            kv: kv
-                        });
-                    }
-
-                    links.push({
-                        source: aea,
-                        target: initiatorId,
-                        weight: 5,  // Antragsteller 5x stärker gewichtet
-                        is_initiator: true
-                    });
-
-                    nodeMap.get(aea).linkCount += 5;
-                    nodeMap.get(initiatorId).linkCount += 5;
-                }
-
-                // Verbindungen zu Supporters - normal gewichtet
                 supporters.forEach(supporter => {
+                    // Handle both old format [name, kv] and new format [name, kv, is_initiator]
                     const name = supporter[0];
                     const kv = supporter[1];
-                    if (!name || !kv) return;
-                    
+                    const is_initiator = supporter.length > 2 ? supporter[2] : false;
                     const supporterId = `${name} | ${kv}`;
 
                     if (!nodeMap.has(supporterId)) {
@@ -999,15 +947,19 @@
                         });
                     }
 
+                    // Gewichtung: 5 für Antragsteller, 1 für Supporter
+                    const weight = is_initiator ? 5 : 1;
+                    
+                    // Erstelle Link-Objekt mit IDs (werden später in der Simulation zu Objekten)
                     links.push({
                         source: aea,
                         target: supporterId,
-                        weight: 1,  // Supporter normal gewichtet
-                        is_initiator: false
+                        weight: weight,
+                        is_initiator: is_initiator
                     });
 
-                    nodeMap.get(aea).linkCount += 1;
-                    nodeMap.get(supporterId).linkCount += 1;
+                    nodeMap.get(aea).linkCount += weight;
+                    nodeMap.get(supporterId).linkCount += weight;
                 });
             });
 
