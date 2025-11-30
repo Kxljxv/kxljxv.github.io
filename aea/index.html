@@ -724,7 +724,7 @@
             };
 
             this.zoom = d3.zoom()
-                .scaleExtent([0.1, 4])
+                .scaleExtent([0.01, 4])
                 .on('zoom', (event) => {
                     this.transform = event.transform;
                     this.render();
@@ -1543,7 +1543,7 @@
         resetZoom() {
             this.deselectAll();
             this.canvas.transition()
-                .duration(750)
+                .duration(0)
                 .call(this.zoom.scaleTo, 0.01);
         }
 
