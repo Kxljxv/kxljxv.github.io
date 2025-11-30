@@ -539,13 +539,9 @@
                     <div id="search-results" class="space-y-1"></div>
 
                     <hr class="mb-2 mt-4 border-[hsl(var(--text-500)/0.2)]">
-                    <div class="mb-4">
-                        <label for="amendment-select" class="mb-2 block text-sm font-medium text-[hsl(var(--text-200))]">Antrag auswählen</label>
-                        <select id="amendment-select" class="w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent bright-container focus:ring-2 focus:ring-[hsl(var(--bg-200))]">
-                            <option value="">Bitte wählen…</option>
-                        </select>
-                        <button id="open-amendment-btn" class="mt-2 w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button" style="display:none;">Antrag öffnen</button>
-                    </div>
+                    <button id="open-selected-antrag-btn" class="w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button">Antrag aufrufen</button>
+
+
                 </div>
 
                 <!-- Groups Tab -->
@@ -618,7 +614,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
     </button>
-    <button id="open-selected-antrag-btn" type="button" class="absolute bottom-5 right-5 z-40 rounded-lg p-3 font-medium transition-all fancy-button" style="display:none;">Antrag öffnen</button>
+    <!--<button id="open-selected-antrag-btn" type="button" class="absolute bottom-5 right-5 z-40 rounded-lg p-3 font-medium transition-all fancy-button" style="display:none;">Antrag öffnen</button>-->
 
     <div data-popover id="stats-popover" role="tooltip" class="invisible absolute z-50 inline-block w-64 rounded-lg bg-[hsl(var(--bg-100))] text-sm text-[hsl(var(--text-200))] opacity-0 shadow-[0_0.25rem_1.25rem_hsl(var(--always-black)/3.5%),0_0_0_0.5px_hsla(var(--border-300)/0.15)] transition-opacity duration-300">
         <div class="rounded-t-lg border-b border-[hsl(var(--text-500)/0.2)] px-3 py-2">
@@ -694,6 +690,8 @@
         </div>
     </div>
 </div>
+
+
 
 
 <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -996,12 +994,10 @@
             document.getElementById('loading-text').textContent = 'Simulation läuft...';
 
             const simulation = d3.forceSimulation(this.nodes)
-                .force('link', d3.forceLink(this.links).id(d => d.id).distance(100))
+                .force('link', d3.forceLink(this.links).id(d => d.id))
                 .force('charge', d3.forceManyBody().strength(-300))
                 .force('center', d3.forceCenter(this.width / 2, this.height / 2))
                 .force('collision', d3.forceCollide().radius(30))
-                .alphaDecay(0.005)
-                .alphaMin(0.001);
 
             let iterations = 0;
             const maxIterations = 1500;
@@ -1010,6 +1006,9 @@
                 iterations++;
                 const progress = Math.min(100, (iterations / maxIterations) * 100);
                 document.getElementById('loading-text').textContent = `Simulation läuft... ${Math.round(progress)}%`;
+                this.render();
+                this.centerGraph();
+                this.resetZoom();
             });
 
             simulation.on('end', () => {
@@ -1105,7 +1104,7 @@
             }
 
             this.nodes.forEach(n => {
-                const radius = (5 + Math.sqrt(n.linkCount) * 2) * this.settings.nodeSize;
+                const radius = (Math.sqrt(n.linkCount) * 2) * this.settings.nodeSize;
                 ctx.save();
                 ctx.globalAlpha = isDimmed(n) ? 0.2 : 1.0;
                 ctx.fillStyle = this.getNodeColor(n);
@@ -1118,12 +1117,12 @@
                 if (showLabel) {
                     ctx.save();
                     ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-000-full').trim() || '#faf9f5';
-                    ctx.font = '12px ' + (this.getFontClass(n.font).includes('serif') ? 'Serif' : 'ModernDense');
+                    ctx.font = '16px ' + (this.getFontClass(n.font).includes('serif') ? 'Serif' : 'ModernDense');
                     ctx.textBaseline = 'middle';
                     ctx.fillText(n.label, n.x + radius + 5, n.y);
                     if (n.sublabel) {
                         ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-400-full').trim() || '#9c9a92';
-                        ctx.font = '10px ' + (this.getFontClass(n.font).includes('serif') ? 'Serif' : 'ModernDense');
+                        ctx.font = '12px ' + (this.getFontClass(n.font).includes('serif') ? 'Serif' : 'ModernDense');
                         ctx.fillText(n.sublabel, n.x + radius + 5, n.y + 12);
                     }
                     ctx.restore();
@@ -1539,6 +1538,13 @@
             this.canvas.transition()
                 .duration(750)
                 .call(this.zoom.transform, d3.zoomIdentity);
+        }
+
+        resetZoom() {
+            this.deselectAll();
+            this.canvas.transition()
+                .duration(750)
+                .call(this.zoom.scaleTo, 0.01);
         }
 
         centerGraph() {
