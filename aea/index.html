@@ -956,8 +956,8 @@
                             const supporterId = `${app[0]} | ${app[1] || ''}`;
                             if (!nodeMap.has(supporterId)) nodeMap.set(supporterId, { id: supporterId, label: app[0], sublabel: app[1] || '', type: 'supporter', color: supporterColor, linkCount: 0, font: this.defaultFont });
                             links.push({ source: aea, target: supporterId, weight: 5 });
-                            nodeMap.get(aea).linkCount += 5;
-                            nodeMap.get(supporterId).linkCount += 5;
+                            nodeMap.get(aea).linkCount += 100;
+                            nodeMap.get(supporterId).linkCount += 100;
                         }
                         (val.supporters || []).forEach(s => {
                             const supporterId = `${s[0]} | ${s[1] || ''}`;
