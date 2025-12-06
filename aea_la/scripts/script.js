@@ -392,10 +392,7 @@ class GraphVisualization {
         });
 
         document.getElementById('reset-view').addEventListener('click', () => this.resetView());
-
-
         document.getElementById('create-group').addEventListener('click', () => this.createGroup());
-        document.getElementById('create-kv-group').addEventListener('click', () => this.createKVGroup());
         document.getElementById('export-groups').addEventListener('click', () => this.exportGroups());
         document.getElementById('import-groups').addEventListener('change', (e) => this.importGroups(e));
 
@@ -643,18 +640,6 @@ class GraphVisualization {
         document.getElementById('group-name').value = '';
     }
 
-    createKVGroup() {
-        const kv = document.getElementById('kv-name').value.trim();
-        const color = this.selectedColor;
-        if (!kv) { alert('Bitte KV eingeben'); return; }
-        const group = { id: Date.now(), name: `KV: ${kv}`, color, nodes: [] };
-        this.groups.push(group);
-        this.nodes.filter(n => n.type === 'supporter' && (n.sublabel || '').toLowerCase() === kv.toLowerCase())
-            .forEach(n => this.nodeGroups.set(n.id, group.id));
-        this.updateGroupList();
-        this.render();
-        document.getElementById('kv-name').value = '';
-    }
 
     updateGroupList() {
         const listContainer = document.getElementById('group-list');
