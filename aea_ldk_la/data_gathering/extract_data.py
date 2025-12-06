@@ -23,6 +23,8 @@ def entferne_duplikate(input_liste):
 
   return bereinigte_liste
 
+
+
 def txt_zu_dict(dateiname: str) -> dict:
     """
     Liest eine Textdatei zeilenweise aus und erstellt ein Dictionary.
@@ -73,6 +75,9 @@ def txt_zu_dict(dateiname: str) -> dict:
         
     return ergebnis_dict
 
+
+
+
 def txt_to_list(txt: str) -> list[str]:
     """
     Converts a string of text to a list of strings, where each string is a line from the text.
@@ -94,14 +99,28 @@ def extract_list_from_section(url: str) -> list[str]:
     Returns a list of strings.
     """
     
-    response = requests.get(url)
+    try:
+        response = requests.get(url)
+    except:
+        print(f"Request for {url} wasn't succesful!")
+        return []
+    
     response.raise_for_status()  # Ensure the request was successful
 
     soup = BeautifulSoup(response.text, "html.parser")
 
+
+
     # Find the target section
-    section = soup.find("section", {"class": "supporters", "id": "supporters"})
+    section = soup.find("section", {"class": "fullList hidden"})
+
     if not section:
+        section = soup.find("section", {"class": "supporters"})
+        print('supporters section')
+
+
+    if not section:
+        print('empty section')
         return []  # If not found, return an empty list
 
     # Find all list items inside the section
@@ -125,8 +144,11 @@ def extract_heading_from_section(url: str) -> list[str]:
     
     Returns a list of strings.
     """
-    
-    response = requests.get(url)
+    try:
+        response = requests.get(url)
+    except:
+        print(f"Request for {url} wasn't succesful!")
+        return []
     response.raise_for_status()  # Ensure the request was successful
 
     soup = BeautifulSoup(response.text, "html.parser")
@@ -151,7 +173,11 @@ def extract_applicant_name(url: str) -> str | None:
     Returns a clean name string or None if not found.
     """
 
-    response = requests.get(url)
+    try:
+        response = requests.get(url)
+    except:
+        print(f"Request for {url} wasn't succesful!")
+        return None
     response.raise_for_status()
 
     soup = BeautifulSoup(response.text, "html.parser")
@@ -159,16 +185,19 @@ def extract_applicant_name(url: str) -> str | None:
     # Find the data table
     table = soup.find("table", {"class": "motionDataTable"})
     if not table:
+        print('empty table')
         return None
 
     # Find the row containing the applicant entry
     applicant_row = table.find("th", string=lambda t: t and "Antragsteller*in" in t)
     if not applicant_row:
+        print('empty applicant_row')
         return None
 
     # The name is inside the adjacent <td>
     applicant_cell = applicant_row.find_next("td")
     if not applicant_cell:
+        print('empty applicant_cell')
         return None
 
     # Extract visible text, removing parentheses or additional info
@@ -213,8 +242,11 @@ def save_dict_to_json(data: Dict[str, Any], filename: str) -> None:
 
 
 url_txts = [
-    'urls/LA25-4.txt',
+    'urls/LDK24-2.txt',
+    'urls/LDK24-1.txt',
+    'urls/LDK25-2.txt',
     'urls/LA25-3.txt',
+    'urls/LA25-4.txt',
 ]
 
 url_lists = [txt_to_list(txt) for txt in url_txts]
@@ -224,14 +256,17 @@ database = {}
 # Load label mapping (replaces labels.txt)
 label_mapping = load_label_mapping()
 
-print("Loaded label mapping:", label_mapping)
-print("URL lists:", url_lists)
+print("Loaded label mapping.")
+print("URL lists.")
+
+
+
 for url_list in url_lists:
     for url in url_list:
         url_data = {}
 
         id_session = re.split("/",(re.split("https://berlin.antragsgruen.de/", url)[1]))[0]
-        
+
         heading = extract_heading_from_section(url)
         print(heading)
         try:
@@ -262,17 +297,23 @@ for url_list in url_lists:
         print(applicant)
         print(supporters)
         print(url)
+        
 
-        url_data["application_id"] = application_id
-        url_data["heading"] = heading
-        url_data["applicant"] = applicant
-        url_data["supporters"] = supporters
-        url_data["url"] = url
-        database[application_id] = url_data
+        if len(supporters) > 1:
+            url_data["application_id"] = application_id
+            url_data["heading"] = heading
+            url_data["applicant"] = applicant
+            url_data["supporters"] = supporters
+            url_data["url"] = url
+            database[application_id] = url_data
+            save_dict_to_json(database, "data.json")
+            save_dict_to_json(label_mapping, "label_mapping.json")
+        else:
+            print(f"Warning: No supporters found for {url}")
 
 
 print(database)
-save_dict_to_json(database, "la_data.json")
+save_dict_to_json(database, "data.json")
 
 # Save updated label mapping
 save_dict_to_json(label_mapping, "label_mapping.json")

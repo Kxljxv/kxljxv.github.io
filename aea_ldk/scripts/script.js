@@ -350,8 +350,7 @@ class GraphVisualization {
 
         simulation.on("tick", () => {
             iterations++;
-            const progress = Math.min(100, (iterations / maxIterations) * 100);
-            document.getElementById('loading-text').textContent = `Simulation läuft... ${Math.round(progress)}%`;
+            document.getElementById('loading-text').textContent = `Simulation läuft... ${iterations}`;
             this.render();
             this.centerGraph();
             this.resetZoom();

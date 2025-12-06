@@ -304,7 +304,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--bg-primary);
+    background: var(--bg-100);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -449,5 +449,6 @@ body {
 }
 
 .loading-screen {
-    background-color: transparent;
+    background: var(--bg-200-full);
+    opacity: 1;
 }

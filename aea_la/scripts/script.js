@@ -342,7 +342,7 @@ class GraphVisualization {
         const simulation = d3.forceSimulation(this.nodes)
             .force('link', linkForce)
             .force('charge', d3.forceManyBody().strength(-200))
-            .force('collision', d3.forceCollide().radius(20).strength(10))
+            .force('collision', d3.forceCollide().radius(15).strength(10))
             .force("center", d3.forceCenter(this.width / 2, this.height / 2).strength(0.001))
 
         let iterations = 0;
@@ -350,8 +350,7 @@ class GraphVisualization {
 
         simulation.on("tick", () => {
             iterations++;
-            const progress = Math.min(100, (iterations / maxIterations) * 100);
-            document.getElementById('loading-text').textContent = `Simulation läuft... ${Math.round(progress)}%`;
+            document.getElementById('loading-text').textContent = `Simulation läuft... ${iterations}`;
             this.render();
             this.centerGraph();
             this.resetZoom();
@@ -450,7 +449,7 @@ class GraphVisualization {
         }
 
         this.nodes.forEach(n => {
-            const radius = (Math.sqrt(n.linkCount) * 5 + 1) * this.settings.nodeSize;
+            const radius = (Math.sqrt(n.linkCount) * 1.5 + 0.25) * this.settings.nodeSize;
             ctx.save();
             ctx.globalAlpha = isDimmed(n) ? 0.2 : 1.0;
             ctx.fillStyle = this.getNodeColor(n);
