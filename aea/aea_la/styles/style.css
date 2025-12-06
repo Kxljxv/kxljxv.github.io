@@ -1,0 +1,454 @@
+@import "tailwindcss";
+
+
+/* Custom Fonts */
+@font-face {
+    font-family: 'Dyslexic';
+    src: url('https://kxljxv.github.io/aea/fonts/dyslexic.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Dyslexic';
+    src: url('https://kxljxv.github.io/aea/fonts/dyslexic_bold.woff2') format('woff2');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Dyslexic';
+    src: url('https://kxljxv.github.io/aea/fonts/dyslexic_italic.woff2') format('woff2');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Dyslexic';
+    src: url('https://kxljxv.github.io/aea/fonts/dyslexic_italic_bold.woff2') format('woff2');
+    font-weight: bold;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'ModernDense';
+    src: url('https://kxljxv.github.io/aea/fonts/modern_dense.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'ModernDense';
+    src: url('https://kxljxv.github.io/aea/fonts/modern_dense_italic.woff2') format('woff2');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'ModernWide';
+    src: url('https://kxljxv.github.io/aea/fonts/modern_wide.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Serif';
+    src: url('https://kxljxv.github.io/aea/fonts/serif.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Serif';
+    src: url('https://kxljxv.github.io/aea/fonts/serif_italic.woff2') format('woff2');
+    font-weight: normal;
+    font-style: italic;
+}
+
+/* Custom CSS Variables */
+:root {
+    --always-white-full: hsl(0 0% 100%);
+    --always-black-full: hsl(0 0% 0%);
+
+    --always-white: 0 0% 100%;
+    --always-black: 0 0% 0%;
+
+    --accent-brand-full: hsl(15 63.1% 59.6%);
+    --accent-main-000-full: hsl(15 54.2% 51.2%);
+    --accent-main-100-full: hsl(15 63.1% 59.6%);
+    --accent-main-200-full: hsl(15 63.1% 59.6%);
+    --accent-main-900-full: hsl(0 0% 0%);
+    --accent-pro-000-full: hsl(251 84.6% 74.5%);
+    --accent-pro-100-full: hsl(251 40.2% 54.1%);
+    --accent-pro-200-full: hsl(251 40% 45.1%);
+    --accent-pro-900-full: hsl(250 25.3% 19.4%);
+    --accent-secondary-000-full: hsl(210 65.5% 67.1%);
+    --accent-secondary-100-full: hsl(210 70.9% 51.6%);
+    --accent-secondary-200-full: hsl(210 70.9% 51.6%);
+    --accent-secondary-900-full: hsl(210 55.9% 24.6%);
+    --bg-000-full: hsl(60 2.1% 18.4%);
+    --bg-100-full: hsl(60 2.7% 14.5%);
+    --bg-200-full: hsl(30 3.3% 11.8%);
+    --bg-300-full: hsl(60 2.6% 7.6%);
+    --bg-400-full: hsl(0 0% 0%);
+    --bg-500-full: hsl(0 0% 0%);
+    --border-100-full: hsl(51 16.5% 84.5%);
+    --border-200-full: hsl(51 16.5% 84.5%);
+    --border-300-full: hsl(51 16.5% 84.5%);
+    --border-400-full: hsl(51 16.5% 84.5%);
+    --danger-000-full: hsl(0 98.4% 75.1%);
+    --danger-100-full: hsl(0 67% 59.6%);
+    --danger-200-full: hsl(0 67% 59.6%);
+    --danger-900-full: hsl(0 46.5% 27.8%);
+    --oncolor-100-full: hsl(0 0% 100%);
+    --oncolor-200-full: hsl(60 6.7% 97.1%);
+    --oncolor-300-full: hsl(60 6.7% 97.1%);
+    --pictogram-100-full: hsl(48 3.4% 29.2%);
+    --pictogram-200-full: hsl(60 2.5% 23.3%);
+    --pictogram-300-full: hsl(60 2.1% 18.4%);
+    --pictogram-400-full: hsl(60 2.7% 14.5%);
+    --success-000-full: hsl(97 59.1% 46.1%);
+    --success-100-full: hsl(97 75% 32.9%);
+    --success-200-full: hsl(97 75% 32.9%);
+    --success-900-full: hsl(127 100% 13.9%);
+    --text-000-full: hsl(48 33.3% 97.1%);
+    --text-100-full: hsl(48 33.3% 97.1%);
+    --text-200-full: hsl(50 9% 73.7%);
+    --text-300-full: hsl(50 9% 73.7%);
+    --text-400-full: hsl(48 4.8% 59.2%);
+    --text-500-full: hsl(48 4.8% 59.2%);
+
+
+    --accent-brand: 15 63.1% 59.6%;
+    --accent-main-000: 15 54.2% 51.2%;
+    --accent-main-100: 15 63.1% 59.6%;
+    --accent-main-200: 15 63.1% 59.6%;
+    --accent-main-900: 0 0% 0%;
+    --accent-pro-000: 251 84.6% 74.5%;
+    --accent-pro-100: 251 40.2% 54.1%;
+    --accent-pro-200: 251 40% 45.1%;
+    --accent-pro-900: 250 25.3% 19.4%;
+    --accent-secondary-000: 210 65.5% 67.1%;
+    --accent-secondary-100: 210 70.9% 51.6%;
+    --accent-secondary-200: 210 70.9% 51.6%;
+    --accent-secondary-900: 210 55.9% 24.6%;
+    --bg-000: 60 2.1% 18.4%;
+    --bg-100: 60 2.7% 14.5%;
+    --bg-200: 30 3.3% 11.8%;
+    --bg-300: 60 2.6% 7.6%;
+    --bg-400: 0 0% 0%;
+    --bg-500: 0 0% 0%;
+    --border-100: 51 16.5% 84.5%;
+    --border-200: 51 16.5% 84.5%;
+    --border-300: 51 16.5% 84.5%;
+    --border-400: 51 16.5% 84.5%;
+    --danger-000: 0 98.4% 75.1%;
+    --danger-100: 0 67% 59.6%;
+    --danger-200: 0 67% 59.6%;
+    --danger-900: 0 46.5% 27.8%;
+    --oncolor-100: 0 0% 100%;
+    --oncolor-200: 60 6.7% 97.1%;
+    --oncolor-300: 60 6.7% 97.1%;
+    --pictogram-100: 48 3.4% 29.2%;
+    --pictogram-200: 60 2.5% 23.3%;
+    --pictogram-300: 60 2.1% 18.4%;
+    --pictogram-400: 60 2.7% 14.5%;
+    --success-000: 97 59.1% 46.1%;
+    --success-100: 97 75% 32.9%;
+    --success-200: 97 75% 32.9%;
+    --success-900: 127 100% 13.9%;
+    --text-000: 48 33.3% 97.1%;
+    --text-100: 60 12% 92%;
+    --text-200: 50 9% 73.7%;
+    --text-300: 50 9% 73.7%;
+    --text-400: 48 4.8% 59.2%;
+    --text-500: 48 4.8% 59.2%;
+
+    --bg-primary: #262624;
+    --bg-primary-unselected: #303X02e;
+    --bg-primary-hover: #2b2b29;
+    --bg-primary-selected: #30302e;
+
+    --button-normal: rgb(38, 38, 36, 0);
+
+    --button-hover: #2b2b29;
+
+    --button-selected: rgba(20, 20, 19, 0);
+
+    --bg-light: #30302e;
+    --bg-light-hover: #1f1e1d;
+    --bg-light-selected: #141413;
+
+    --bg-graph: #080807;
+    --border-color: #4a4a46;
+    --border-color-hover: #65645f;
+    --text-heading-primary: #faf9f5;
+    --text-heading-secondary: #faf9f5;
+    --text-primary: #faf9f5;
+    --text-secondary: #faf9f5;
+    --text-tertiary: #9c9a92;
+    --accent-primary-color: #bf603b;
+    --accent-primary-hover: #d27753;
+    --accent-secondary-color: #4084de;
+    --accent-secondary-hover: #7cace4;
+    --node-antrag: #d86b74;
+    --node-supporter: #7dff00;
+    --node-group-red: #d86b74;
+    --node-group-green: #9cc376;
+    --node-group-blue: #6eb0f2;
+    --node-group-purple: #c179e0;
+    --node-group-orange: #cc9962;
+    --node-group-light-grey: #acb2c0;
+    --node-group-dark-grey: #5d6371;
+
+
+
+    --link-color: rgba(153, 153, 153, 0.3);
+    --default-font: 'ModernDense', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+    font-family: var(--default-font);
+    background: var(--bg-graph);
+    color: var(--text-primary);
+    overflow: hidden;
+}
+
+.font-dyslexic {
+    font-family: 'Dyslexic', sans-serif !important;
+}
+
+.font-modern-dense {
+    font-family: 'ModernDense', sans-serif !important;
+}
+
+.font-modern-wide {
+    font-family: 'ModernWide', sans-serif !important;
+}
+
+.font-serif {
+    font-family: 'Serif', serif !important;
+}
+
+#controls-panel {
+    transition: transform 0.3s ease;
+    width: 400px;
+
+
+}
+
+#graph-svg {
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+}
+
+#graph-svg:active {
+    cursor: grabbing;
+}
+
+.link {
+    stroke: var(--link-color);
+    stroke-width: 1;
+}
+
+.node {
+    cursor: pointer;
+    transition: stroke-width 3s;
+}
+
+.node:hover {
+    stroke: #ffffff;
+    stroke-width: 1.5;
+}
+
+.node.selected {
+    stroke: #ffffff;
+    stroke-width: 2;
+}
+
+.node.dimmed {
+    opacity: 0.2;
+}
+
+.link.dimmed {
+    opacity: 0.1;
+}
+
+.label.dimmed {
+    opacity: 0.2;
+}
+
+.label {
+    fill: var(--text-primary);
+    font-size: 12px;
+    pointer-events: none;
+    user-select: none;
+}
+
+.sublabel {
+    fill: var(--text-secondary);
+    font-size: 10px;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Hover Label */
+.hover-label {
+    display: none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-100);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #4a4a4a;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    #controls-panel {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 50vh !important;
+        bottom: auto;
+        top: 0;
+        left: 0;
+        right: 0;
+        border-radius: 0 0 16px 16px;
+
+    }
+
+    .mobile-hidden {
+        display: none;
+    }
+}
+
+/* Tab Content */
+.tab-content {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* Group Item */
+.group-item {
+    transition: all 0.2s;
+}
+
+.group-item:hover {
+    box-shadow:
+        0 0.25rem 1.25rem hsl(var(--always-black) / 5%),
+        0 0 0 0.5px hsla(var(--border-200) / 0.4);
+}
+
+/* Panel Collapse */
+.panel-collapsed {
+    transform: translateX(-100%);
+}
+
+.panel-collapsed #collapse-btn {
+    transform: translateX(320px) rotate(180deg);
+}
+
+
+
+#collapse-btn {
+    transition: all 0.3s ease;
+}
+
+/* Color Preset */
+.color-preset {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.color-preset:hover {
+    transform: scale(1.1);
+}
+
+.color-preset.selected {
+    border-color: white;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+/* Performance optimizations */
+.node,
+.link,
+.label,
+.sublabel {
+    will-change: auto;
+}
+
+.bright-container {
+    background-color: transparent;
+    box-shadow:
+        0 0.25rem 1.25rem hsl(var(--always-black) / 3.5%),
+        0 0 0 0.5px hsla(var(--border-300) / 0.15);
+    color: var(--text-200-full);
+    border-radius: 0.5rem;
+}
+
+.bright-container:hover {
+    box-shadow:
+        0 0.25rem 1.25rem hsl(var(--always-black) / 3.5%),
+        0 0 0 0.5px hsla(var(--border-200) / 0.3);
+    color: var(--text-000-full);
+}
+
+.bright-container:focus-within {
+    box-shadow:
+        0 0.25rem 1.25rem hsl(var(--always-black) / 7.5%),
+        0 0 0 0.5px hsla(var(--border-200) / 0.3);
+    color: var(--text-000-full);
+}
+
+.bright-container:hover:focus-within {
+    box-shadow:
+        0 0.25rem 1.25rem hsl(var(--always-black) / 7.5%),
+        0 0 0 0.5px hsla(var(--border-200) / 0.3);
+    color: var(--text-000-full);
+}
+
+.fancy-button {
+    background-color: transparent;
+    color: var(--text-200-full);
+    border-radius: 0.5rem;
+}
+
+.fancy-button:hover {
+    background-color: var(--bg-300-full);
+    color: var(--text-000-full);
+}
+
+.fancy-button:focus,
+.fancy-button:focus-visible {
+    background-color: var(--bg-200-full);
+    color: var(--text-200-full);
+    outline: none;
+}
+
+.fancy-button:hover:focus,
+.fancy-button:hover:focus-visible {
+    background-color: var(--bg-200-full);
+    color: var(--text-200-full);
+}
+
+.loading-screen {
+    background: var(--bg-200-full);
+    opacity: 1;
+}
