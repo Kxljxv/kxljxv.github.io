@@ -172,8 +172,8 @@ class GraphVisualization {
 
     async loadData() {
         try {
-            document.getElementById('loading-text').textContent = 'Lade la_data.json...';
-            const response = await fetch('data_gathering/la_data.json');
+            document.getElementById('loading-text').textContent = 'Lade data.json...';
+            const response = await fetch('./data_gathering/data.json');
             if (!response.ok) {
                 throw new Error(`HTTP Error: ${response.status}`);
             }
@@ -197,7 +197,7 @@ class GraphVisualization {
                           <p class="text-gray-400 mb-2">Bitte stelle sicher, dass:</p>
                           <ul class="list-disc list-inside text-gray-400 space-y-1">
                               <li>Das Python-Skript ausgeführt wurde</li>
-                              <li>Die Datei data_gathering/la_data.json existiert</li>
+                              <li>Die Datei data_gathering/data.json existiert</li>
                               <li>Ein lokaler Webserver läuft</li>
                           </ul>
                       </div>
@@ -338,23 +338,33 @@ class GraphVisualization {
                 const w = l.weight || 1;
                 return 160 / Math.sqrt(w);
             });
+            
 
         const simulation = d3.forceSimulation(this.nodes)
             .force('link', linkForce)
-            .force('charge', d3.forceManyBody().strength(-200))
-            .force('collision', d3.forceCollide().radius(15).strength(10))
+            .force('charge', d3.forceManyBody().strength(-200).distanceMin(15))
+            .force('collision', d3.forceCollide().radius(18).strength(4).iterations(20))
             .force("center", d3.forceCenter(this.width / 2, this.height / 2).strength(0.001))
 
+        
         let iterations = 0;
-        const maxIterations = 500;
+        const maxIterations = 600;
+        const alphaDecay = 0.01
+
+        simulation.alphaDecay(alphaDecay)
+        simulation.alphaMin(Math.pow(1 - alphaDecay, maxIterations))
+
+
 
         simulation.on("tick", () => {
             iterations++;
-            document.getElementById('loading-text').textContent = `Simulation läuft... ${iterations}`;
+            document.getElementById('loading-text').textContent = `Simulation läuft... ${Math.round(iterations / maxIterations * 100)}%`;
             this.render();
             this.centerGraph();
             this.resetZoom();
         });
+
+        
 
         simulation.on('end', () => {
             document.getElementById('loading').style.display = 'none';
