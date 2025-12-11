@@ -833,7 +833,7 @@ class GraphVisualization {
         const matches = this.allNodes.filter(node =>
             node.label.toLowerCase().includes(query) ||
             (node.sublabel && node.sublabel.toLowerCase().includes(query))
-        ).slice(0, 10);
+        ).slice(0, 100);
 
         if (matches.length === 0) {
             resultsDiv.innerHTML = '<p class="text-[hsl(var(--text-400))] text-sm p-2">Keine Ergebnisse gefunden</p>';
