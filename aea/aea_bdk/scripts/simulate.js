@@ -355,19 +355,15 @@ class GraphVisualization {
 
         const simulation = d3.forceSimulation(this.nodes)
             .force('link', linkForce)
-            .force('charge', d3.forceManyBody().strength(d => {
-                const lc = d.linkCount || 0;
-                const radius = (Math.sqrt(lc) * 1.5 + 0.25) * this.settings.nodeSize;
-                return -20 * radius;
-            }).distanceMin(15))
-            .force('collision', d3.forceCollide().radius(d => (1.2 * (Math.sqrt(d.linkCount) * 1.5 + 0.25) * this.settings.nodeSize)).strength(6).iterations(50))
-            .force("center", d3.forceCenter(this.width / 2, this.height / 2).strength(0.1))
+            .force('charge', d3.forceManyBody().strength(-200).distanceMin(15))
+            .force('collision', d3.forceCollide().radius(d => (1.2 * (Math.sqrt(d.linkCount) * 1.5 + 0.25) * this.settings.nodeSize)).strength(4).iterations(20))
+            .force("center", d3.forceCenter(this.width / 2, this.height / 2).strength(0.001))
             .velocityDecay(0.1)
 
         
         let iterations = 0;
         const maxIterations = 1000;
-        const alphaDecay = 0.02
+        const alphaDecay = 0.01
 
         simulation.alphaDecay(alphaDecay)
         simulation.alphaMin(Math.pow(1 - alphaDecay, maxIterations))
