@@ -82,7 +82,6 @@ class GraphVisualization {
     }
 
     setupColorModal() {
-        const modal = FlowbiteInstances.getInstance('Modal', 'color-modal');
         const presets = document.querySelectorAll('.color-preset');
         const customInput = document.getElementById('custom-color-input');
         const confirmBtn = document.getElementById('confirm-color');
@@ -182,8 +181,6 @@ class GraphVisualization {
             this.data = data;
             this.metadata = data.metadata || {};
 
-            await this.loadAmendmentUrls();
-            await this.loadSupportersIndex();
             this.processData();
             this.setupEventListeners();
             this.simulatePhysics();
@@ -275,7 +272,7 @@ class GraphVisualization {
         } else if (this.data.support_map) {
             Object.entries(this.data.support_map).forEach(([aea, val]) => {
                 if (!nodeMap.has(aea)) {
-                    nodeMap.set(aea, { id: aea, label: aea, type: 'antrag', color: antragColor, linkCount: 0, font: this.defaultFont });
+                    nodeMap.set(aea, { id: aea, label: aea, type: 'antrag', color: antragColor, linkCount: 0, absoluteLinkCount: 0, font: this.defaultFont });
                 }
                 if (Array.isArray(val)) {
                     val.forEach(s => {
@@ -284,6 +281,8 @@ class GraphVisualization {
                         links.push({ source: aea, target: supporterId, weight: 1 });
                         nodeMap.get(aea).linkCount += 1;
                         nodeMap.get(supporterId).linkCount += 1;
+                        nodeMap.get(aea).absoluteLinkCount += 1;
+                        nodeMap.get(supporterId).absoluteLinkCount += 1;
                     });
                 } else if (val && typeof val === 'object') {
                     const app = val.initiator;
@@ -293,6 +292,8 @@ class GraphVisualization {
                         links.push({ source: aea, target: supporterId, weight: 5 });
                         nodeMap.get(aea).linkCount += 100;
                         nodeMap.get(supporterId).linkCount += 100;
+                        nodeMap.get(aea).absoluteLinkCount += 1;
+                        nodeMap.get(supporterId).absoluteLinkCount += 1;
                     }
                     (val.supporters || []).forEach(s => {
                         const supporterId = `${s[0]} | ${s[1] || ''}`;
@@ -300,6 +301,8 @@ class GraphVisualization {
                         links.push({ source: aea, target: supporterId, weight: 1 });
                         nodeMap.get(aea).linkCount += 1;
                         nodeMap.get(supporterId).linkCount += 1;
+                        nodeMap.get(aea).absoluteLinkCount += 1;
+                        nodeMap.get(supporterId).absoluteLinkCount += 1;
                     });
                 }
             });
@@ -315,8 +318,11 @@ class GraphVisualization {
         this.adj = new Map();
         this.nodes.forEach(n => this.adj.set(n.id, new Set()));
         this.links.forEach(l => {
-            const a = l.source.id || l.source;
-            const b = l.target.id || l.target;
+            const source = l.source ?? l.source;
+            const target = l.target ?? l.target;
+            if (!source || !target) return;
+            const a = typeof source === 'object' ? source.id : source;
+            const b = typeof target === 'object' ? target.id : target;
             if (this.adj.has(a)) this.adj.get(a).add(b);
             if (this.adj.has(b)) this.adj.get(b).add(a);
         });
@@ -327,6 +333,13 @@ class GraphVisualization {
 
     simulatePhysics() {
         document.getElementById('loading-text').textContent = 'Simulation läuft...';
+
+        const nodeById = new Map(this.nodes.map(n => [n.id, n]));
+        this.links = this.links.filter(l => {
+            const a = typeof l.source === 'object' ? l.source.id : l.source;
+            const b = typeof l.target === 'object' ? l.target.id : l.target;
+            return nodeById.has(a) && nodeById.has(b);
+        });
 
         const linkForce = d3.forceLink(this.links)
             .id(d => d.id)
@@ -342,14 +355,19 @@ class GraphVisualization {
 
         const simulation = d3.forceSimulation(this.nodes)
             .force('link', linkForce)
-            .force('charge', d3.forceManyBody().strength(-200).distanceMin(15))
-            .force('collision', d3.forceCollide().radius(18).strength(4).iterations(20))
-            .force("center", d3.forceCenter(this.width / 2, this.height / 2).strength(0.001))
+            .force('charge', d3.forceManyBody().strength(d => {
+                const lc = d.linkCount || 0;
+                const radius = (Math.sqrt(lc) * 1.5 + 0.25) * this.settings.nodeSize;
+                return -20 * radius;
+            }).distanceMin(15))
+            .force('collision', d3.forceCollide().radius(d => (1.2 * (Math.sqrt(d.linkCount) * 1.5 + 0.25) * this.settings.nodeSize)).strength(6).iterations(50))
+            .force("center", d3.forceCenter(this.width / 2, this.height / 2).strength(0.1))
+            .velocityDecay(0.1)
 
         
         let iterations = 0;
-        const maxIterations = 600;
-        const alphaDecay = 0.01
+        const maxIterations = 1000;
+        const alphaDecay = 0.02
 
         simulation.alphaDecay(alphaDecay)
         simulation.alphaMin(Math.pow(1 - alphaDecay, maxIterations))
@@ -362,6 +380,8 @@ class GraphVisualization {
             this.render();
             this.centerGraph();
             this.resetZoom();
+            this.centerOnNode(this.nodes[0]);
+
         });
 
         
@@ -370,6 +390,35 @@ class GraphVisualization {
             document.getElementById('loading').style.display = 'none';
             this.render();
             this.centerGraph();
+
+            const exportNodesData = this.nodes
+
+            console.log(exportNodesData)
+            const nodesDataStr = JSON.stringify(exportNodesData, null, 2);
+            const nodesDataBlob = new Blob([nodesDataStr], { type: 'application/json' });
+            const nodesUrl = URL.createObjectURL(nodesDataBlob);
+
+            const link = document.createElement('a');
+            link.href = nodesUrl;
+            link.download = `graph-nodes-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+
+            URL.revokeObjectURL(nodesUrl);
+            
+            const exportLinksData = this.links
+
+            console.log(exportLinksData)
+            const linksDataStr = JSON.stringify(exportLinksData, null, 2);
+            const linksDataBlob = new Blob([linksDataStr], { type: 'application/json' });
+            const linksUrl = URL.createObjectURL(linksDataBlob);
+
+            const linksLink = document.createElement('a');
+            linksLink.href = linksUrl;
+            linksLink.download = `graph-links-${new Date().toISOString().split('T')[0]}.json`;
+            linksLink.click();
+
+            URL.revokeObjectURL(linksUrl);
+
         });
     }
 
@@ -879,7 +928,9 @@ class GraphVisualization {
         this.deselectAll();
         this.canvas.transition()
             .duration(750)
-            .call(this.zoom.transform, d3.zoomIdentity);
+            this.centerGraph();
+            this.resetZoom();
+            this.centerOnNodeNoZoom(this.nodes[0]);
     }
 
     resetZoom() {
@@ -911,6 +962,15 @@ class GraphVisualization {
         this.canvas.transition()
             .duration(750)
             .call(this.zoom.transform, transform);
+    }
+
+    centerOnNodeNoZoom(node) {
+        const transform = d3.zoomIdentity
+            .translate(this.width / 2, this.height / 2)
+            .translate(-node.x, -node.y);
+        this.canvas.transition()
+            .duration(750)
+            .call(transform);
     }
 
     findNodeAt(event) {
