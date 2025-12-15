@@ -178,17 +178,31 @@
 
                     <hr class="mb-2 mt-2 border-[hsl(var(--text-500)/0.2)]">
 
-
                     <div class="mb-4">
                         <label for="search" class="mb-2 block text-sm font-medium text-[hsl(var(--text-200))]">Node suchen</label>
-                        <input type="text" id="search" class="block w-full rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent bright-container focus:ring-2 focus:ring-[hsl(var(--bg-200))]" placeholder="Name oder KV eingeben..." />
+                        <input type="text" id="search" class="block w-full rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent bright-container focus:ring-2 focus:ring-[hsl(var(--bg-200))]" placeholder="Name eingeben..." />
                     </div>
 
                     <div id="search-results" class="space-y-1"></div>
 
-                    <hr class="mb-2 mt-4 border-[hsl(var(--text-500)/0.2)]">
-                    <button id="open-selected-antrag-btn" class="w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button">Antrag aufrufen</button>
 
+                    <div style="display:none" class="mb-4">
+                        <label class="mb-2 block text-sm font-medium text-[hsl(var(--text-200))]">Änderungsantrag auswählen</label>
+                        <select id="amendment-select" class="w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent bright-container focus:ring-2 focus:ring-[hsl(var(--bg-200))]">
+                            <option value="">Bitte wählen...</option>
+                        </select>
+                    </div>
+                    <button id="open-amendment-btn" style="display:none" class="mb-4 w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button">Amendment öffnen</button>
+
+                    <div id="pdf-container" class="rounded-lg overflow-hidden bright-container" style="display:none">
+                        <iframe id="amendment-pdf" title="Amendment PDF" class="w-full" style="height: 420px; border: 0;" src=""></iframe>
+                    </div>
+
+                    <button id="open-pdf-modal-btn" style="display:none" class="w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button">PDF groß öffnen</button>
+
+
+
+                    <button id="open-selected-antrag-btn" style="display:none" class="w-full font-medium rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent fancy-button">Antrag aufrufen</button>
 
                 </div>
 
@@ -319,6 +333,20 @@
                 <div class="p-4 md:p-5">
                     <input type="text" id="group-node-search" placeholder="Node suchen..." class="mb-4 block w-full rounded-lg text-sm px-5 py-2.5 transition-all duration-300 border border-transparent bright-container focus:ring-2 focus:ring-[hsl(var(--bg-200))]" />
                     <div id="group-search-results" class="max-h-96 space-y-1 overflow-y-auto"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- PDF Modal -->
+    <div id="pdf-modal" tabindex="-1" aria-hidden="true" class="fixed top-0 right-0 left-0 z-50 hidden items-center justify-center overflow-x-hidden overflow-y-auto md:inset-0">
+        <div class="relative w-[80vw] h-[95vh] max-w-4xl p-4">
+            <div class="relative h-full rounded-lg bg-[hsl(var(--bg-100))] shadow-[0_0.25rem_1.25rem_hsl(var(--always-black)/3.5%),0_0_0_0.5px_hsla(var(--border-300)/0.15)]">
+                <div class="flex items-center justify-between rounded-t border-b border-[hsl(var(--text-500)/0.2)] md:p-5">
+                    <h3 class="mb-2 text-[hsl(var(--text-200))] flex items-center text-center min-w-0 font-serif text-3xl">PDF Ansicht</h3>
+
+                </div>
+                <div class="p-4 md:p-5 h-[calc(100%-4rem)]">
+                    <iframe id="pdf-modal-iframe" title="PDF Modal" class="w-full h-full rounded-lg" style="border: 0;" src=""></iframe>
                 </div>
             </div>
         </div>

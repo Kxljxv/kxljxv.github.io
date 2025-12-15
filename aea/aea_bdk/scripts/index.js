@@ -18,6 +18,7 @@ class GraphVisualization {
         this.transform = d3.zoomIdentity;
         this.selectedAntragCode = null;
         this.motionUrlMap = {};
+        this.currentPdfCode = null;
 
         this.settings = {
             showLabels: false,
@@ -183,6 +184,7 @@ class GraphVisualization {
             this.metadata = data.metadata || {};
 
             this.processData();
+            this.populateAmendmentSelect();
             this.setupEventListeners();
             this.simulatePhysics();
 
@@ -393,15 +395,24 @@ class GraphVisualization {
 
         const openBtn = document.getElementById('open-amendment-btn');
         const selectEl = document.getElementById('amendment-select');
+        const openPdfModalBtn = document.getElementById('open-pdf-modal-btn');
         if (selectEl && openBtn) {
             selectEl.addEventListener('change', () => {
                 openBtn.style.display = selectEl.value ? 'block' : 'none';
+                if (openPdfModalBtn) openPdfModalBtn.style.display = selectEl.value ? 'inline-block' : 'none';
+                if (selectEl.value) this.updatePdfViewer(selectEl.value);
             });
             openBtn.addEventListener('click', () => {
                 const code = selectEl.value;
                 const url = (this.motionUrlMap && this.motionUrlMap[code]) || (this.amendmentUrls && this.amendmentUrls[code]);
                 if (code && url) window.open(url, '_blank');
             });
+            if (openPdfModalBtn) {
+                openPdfModalBtn.addEventListener('click', () => {
+                    const code = this.currentPdfCode || this.selectedAntragCode || selectEl.value;
+                    if (code) this.openPdfModal(code);
+                });
+            }
         }
 
         const openSelectedBtn = document.getElementById('open-selected-antrag-btn');
@@ -504,9 +515,16 @@ class GraphVisualization {
         if (d.type === 'antrag') {
             this.selectedAntragCode = d.id;
             if (btn) btn.style.display = 'block';
+            const openPdfModalBtn = document.getElementById('open-pdf-modal-btn');
+            if (openPdfModalBtn) openPdfModalBtn.style.display = 'inline-block';
+            this.updatePdfViewer(d.id);
         } else {
             this.selectedAntragCode = null;
             if (btn) btn.style.display = 'none';
+            const openPdfModalBtn = document.getElementById('open-pdf-modal-btn');
+            if (openPdfModalBtn) openPdfModalBtn.style.display = 'none';
+            const pdfContainer = document.getElementById('pdf-container');
+            if (pdfContainer) pdfContainer.style.display = 'none';
         }
         this.render();
     }
@@ -567,6 +585,27 @@ class GraphVisualization {
                 .style('font-size', '12px')
                 .style('text-align', 'center')
                 .text('Keine Gruppen vorhanden');
+        }
+
+        if (node.type === 'antrag') {
+            menu.append('div')
+                .style('padding', '8px')
+                .style('cursor', 'pointer')
+                .style('color', 'hsl(50 9% 73.7%)')
+                .style('font-size', '13px')
+                .style('margin-top', '4px')
+                .style('border-radius', '4px')
+                .text('PDF anzeigen')
+                .on('mouseover', function () {
+                    d3.select(this).style('background', '#3a3a3a');
+                })
+                .on('mouseout', function () {
+                    d3.select(this).style('background', 'transparent');
+                })
+                .on('click', () => {
+                    this.openPdfModal(node.id);
+                    menu.remove();
+                });
         }
 
         if (this.nodeGroups.has(node.id)) {
@@ -960,6 +999,50 @@ class GraphVisualization {
             const obj = await res.json();
             this.supportersIndex = obj.index || {};
         } catch { }
+    }
+
+    populateAmendmentSelect() {
+        const selectEl = document.getElementById('amendment-select');
+        if (!selectEl) return;
+        const existing = new Set(Array.from(selectEl.options).map(o => o.value));
+        this.allNodes
+            .filter(n => n.type === 'antrag')
+            .forEach(n => {
+                if (existing.has(n.id) || n.id === '') return;
+                const opt = document.createElement('option');
+                opt.value = n.id;
+                opt.textContent = n.label || n.id;
+                selectEl.appendChild(opt);
+            });
+    }
+
+    updatePdfViewer(code) {
+        const pdfContainer = document.getElementById('pdf-container');
+        const iframe = document.getElementById('amendment-pdf');
+        if (!pdfContainer || !iframe) return;
+        if (!code) {
+            pdfContainer.style.display = 'none';
+            iframe.src = '';
+            this.currentPdfCode = null;
+            return;
+        }
+        const path = `./data_gathering/pdf/${this.sanitizeFilename(code)}.pdf`;
+        iframe.src = path;
+        pdfContainer.style.display = 'block';
+        this.currentPdfCode = code;
+    }
+
+    sanitizeFilename(name) {
+        return String(name).replace(/[<>:\"/\\|?*]/g, '_').trim();
+    }
+
+    openPdfModal(code) {
+        const modalEl = document.getElementById('pdf-modal');
+        const iframe = document.getElementById('pdf-modal-iframe');
+        if (!modalEl || !iframe) return;
+        iframe.src = `./data_gathering/pdf/${this.sanitizeFilename(code)}.pdf`;
+        const modal = new Modal(modalEl);
+        modal.show();
     }
 }
 
