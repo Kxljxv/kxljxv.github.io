@@ -230,7 +230,7 @@ body {
 
 #controls-panel {
     transition: transform 0.3s ease;
-    width: 400px;
+    width: 450px;
 
 
 }
@@ -315,7 +315,7 @@ body {
 }
 
 /* Mobile Styles */
-@media (max-width: 768px) {
+@media (max-width: 896px) {
     #controls-panel {
         width: 100% !important;
         height: auto !important;
