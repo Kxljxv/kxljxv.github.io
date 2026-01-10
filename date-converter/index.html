@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Date Converter</title>
+    <style>
+        /* Basic styling for presentation */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px dashed #007bff;
+            border-radius: 4px;
+            background-color: #e6f0ff;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Date to Number Converter</h2>
+        <p>Enter date in DD.MM.YYYY format (e.g., 10.11.2018):</p>
+        <input type="text" id="dateInput" value="10.11.2018" placeholder="DD.MM.YYYY">
+        <button onclick="convertDate()">Convert</button>
+        <div id="result">The converted number will appear here.</div>
+    </div>
+
+    <script>
+        /**
+         * Checks if a year is a leap year.
+         * @param {number} year - The year to check.
+         * @returns {boolean} True if it's a leap year, false otherwise.
+         */
+        function isLeapYear(year) {
+            return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+        }
+
+        /**
+         * Converts a date string (DD.MM.YYYY) to a fractional year number (YYYY.fraction).
+         */
+        function convertDate() {
+            const dateString = document.getElementById('dateInput').value;
+            const resultElement = document.getElementById('result');
+
+            // 1. Parse the date string (DD.MM.YYYY)
+            const parts = dateString.split('.');
+            if (parts.length !== 3) {
+                resultElement.textContent = "Error: Invalid date format. Use DD.MM.YYYY.";
+                return;
+            }
+
+            // Note: Date constructor expects MM/DD/YYYY or YYYY-MM-DD
+            // We use YYYY, MM-1, DD for the Date object
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            const year = parseInt(parts[2], 10);
+
+            // Basic validation
+            if (isNaN(day) || isNaN(month) || isNaN(year) || day < 1 || month < 1 || month > 12) {
+                 resultElement.textContent = "Error: Invalid date values.";
+                 return;
+            }
+
+            // Create a Date object for the input date
+            // Month is 0-indexed in JavaScript Date (0=Jan, 11=Dec)
+            const inputDate = new Date(year, month - 1, day);
+
+            // Double check if the date values were valid (e.g., 30.02.2018 is invalid)
+            if (inputDate.getFullYear() !== year || inputDate.getMonth() !== month - 1 || inputDate.getDate() !== day) {
+                resultElement.textContent = "Error: Date is not valid (e.g., check days in month).";
+                return;
+            }
+
+            // 2. Calculate the Day of the Year
+            // Create a Date object for the start of the year (Jan 1st)
+            const startOfYear = new Date(year, 0, 1);
+
+            // Calculate the difference in milliseconds
+            const timeDifference = inputDate.getTime() - startOfYear.getTime();
+
+            // Convert milliseconds to days (1000ms * 60s * 60m * 24h)
+            // Add 1 to make it 1-indexed (Day 1, Day 2, etc.)
+            const dayOfYear = Math.floor(timeDifference / (1000 * 60 * 60 * 24)) + 1;
+            
+            // 3. Determine the total days in the year
+            const daysInYear = isLeapYear(year) ? 366 : 365;
+
+            // 4. Calculate the fractional part
+            // We use (dayOfYear - 1) because the fraction represents the time *elapsed*
+            // since the start of the year (Jan 1st is 0.00). If you want Jan 1st to be 1/365,
+            // change the numerator to dayOfYear. Following the 2018.86 example (like Julian day),
+            // it's common to use (dayOfYear - 1 + fractional_day_part) / daysInYear.
+            // For simplicity, we'll just use the dayOfYear as the point *in* the year.
+            // Using (dayOfYear - 1) / daysInYear for 0-indexed fraction:
+            // const fractionalPart = (dayOfYear - 1) / daysInYear;
+            
+            // Following the example 10.11.2018 -> 2018.86
+            // 10.11.2018 is Day 314. 314 / 365 is ~0.86
+            // To match the output format, we calculate the fraction based on the day number.
+            const fractionalPart = dayOfYear / daysInYear;
+
+
+            // 5. Combine and format the result
+            // Combine year and fractional part, rounded to 2 decimal places
+            const fractionalYear = year + fractionalPart;
+            const formattedResult = fractionalYear.toFixed(2);
+
+            resultElement.textContent = `Date: ${dateString} | Day of Year: ${dayOfYear}/${daysInYear} | Converted: ${formattedResult}`;
+        }
+    </script>
+
+</body>
+</html>
