@@ -1,0 +1,3552 @@
+[
+  {
+    "id": "michael-oberst",
+    "name": "Michael Oberst",
+    "value": 0.5318
+  },
+  {
+    "id": "julia-lietzmann",
+    "name": "Julia Lietzmann",
+    "value": 0.6689
+  },
+  {
+    "id": "marcus-paul",
+    "name": "Marcus Paul",
+    "value": 0.3842
+  },
+  {
+    "id": "katja-zimmermann",
+    "name": "Katja Zimmermann",
+    "value": 0.7184
+  },
+  {
+    "id": "tarek-massalme",
+    "name": "Tarek Massalme",
+    "value": 1.0727
+  },
+  {
+    "id": "silke-gebel",
+    "name": "Silke Gebel",
+    "value": 0.122
+  },
+  {
+    "id": "stefanie-remlinger",
+    "name": "Stefanie Remlinger",
+    "value": 0.924
+  },
+  {
+    "id": "hanna-steinmueller",
+    "name": "Hanna Steinmüller",
+    "value": 0.9143
+  },
+  {
+    "id": "susanna-kahlefeld",
+    "name": "Susanna Kahlefeld",
+    "value": -0.7278
+  },
+  {
+    "id": "daniel-eliasson",
+    "name": "Daniel Eliasson",
+    "value": 0.0023
+  },
+  {
+    "id": "beate-sattler-ashoff",
+    "name": "Beate Sattler-Ashoff",
+    "value": 0.1597
+  },
+  {
+    "id": "rita-keil",
+    "name": "Rita Keil",
+    "value": -0.5938
+  },
+  {
+    "id": "bahar-haghanipour",
+    "name": "Bahar Haghanipour",
+    "value": -0.8996
+  },
+  {
+    "id": "klara-schedlich",
+    "name": "Klara Schedlich",
+    "value": -0.7987
+  },
+  {
+    "id": "catrin-wahlen",
+    "name": "Catrin Wahlen",
+    "value": -0.8136
+  },
+  {
+    "id": "louis-krueger",
+    "name": "Louis Krüger",
+    "value": -0.9103
+  },
+  {
+    "id": "taylan-kurt",
+    "name": "Taylan Kurt",
+    "value": 3.01
+  },
+  {
+    "id": "hans-joachim-stricker",
+    "name": "Hans-Joachim Stricker",
+    "value": 0.9797
+  },
+  {
+    "id": "saro-gorgis",
+    "name": "Saro Gorgis",
+    "value": 1.0388
+  },
+  {
+    "id": "martin-reents",
+    "name": "Martin Reents",
+    "value": -1.0337
+  },
+  {
+    "id": "alexander-kraess",
+    "name": "Alexander Kräß",
+    "value": 0.4751
+  },
+  {
+    "id": "bernd-steinhoff",
+    "name": "Bernd Steinhoff",
+    "value": 0.8616
+  },
+  {
+    "id": "ute-stumm",
+    "name": "Ute Stumm",
+    "value": 0.8636
+  },
+  {
+    "id": "marianne-wagner",
+    "name": "Marianne Wagner",
+    "value": 0.8652
+  },
+  {
+    "id": "ulrike-kipf",
+    "name": "Ulrike Kipf",
+    "value": 0.2384
+  },
+  {
+    "id": "manuel-guell",
+    "name": "Manuel Güll",
+    "value": 3.01
+  },
+  {
+    "id": "willi-junga",
+    "name": "Willi Junga",
+    "value": -0.8477
+  },
+  {
+    "id": "brigitte-sakrzewski",
+    "name": "Brigitte Sakrzewski",
+    "value": -0.7962
+  },
+  {
+    "id": "jonas-graeber",
+    "name": "Jonas Graeber",
+    "value": -0.9117
+  },
+  {
+    "id": "jonathan-philip-aus",
+    "name": "Jonathan Philip Aus",
+    "value": -0.9149
+  },
+  {
+    "id": "elisabeth-giesemann",
+    "name": "Elisabeth Giesemann",
+    "value": -0.8411
+  },
+  {
+    "id": "sonja-heinzen",
+    "name": "Sonja Heinzen",
+    "value": -0.7058
+  },
+  {
+    "id": "johannes-mihram",
+    "name": "Johannes Mihram",
+    "value": -0.8839
+  },
+  {
+    "id": "markus-schopp",
+    "name": "Markus Schopp",
+    "value": -0.9605
+  },
+  {
+    "id": "bogusz-schmidt",
+    "name": "Bogusz Schmidt",
+    "value": -0.8952
+  },
+  {
+    "id": "dennis-mateskovic",
+    "name": "Dennis Mateskovic",
+    "value": -0.9966
+  },
+  {
+    "id": "mika-nyke-lou-asshauer",
+    "name": "Mika Nyke Lou Aßhauer",
+    "value": -0.7996
+  },
+  {
+    "id": "susanne-rudeck",
+    "name": "Susanne Rudeck",
+    "value": -0.8928
+  },
+  {
+    "id": "juliane-roell",
+    "name": "Juliane Röll",
+    "value": -0.9478
+  },
+  {
+    "id": "jennifer-bode",
+    "name": "Jennifer Bode",
+    "value": -0.9694
+  },
+  {
+    "id": "melanie-rummler",
+    "name": "Melanie Rummler",
+    "value": -0.937
+  },
+  {
+    "id": "lela-sisauri",
+    "name": "Lela Sisauri",
+    "value": -0.6108
+  },
+  {
+    "id": "birgit-vasiliades",
+    "name": "Birgit Vasiliades",
+    "value": -0.711
+  },
+  {
+    "id": "mascha-brammer",
+    "name": "Mascha Brammer",
+    "value": -0.7875
+  },
+  {
+    "id": "yorick-stoeve",
+    "name": "Yorick Stöve",
+    "value": -0.9509
+  },
+  {
+    "id": "peter-windsheimer",
+    "name": "Peter Windsheimer",
+    "value": -0.7152
+  },
+  {
+    "id": "veronika-graewe",
+    "name": "Veronika Gräwe",
+    "value": -0.5106
+  },
+  {
+    "id": "ertan-oeztuerk",
+    "name": "Ertan Öztürk",
+    "value": -0.27
+  },
+  {
+    "id": "jan-louis-wiedmann",
+    "name": "Jan-Louis Wiedmann",
+    "value": -0.9061
+  },
+  {
+    "id": "marit-schatzmann",
+    "name": "Marit Schatzmann",
+    "value": -0.8986
+  },
+  {
+    "id": "yannick-lehmann",
+    "name": "Yannick Lehmann",
+    "value": -0.5864
+  },
+  {
+    "id": "meret-grabenhorst",
+    "name": "Meret Grabenhorst",
+    "value": -0.9425
+  },
+  {
+    "id": "kuebra-beydas",
+    "name": "Kübra Beydas",
+    "value": -0.9451
+  },
+  {
+    "id": "marie-lena-nelle",
+    "name": "Marie-Lena Nelle",
+    "value": -0.9675
+  },
+  {
+    "id": "jenny-laube",
+    "name": "Jenny Laube",
+    "value": -0.9711
+  },
+  {
+    "id": "merieme-benali-jockers",
+    "name": "Merieme Benali-Jockers",
+    "value": -0.7916
+  },
+  {
+    "id": "daniela-ehlers",
+    "name": "Daniela Ehlers",
+    "value": -0.7871
+  },
+  {
+    "id": "hila-mayfrank",
+    "name": "Hila Mayfrank",
+    "value": -0.9115
+  },
+  {
+    "id": "pablo-alfonso-johannes-klein-araya",
+    "name": "Pablo Alfonso Johannes Klein Araya",
+    "value": -0.888
+  },
+  {
+    "id": "mohammad-samim-mohammad-akbar",
+    "name": "Mohammad Samim Mohammad Akbar",
+    "value": -0.943
+  },
+  {
+    "id": "johannes-feldker",
+    "name": "Johannes Feldker",
+    "value": -0.7292
+  },
+  {
+    "id": "marie-nerreter",
+    "name": "Marie Nerreter",
+    "value": -0.8795
+  },
+  {
+    "id": "harald-loehlein",
+    "name": "Harald Löhlein",
+    "value": -0.9198
+  },
+  {
+    "id": "jan-moebius",
+    "name": "Jan Möbius",
+    "value": -0.7685
+  },
+  {
+    "id": "ronith-schalast",
+    "name": "Ronith Schalast",
+    "value": -0.9432
+  },
+  {
+    "id": "carola-scheibe-koester",
+    "name": "Carola Scheibe-Köster",
+    "value": -0.7801
+  },
+  {
+    "id": "michael-bimmler",
+    "name": "Michael Bimmler",
+    "value": -0.9433
+  },
+  {
+    "id": "monika-herrmann",
+    "name": "Monika Herrmann",
+    "value": -0.958
+  },
+  {
+    "id": "felicitas-maltry",
+    "name": "Felicitas Maltry",
+    "value": -0.9235
+  },
+  {
+    "id": "birgit-gust",
+    "name": "Birgit Gust",
+    "value": -0.9628
+  },
+  {
+    "id": "anne-speck",
+    "name": "Anne Speck",
+    "value": -0.6828
+  },
+  {
+    "id": "teresa-kulawik",
+    "name": "Teresa Kulawik",
+    "value": -0.9086
+  },
+  {
+    "id": "aferdita-suka",
+    "name": "Aferdita Suka",
+    "value": -1.0225
+  },
+  {
+    "id": "sebastian-wormsbaecher",
+    "name": "Sebastian Wormsbächer",
+    "value": 0.0661
+  },
+  {
+    "id": "ronald-reimann",
+    "name": "Ronald Reimann",
+    "value": -0.9613
+  },
+  {
+    "id": "thore-hagemann",
+    "name": "Thore Hagemann",
+    "value": -0.9437
+  },
+  {
+    "id": "anastasia-vasiliades",
+    "name": "Anastasia Vasiliades",
+    "value": -0.9103
+  },
+  {
+    "id": "matthias-siebert",
+    "name": "Matthias Siebert",
+    "value": -0.9438
+  },
+  {
+    "id": "birger-doelling",
+    "name": "Birger Dölling",
+    "value": -0.7966
+  },
+  {
+    "id": "ute-benzerari",
+    "name": "Ute Benzerari",
+    "value": -1.0086
+  },
+  {
+    "id": "heike-ekea-gleibs",
+    "name": "Heike Ekea Gleibs",
+    "value": -1.0342
+  },
+  {
+    "id": "chantal-muenster",
+    "name": "Chantal Münster",
+    "value": -0.8229
+  },
+  {
+    "id": "magdalena-michalka",
+    "name": "Magdalena Michalka",
+    "value": -0.9264
+  },
+  {
+    "id": "betuel-bayrak",
+    "name": "Betül Bayrak",
+    "value": -1.0014
+  },
+  {
+    "id": "susanne-olschewski",
+    "name": "Susanne Olschewski",
+    "value": -0.9998
+  },
+  {
+    "id": "mirjam-michel",
+    "name": "Mirjam Michel",
+    "value": -0.9136
+  },
+  {
+    "id": "tabea-schoch",
+    "name": "Tabea Schoch",
+    "value": -0.9628
+  },
+  {
+    "id": "frauke-prasser",
+    "name": "Frauke Prasser",
+    "value": -0.8017
+  },
+  {
+    "id": "helen-schmidt",
+    "name": "Helen Schmidt",
+    "value": -0.8192
+  },
+  {
+    "id": "hannah-wettig",
+    "name": "Hannah Wettig",
+    "value": 0.7957
+  },
+  {
+    "id": "walter-otte",
+    "name": "Walter Otte",
+    "value": 1.2242
+  },
+  {
+    "id": "mathias-kraatz",
+    "name": "Mathias Kraatz",
+    "value": 0.8336
+  },
+  {
+    "id": "manfred-herrmann",
+    "name": "Manfred Herrmann",
+    "value": 1.0173
+  },
+  {
+    "id": "susanne-zissel",
+    "name": "Susanne Zissel",
+    "value": 1.1291
+  },
+  {
+    "id": "andré-meral",
+    "name": "André Meral",
+    "value": 1.108
+  },
+  {
+    "id": "dietmar-huesemann-menge",
+    "name": "Dietmar Hüsemann-Menge",
+    "value": 1.086
+  },
+  {
+    "id": "lisa-depenbrock",
+    "name": "Lisa Depenbrock",
+    "value": 0.9174
+  },
+  {
+    "id": "peter-schrage-aden",
+    "name": "Peter Schrage-Aden",
+    "value": -0.3097
+  },
+  {
+    "id": "dario-planert",
+    "name": "Dario Planert",
+    "value": 0.4818
+  },
+  {
+    "id": "christian-hawel",
+    "name": "Christian Hawel",
+    "value": 0.9177
+  },
+  {
+    "id": "david-braun",
+    "name": "David Braun",
+    "value": 0.8168
+  },
+  {
+    "id": "christopher-philipp",
+    "name": "Christopher Philipp",
+    "value": 1.1841
+  },
+  {
+    "id": "uwe-ney-rancea",
+    "name": "Uwe Ney-Rancea",
+    "value": 0.9179
+  },
+  {
+    "id": "kerstin-mueller",
+    "name": "Kerstin Müller",
+    "value": 0.8101
+  },
+  {
+    "id": "frank-schubert",
+    "name": "Frank Schubert",
+    "value": -0.048
+  },
+  {
+    "id": "katharina-koufen",
+    "name": "Katharina Koufen",
+    "value": 0.9181
+  },
+  {
+    "id": "sergey-lagodinsky",
+    "name": "Sergey Lagodinsky",
+    "value": 0.5382
+  },
+  {
+    "id": "inez-mischitz",
+    "name": "Inez Mischitz",
+    "value": 0.9183
+  },
+  {
+    "id": "carola-ehrlich-cypra",
+    "name": "Carola Ehrlich-Cypra",
+    "value": 0.315
+  },
+  {
+    "id": "katrin-schaar",
+    "name": "Katrin Schaar",
+    "value": 0.9778
+  },
+  {
+    "id": "ute-reitz",
+    "name": "Ute Reitz",
+    "value": 0.6221
+  },
+  {
+    "id": "lillemor-mallau",
+    "name": "Lillemor Mallau",
+    "value": 0.25
+  },
+  {
+    "id": "uwe-lehmann",
+    "name": "Uwe Lehmann",
+    "value": 0.9186
+  },
+  {
+    "id": "tilo-fuchs",
+    "name": "Tilo Fuchs",
+    "value": 0.9187
+  },
+  {
+    "id": "stefan-gelbhaar",
+    "name": "Stefan Gelbhaar",
+    "value": 0.3298
+  },
+  {
+    "id": "tilo-paetzolt",
+    "name": "Tilo Pätzolt",
+    "value": 0.1531
+  },
+  {
+    "id": "christa-markl-vieto-estrada",
+    "name": "Christa Markl-Vieto Estrada",
+    "value": 0.5331
+  },
+  {
+    "id": "uwe-koehne",
+    "name": "Uwe Köhne",
+    "value": 0.919
+  },
+  {
+    "id": "leif-roman-sporleder",
+    "name": "Leif-Roman Sporleder",
+    "value": 1.1772
+  },
+  {
+    "id": "verena-sich",
+    "name": "Verena Sich",
+    "value": 0.9192
+  },
+  {
+    "id": "alexander-manolopoulos",
+    "name": "Alexander Manolopoulos",
+    "value": 1.0019
+  },
+  {
+    "id": "christof-rambke",
+    "name": "Christof Rambke",
+    "value": -0.6043
+  },
+  {
+    "id": "christian-sandau",
+    "name": "Christian Sandau",
+    "value": 1.1212
+  },
+  {
+    "id": "herbert-nebel",
+    "name": "Herbert Nebel",
+    "value": 0.1011
+  },
+  {
+    "id": "dustin-eikmeier",
+    "name": "Dustin Eikmeier",
+    "value": -0.3301
+  },
+  {
+    "id": "sarah-gengnagel",
+    "name": "Sarah Gengnagel",
+    "value": -1.0541
+  },
+  {
+    "id": "grit-menzzer",
+    "name": "Grit Menzzer",
+    "value": -0.0573
+  },
+  {
+    "id": "gollaleh-ahmadi",
+    "name": "Gollaleh Ahmadi",
+    "value": 0.9998
+  },
+  {
+    "id": "jonah-hacker",
+    "name": "Jonah Hacker",
+    "value": 1.0762
+  },
+  {
+    "id": "christopher-schriner",
+    "name": "Christopher Schriner",
+    "value": 0.8355
+  },
+  {
+    "id": "michael-bloecher",
+    "name": "Michael Blöcher",
+    "value": 1.2449
+  },
+  {
+    "id": "lara-liese",
+    "name": "Lara Liese",
+    "value": 1.2594
+  },
+  {
+    "id": "kevin-paczkowski",
+    "name": "Kevin Paczkowski",
+    "value": 1.2508
+  },
+  {
+    "id": "linus-siebert",
+    "name": "Linus Siebert",
+    "value": 1.261
+  },
+  {
+    "id": "arif-koray-oezbagci",
+    "name": "Arif-Koray Özbagci",
+    "value": 0.6166
+  },
+  {
+    "id": "daniel-mieves",
+    "name": "Daniel Mieves",
+    "value": 0.4856
+  },
+  {
+    "id": "elisabeth-jenschke",
+    "name": "Elisabeth Jenschke",
+    "value": 1.2485
+  },
+  {
+    "id": "susanne-sachtleber",
+    "name": "Susanne Sachtleber",
+    "value": 0.4876
+  },
+  {
+    "id": "kurt-hildebrand",
+    "name": "Kurt Hildebrand",
+    "value": 0.6585
+  },
+  {
+    "id": "yasemin-derviscemallioglu",
+    "name": "Yasemin Derviscemallioglu",
+    "value": 1.2559
+  },
+  {
+    "id": "paul-benter",
+    "name": "Paul Benter",
+    "value": 0.5604
+  },
+  {
+    "id": "maria-faerber",
+    "name": "Maria Faerber",
+    "value": 1.2561
+  },
+  {
+    "id": "tanja-prinz",
+    "name": "Tanja Prinz",
+    "value": 0.9229
+  },
+  {
+    "id": "nicolas-voelcker-ortega",
+    "name": "Nicolas Völcker Ortega",
+    "value": 0.9781
+  },
+  {
+    "id": "katja-ulbert",
+    "name": "Katja Ulbert",
+    "value": 1.0089
+  },
+  {
+    "id": "jens-peter-mueller",
+    "name": "Jens-Peter Müller",
+    "value": 1.1927
+  },
+  {
+    "id": "ole-jacobs",
+    "name": "Ole Jacobs",
+    "value": 1.0294
+  },
+  {
+    "id": "armin-afsharnejat",
+    "name": "Armin Afsharnejat",
+    "value": 1.1865
+  },
+  {
+    "id": "andrea-nakoinz",
+    "name": "Andrea Nakoinz",
+    "value": 0.2395
+  },
+  {
+    "id": "alexandra-bendzko",
+    "name": "Alexandra Bendzko",
+    "value": 0.7285
+  },
+  {
+    "id": "felix-leander-droop",
+    "name": "Felix Leander Droop",
+    "value": 0.9437
+  },
+  {
+    "id": "katharina-hild",
+    "name": "Katharina Hild",
+    "value": 1.0143
+  },
+  {
+    "id": "robert-liestmann",
+    "name": "Robert Liestmann",
+    "value": 0.7438
+  },
+  {
+    "id": "holger-michel",
+    "name": "Holger Michel",
+    "value": 0.9177
+  },
+  {
+    "id": "peter-schaar",
+    "name": "Peter Schaar",
+    "value": 0.7562
+  },
+  {
+    "id": "heiko-a.-manz",
+    "name": "Heiko A. Manz",
+    "value": 0.0179
+  },
+  {
+    "id": "tobias-marktscheffel",
+    "name": "Tobias Marktscheffel",
+    "value": 1.2523
+  },
+  {
+    "id": "lisa-meltendorf",
+    "name": "Lisa Meltendorf",
+    "value": 1.2582
+  },
+  {
+    "id": "manuel-honisch",
+    "name": "Manuel Honisch",
+    "value": -0.7176
+  },
+  {
+    "id": "vito-dabisch",
+    "name": "Vito Dabisch",
+    "value": -0.9865
+  },
+  {
+    "id": "meike-paula-berg",
+    "name": "Meike Paula Berg",
+    "value": -0.9653
+  },
+  {
+    "id": "britta-eiben-zach",
+    "name": "Britta Eiben-Zach",
+    "value": 0.2439
+  },
+  {
+    "id": "lea-rajewski",
+    "name": "Lea Rajewski",
+    "value": -0.4878
+  },
+  {
+    "id": "jens-weinandt",
+    "name": "Jens Weinandt",
+    "value": -0.5692
+  },
+  {
+    "id": "rebekka-dreher",
+    "name": "Rebekka Dreher",
+    "value": 0.1309
+  },
+  {
+    "id": "annekatrin-schimmelpfennig",
+    "name": "Annekatrin Schimmelpfennig",
+    "value": 0.1836
+  },
+  {
+    "id": "andras-franke",
+    "name": "Andras Franke",
+    "value": -0.0825
+  },
+  {
+    "id": "janine-schott",
+    "name": "Janine Schott",
+    "value": -0.6484
+  },
+  {
+    "id": "sabine-ponath",
+    "name": "Sabine Ponath",
+    "value": 0.527
+  },
+  {
+    "id": "nicolas-scharioth",
+    "name": "Nicolas Scharioth",
+    "value": 0.6468
+  },
+  {
+    "id": "kolja-voehringer",
+    "name": "Kolja Vöhringer",
+    "value": 0.7703
+  },
+  {
+    "id": "lydia-krueger",
+    "name": "Lydia Krüger",
+    "value": -0.779
+  },
+  {
+    "id": "timur-ohloff",
+    "name": "Timur Ohloff",
+    "value": 2.5948
+  },
+  {
+    "id": "britta-kistenich",
+    "name": "Britta Kistenich",
+    "value": 0.4121
+  },
+  {
+    "id": "silke-lambeck",
+    "name": "Silke Lambeck",
+    "value": 0.5368
+  },
+  {
+    "id": "heike-kaehler",
+    "name": "Heike Kähler",
+    "value": 1.1082
+  },
+  {
+    "id": "dara-kossok-spiess",
+    "name": "Dara Kossok-Spieß",
+    "value": 0.7117
+  },
+  {
+    "id": "sabine-hawlitzki",
+    "name": "Sabine Hawlitzki",
+    "value": 0.0575
+  },
+  {
+    "id": "petra-vandrey",
+    "name": "Petra Vandrey",
+    "value": 0.3881
+  },
+  {
+    "id": "christin-chemnitz",
+    "name": "Christin Chemnitz",
+    "value": 0.3943
+  },
+  {
+    "id": "doreen-frowitter",
+    "name": "Doreen Frowitter",
+    "value": 0.2743
+  },
+  {
+    "id": "lennart-sydow",
+    "name": "Lennart Sydow",
+    "value": 1.2196
+  },
+  {
+    "id": "ingeborg-hofer",
+    "name": "Ingeborg Hofer",
+    "value": 0.4136
+  },
+  {
+    "id": "tillmann-johannes-bechtold",
+    "name": "Tillmann Johannes Bechtold",
+    "value": 1.2728
+  },
+  {
+    "id": "stephan-von-dassel",
+    "name": "Stephan von Dassel",
+    "value": 0.9508
+  },
+  {
+    "id": "ansgar-roessig",
+    "name": "Ansgar Rössig",
+    "value": 1.2778
+  },
+  {
+    "id": "madlen-ehrlich",
+    "name": "Madlen Ehrlich",
+    "value": 0.8567
+  },
+  {
+    "id": "nils-erik-carlhoff",
+    "name": "Nils-Erik Carlhoff",
+    "value": 1.1288
+  },
+  {
+    "id": "cornelia-poczka",
+    "name": "Cornelia Poczka",
+    "value": 1.2788
+  },
+  {
+    "id": "test-durch-landesgeschaeftsstelle",
+    "name": "Test durch Landesgeschäftsstelle",
+    "value": 3.01
+  },
+  {
+    "id": "jelisaweta-kamm",
+    "name": "Jelisaweta Kamm",
+    "value": -0.4173
+  },
+  {
+    "id": "thomas-hess",
+    "name": "Thomas Hess",
+    "value": -0.4093
+  },
+  {
+    "id": "janna-vossnacker",
+    "name": "Janna Voßnacker",
+    "value": -0.493
+  },
+  {
+    "id": "linda-krummenauer",
+    "name": "Linda Krummenauer",
+    "value": -1.0851
+  },
+  {
+    "id": "birgit-janecek",
+    "name": "Birgit Janecek",
+    "value": 1.2417
+  },
+  {
+    "id": "matthias-oomen",
+    "name": "Matthias Oomen",
+    "value": 0.52
+  },
+  {
+    "id": "esther-kern",
+    "name": "Esther Kern",
+    "value": 0.6033
+  },
+  {
+    "id": "gerhard-timm",
+    "name": "Gerhard Timm",
+    "value": -0.2647
+  },
+  {
+    "id": "bernd-langhammer",
+    "name": "Bernd Langhammer",
+    "value": -0.1005
+  },
+  {
+    "id": "jan-barth",
+    "name": "Jan Barth",
+    "value": -0.3654
+  },
+  {
+    "id": "jana-gerlach",
+    "name": "Jana Gerlach",
+    "value": -0.2311
+  },
+  {
+    "id": "georg-atta-mensah",
+    "name": "Georg Atta Mensah",
+    "value": -0.2088
+  },
+  {
+    "id": "jonas-prade",
+    "name": "Jonas Prade",
+    "value": 0.4886
+  },
+  {
+    "id": "christiane-heider",
+    "name": "Christiane Heider",
+    "value": -0.3281
+  },
+  {
+    "id": "elke-kluender",
+    "name": "Elke Klünder",
+    "value": -0.4779
+  },
+  {
+    "id": "patrick-koenig",
+    "name": "Patrick König",
+    "value": -0.1423
+  },
+  {
+    "id": "ina-schmiedeberg",
+    "name": "Ina Schmiedeberg",
+    "value": -0.4639
+  },
+  {
+    "id": "beate-bruker",
+    "name": "Beate Bruker",
+    "value": -0.6081
+  },
+  {
+    "id": "werner-heck",
+    "name": "Werner Heck",
+    "value": -1.1515
+  },
+  {
+    "id": "sven-drebes",
+    "name": "Sven Drebes",
+    "value": -0.3443
+  },
+  {
+    "id": "philipp-ahrens",
+    "name": "Philipp Ahrens",
+    "value": -0.8551
+  },
+  {
+    "id": "irmgard-spoerndle",
+    "name": "Irmgard Spörndle",
+    "value": -0.5626
+  },
+  {
+    "id": "ludwin-feiten",
+    "name": "Ludwin Feiten",
+    "value": -0.0775
+  },
+  {
+    "id": "juergen-dietrich",
+    "name": "Jürgen Dietrich",
+    "value": -0.5344
+  },
+  {
+    "id": "tuba-bozkurt",
+    "name": "Tuba Bozkurt",
+    "value": -0.2903
+  },
+  {
+    "id": "ario-ebrahimpour-mirzaie",
+    "name": "Ario Ebrahimpour Mirzaie",
+    "value": -0.5832
+  },
+  {
+    "id": "sina-brabetz",
+    "name": "Sina Brabetz",
+    "value": -0.2091
+  },
+  {
+    "id": "milan-weyrauch",
+    "name": "Milan Weyrauch",
+    "value": -0.0755
+  },
+  {
+    "id": "lucie-schroeder",
+    "name": "Lucie Schröder",
+    "value": -0.2233
+  },
+  {
+    "id": "jacqueline-lori-fingerle",
+    "name": "Jacqueline Lori Fingerle",
+    "value": 0.272
+  },
+  {
+    "id": "annemarie-gorissen",
+    "name": "Annemarie Gorißen",
+    "value": -0.2332
+  },
+  {
+    "id": "maja-louise-schuleit",
+    "name": "Maja-Louise Schuleit",
+    "value": 0.3183
+  },
+  {
+    "id": "cornelia-apel",
+    "name": "Cornelia Apel",
+    "value": -0.1199
+  },
+  {
+    "id": "oliver-juetting",
+    "name": "Oliver Jütting",
+    "value": 0.3898
+  },
+  {
+    "id": "tim-kurockin",
+    "name": "Tim Kurockin",
+    "value": 0.4701
+  },
+  {
+    "id": "antonia-schwarz",
+    "name": "Antonia Schwarz",
+    "value": -0.1592
+  },
+  {
+    "id": "torben-woeckner",
+    "name": "Torben Wöckner",
+    "value": 0.4969
+  },
+  {
+    "id": "guelay-sistu",
+    "name": "Gülay Sistu",
+    "value": -0.3187
+  },
+  {
+    "id": "jacob-zellmer",
+    "name": "Jacob Zellmer",
+    "value": -0.536
+  },
+  {
+    "id": "claudia-leistner",
+    "name": "Claudia Leistner",
+    "value": -0.7975
+  },
+  {
+    "id": "harald-moritz",
+    "name": "Harald Moritz",
+    "value": -0.756
+  },
+  {
+    "id": "andrea-gerbode",
+    "name": "Andrea Gerbode",
+    "value": -0.7712
+  },
+  {
+    "id": "catherina-pieroth-manelli",
+    "name": "Catherina Pieroth-Manelli",
+    "value": -0.8027
+  },
+  {
+    "id": "julian-schwarze",
+    "name": "Julian Schwarze",
+    "value": -0.9877
+  },
+  {
+    "id": "julia-maria-sonnenburg",
+    "name": "Julia Maria Sonnenburg",
+    "value": -0.9084
+  },
+  {
+    "id": "claudia-jung",
+    "name": "Claudia Jung",
+    "value": 0.2827
+  },
+  {
+    "id": "anja-blau",
+    "name": "Anja Blau",
+    "value": 0.0927
+  },
+  {
+    "id": "katrin-bihari-vass",
+    "name": "Katrin Bihari Vass",
+    "value": 0.0611
+  },
+  {
+    "id": "christina-bechinie-von-lazan",
+    "name": "Christina Bechinie von Lazan",
+    "value": 0.2951
+  },
+  {
+    "id": "julia-schneider",
+    "name": "Julia Schneider",
+    "value": 0.3067
+  },
+  {
+    "id": "can-aru",
+    "name": "Can Aru",
+    "value": 0.4088
+  },
+  {
+    "id": "tilly-hensellek",
+    "name": "Tilly Hensellek",
+    "value": 0.2151
+  },
+  {
+    "id": "cordelia-koch",
+    "name": "Cordelia Koch",
+    "value": 0.2952
+  },
+  {
+    "id": "lisa-paus",
+    "name": "Lisa Paus",
+    "value": -0.6127
+  },
+  {
+    "id": "bianca-denfeld",
+    "name": "Bianca Denfeld",
+    "value": 0.2953
+  },
+  {
+    "id": "kristin-husen",
+    "name": "Kristin Husen",
+    "value": 0.2954
+  },
+  {
+    "id": "yannic-leschke",
+    "name": "Yannic Leschke",
+    "value": 0.8488
+  },
+  {
+    "id": "maj-britt-jungjohann",
+    "name": "Maj-Britt Jungjohann",
+    "value": 0.2789
+  },
+  {
+    "id": "manuela-neubert",
+    "name": "Manuela Neubert",
+    "value": 0.2956
+  },
+  {
+    "id": "andrea-baewert",
+    "name": "Andrea Baewert",
+    "value": 0.0472
+  },
+  {
+    "id": "jordi-muehle",
+    "name": "Jordi Mühle",
+    "value": 0.6869
+  },
+  {
+    "id": "maren-bergschneider",
+    "name": "Maren Bergschneider",
+    "value": 0.4595
+  },
+  {
+    "id": "liliana-marie-dornheckter",
+    "name": "Liliana Marie Dornheckter",
+    "value": 0.6093
+  },
+  {
+    "id": "clemens-justus-joshua-sachs",
+    "name": "Clemens Justus Joshua Sachs",
+    "value": 0.509
+  },
+  {
+    "id": "henning-van-ackeren",
+    "name": "Henning van Ackeren",
+    "value": 0.3206
+  },
+  {
+    "id": "irmgard-franke-dressler",
+    "name": "Irmgard Franke-Dressler",
+    "value": 0.3689
+  },
+  {
+    "id": "suncica-klaas",
+    "name": "Suncica Klaas",
+    "value": 0.2961
+  },
+  {
+    "id": "christian-holtorf",
+    "name": "Christian Holtorf",
+    "value": -0.6681
+  },
+  {
+    "id": "christian-huber",
+    "name": "Christian Huber",
+    "value": -0.7743
+  },
+  {
+    "id": "michael-winkelmann",
+    "name": "Michael Winkelmann",
+    "value": -0.3255
+  },
+  {
+    "id": "lennart-rothe",
+    "name": "Lennart Rothe",
+    "value": -0.8192
+  },
+  {
+    "id": "sebastian-kurt",
+    "name": "Sebastian Kurt",
+    "value": -0.745
+  },
+  {
+    "id": "david-przewozny",
+    "name": "David Przewozny",
+    "value": -0.745
+  },
+  {
+    "id": "tobias-balke",
+    "name": "Tobias Balke",
+    "value": -0.3928
+  },
+  {
+    "id": "evan-vosberg",
+    "name": "Evan Vosberg",
+    "value": -0.7602
+  },
+  {
+    "id": "paul-schuster",
+    "name": "Paul Schuster",
+    "value": -0.6229
+  },
+  {
+    "id": "sebastian-nisi",
+    "name": "Sebastian Nisi",
+    "value": -0.7374
+  },
+  {
+    "id": "martin-pogatzki",
+    "name": "Martin Pogatzki",
+    "value": -0.4831
+  },
+  {
+    "id": "annabelle-wolfsturm",
+    "name": "Annabelle Wolfsturm",
+    "value": -0.7454
+  },
+  {
+    "id": "annika-gerold",
+    "name": "Annika Gerold",
+    "value": -0.8558
+  },
+  {
+    "id": "thomas-egenberger-ma",
+    "name": "Thomas Egenberger MA",
+    "value": -0.7312
+  },
+  {
+    "id": "sandra-polsfuhs",
+    "name": "Sandra Polsfuhs",
+    "value": -0.4813
+  },
+  {
+    "id": "lisa-lotta-koehler",
+    "name": "Lisa Lotta Köhler",
+    "value": -0.6754
+  },
+  {
+    "id": "johannes-lechner",
+    "name": "Johannes Lechner",
+    "value": -0.6445
+  },
+  {
+    "id": "annkatrin-esser",
+    "name": "Annkatrin Esser",
+    "value": -1.0205
+  },
+  {
+    "id": "falco-strasser",
+    "name": "Falco Strasser",
+    "value": -0.9114
+  },
+  {
+    "id": "sophie-berndt",
+    "name": "Sophie Berndt",
+    "value": -0.9467
+  },
+  {
+    "id": "thies-sorgenfrei",
+    "name": "Thies Sorgenfrei",
+    "value": -0.5362
+  },
+  {
+    "id": "anna-stahl-czechowska",
+    "name": "Anna Stahl-Czechowska",
+    "value": -0.9525
+  },
+  {
+    "id": "rolf-syben",
+    "name": "Rolf Syben",
+    "value": 0.1943
+  },
+  {
+    "id": "regina-w.-câmara",
+    "name": "Regina W. Câmara",
+    "value": -0.0574
+  },
+  {
+    "id": "manuel-schreibauer",
+    "name": "Manuel Schreibauer",
+    "value": 0.4694
+  },
+  {
+    "id": "anna-von-polheim",
+    "name": "Anna von Polheim",
+    "value": -0.0799
+  },
+  {
+    "id": "stefanie-lucht",
+    "name": "Stefanie Lucht",
+    "value": 0.3406
+  },
+  {
+    "id": "stephan-keichel",
+    "name": "Stephan Keichel",
+    "value": 0.778
+  },
+  {
+    "id": "konrad-hickel",
+    "name": "Konrad Hickel",
+    "value": 0.7777
+  },
+  {
+    "id": "andreas-benens",
+    "name": "Andreas Benens",
+    "value": 0.3415
+  },
+  {
+    "id": "andreas-edel",
+    "name": "Andreas Edel",
+    "value": 0.4639
+  },
+  {
+    "id": "brigitte-kallmann",
+    "name": "Brigitte Kallmann",
+    "value": -1.031
+  },
+  {
+    "id": "simona-bianco",
+    "name": "Simona Bianco",
+    "value": -0.5157
+  },
+  {
+    "id": "andreas-rietz",
+    "name": "Andreas Rietz",
+    "value": -0.4484
+  },
+  {
+    "id": "elina-schumacher",
+    "name": "Elina Schumacher",
+    "value": -1.0753
+  },
+  {
+    "id": "neele-sofie-kuhn",
+    "name": "Neele-Sofie Kuhn",
+    "value": -0.8932
+  },
+  {
+    "id": "leonardo-igracki",
+    "name": "Leonardo Igracki",
+    "value": -0.8281
+  },
+  {
+    "id": "philipp-schuetz",
+    "name": "Philipp Schütz",
+    "value": -0.7373
+  },
+  {
+    "id": "laura-paulke",
+    "name": "Laura Paulke",
+    "value": -0.8282
+  },
+  {
+    "id": "samantha-fischer",
+    "name": "Samantha Fischer",
+    "value": -0.6486
+  },
+  {
+    "id": "gaya-palmér",
+    "name": "Gaya Palmér",
+    "value": -0.969
+  },
+  {
+    "id": "friedel-buehler",
+    "name": "Friedel Bühler",
+    "value": -0.8284
+  },
+  {
+    "id": "guenes-juelide-keskin",
+    "name": "Günes Jülide Keskin",
+    "value": -0.7288
+  },
+  {
+    "id": "leander-wendt",
+    "name": "Leander Wendt",
+    "value": -0.5997
+  },
+  {
+    "id": "niclas-christ",
+    "name": "Niclas Christ",
+    "value": -0.9462
+  },
+  {
+    "id": "sebastian-frevel",
+    "name": "Sebastian Frevel",
+    "value": 0.6142
+  },
+  {
+    "id": "simon-richter",
+    "name": "Simon Richter",
+    "value": 0.7078
+  },
+  {
+    "id": "reemt-heuke",
+    "name": "Reemt Heuke",
+    "value": 0.6738
+  },
+  {
+    "id": "till-koetter",
+    "name": "Till Kötter",
+    "value": 0.7559
+  },
+  {
+    "id": "luisa-stimpel",
+    "name": "Luisa Stimpel",
+    "value": -1.0392
+  },
+  {
+    "id": "christoph-lorenz",
+    "name": "Christoph Lorenz",
+    "value": -0.8916
+  },
+  {
+    "id": "pascal-striebel",
+    "name": "Pascal Striebel",
+    "value": -1.0027
+  },
+  {
+    "id": "bodo-tasche",
+    "name": "Bodo Tasche",
+    "value": -0.958
+  },
+  {
+    "id": "martin-ruemelin",
+    "name": "Martin Rümelin",
+    "value": -0.1155
+  },
+  {
+    "id": "peter-michael-rulff",
+    "name": "Peter Michael Rulff",
+    "value": 0.3439
+  },
+  {
+    "id": "janne-schoenerstedt",
+    "name": "Janne Schönerstedt",
+    "value": 0.6507
+  },
+  {
+    "id": "annalena-pott",
+    "name": "Annalena Pott",
+    "value": 0.6673
+  },
+  {
+    "id": "anna-melnik",
+    "name": "Anna Melnik",
+    "value": 0.6264
+  },
+  {
+    "id": "katrin-volkmann",
+    "name": "Katrin Volkmann",
+    "value": -0.3052
+  },
+  {
+    "id": "marie-charlotte-bierganz",
+    "name": "Marie Charlotte Bierganz",
+    "value": 0.847
+  },
+  {
+    "id": "joerg-staudemeyer",
+    "name": "Jörg Staudemeyer",
+    "value": 0.2704
+  },
+  {
+    "id": "leander-hirschsteiner",
+    "name": "Leander Hirschsteiner",
+    "value": 0.8268
+  },
+  {
+    "id": "alexander-kaas-elias",
+    "name": "Alexander Kaas Elias",
+    "value": 0.6765
+  },
+  {
+    "id": "lisa-wolfram",
+    "name": "Lisa Wolfram",
+    "value": 0.1587
+  },
+  {
+    "id": "thomas-hartmann",
+    "name": "Thomas Hartmann",
+    "value": 0.6778
+  },
+  {
+    "id": "jana-braun",
+    "name": "Jana Braun",
+    "value": 0.6218
+  },
+  {
+    "id": "thorsten-freers",
+    "name": "Thorsten Freers",
+    "value": 0.6295
+  },
+  {
+    "id": "andreas-otto",
+    "name": "Andreas Otto",
+    "value": 0.5873
+  },
+  {
+    "id": "marianne-wulff",
+    "name": "Marianne Wulff",
+    "value": 0.4096
+  },
+  {
+    "id": "jenny-lenz",
+    "name": "Jenny Lenz",
+    "value": 0.24
+  },
+  {
+    "id": "sybille-volkholz",
+    "name": "Sybille Volkholz",
+    "value": 0.7104
+  },
+  {
+    "id": "philipp-freisleben",
+    "name": "Philipp Freisleben",
+    "value": 1.0249
+  },
+  {
+    "id": "svenja-borgschulte",
+    "name": "Svenja Borgschulte",
+    "value": -1.0335
+  },
+  {
+    "id": "nicol-schmidt",
+    "name": "Nicol Schmidt",
+    "value": -1.1324
+  },
+  {
+    "id": "brigitte-schulte",
+    "name": "Brigitte Schulte",
+    "value": -0.2999
+  },
+  {
+    "id": "meike-von-appen",
+    "name": "Meike von Appen",
+    "value": -0.8745
+  },
+  {
+    "id": "wilfried-stotzka",
+    "name": "Wilfried Stotzka",
+    "value": -0.2585
+  },
+  {
+    "id": "lea-rajewski-lehmann",
+    "name": "Lea Rajewski-Lehmann",
+    "value": -0.3548
+  },
+  {
+    "id": "teresa-reichelt",
+    "name": "Teresa Reichelt",
+    "value": -1.0362
+  },
+  {
+    "id": "kristin-kosche",
+    "name": "Kristin Kosche",
+    "value": -0.9706
+  },
+  {
+    "id": "jutta-schmidt-stanojevic",
+    "name": "Jutta Schmidt-Stanojevic",
+    "value": -0.9691
+  },
+  {
+    "id": "jan-stiermann",
+    "name": "Jan Stiermann",
+    "value": -0.8097
+  },
+  {
+    "id": "monika-aurich",
+    "name": "Monika Aurich",
+    "value": 0.0541
+  },
+  {
+    "id": "paul-meyer-dunker",
+    "name": "Paul Meyer-Dunker",
+    "value": -0.8566
+  },
+  {
+    "id": "rhea-niggemann",
+    "name": "Rhea Niggemann",
+    "value": -1.022
+  },
+  {
+    "id": "robin-voelker",
+    "name": "Robin Völker",
+    "value": -1.0195
+  },
+  {
+    "id": "klara-ruhl",
+    "name": "Klara Ruhl",
+    "value": -0.9618
+  },
+  {
+    "id": "olga-koterewa",
+    "name": "Olga Koterewa",
+    "value": -1.0205
+  },
+  {
+    "id": "stefan-ziller",
+    "name": "Stefan Ziller",
+    "value": -0.6465
+  },
+  {
+    "id": "corinna-balkow",
+    "name": "Corinna Balkow",
+    "value": -0.904
+  },
+  {
+    "id": "linda-guzzetti",
+    "name": "Linda Guzzetti",
+    "value": -0.7799
+  },
+  {
+    "id": "charlotte-steinmetz",
+    "name": "Charlotte Steinmetz",
+    "value": -0.8902
+  },
+  {
+    "id": "sandra-lehmann",
+    "name": "Sandra Lehmann",
+    "value": -1.0221
+  },
+  {
+    "id": "anne-albers",
+    "name": "Anne Albers",
+    "value": -1.0193
+  },
+  {
+    "id": "christian-roux",
+    "name": "Christian Roux",
+    "value": -0.4844
+  },
+  {
+    "id": "hans-christian-hoepcke",
+    "name": "Hans-Christian Höpcke",
+    "value": -0.7151
+  },
+  {
+    "id": "almut-neumann",
+    "name": "Almut Neumann",
+    "value": -0.4241
+  },
+  {
+    "id": "christina-markfort",
+    "name": "Christina Markfort",
+    "value": -0.9306
+  },
+  {
+    "id": "christian-tewes",
+    "name": "Christian Tewes",
+    "value": -0.3874
+  },
+  {
+    "id": "joachim-schmitt",
+    "name": "Joachim Schmitt",
+    "value": -0.9425
+  },
+  {
+    "id": "jaron-schulz",
+    "name": "Jaron Schulz",
+    "value": -0.6392
+  },
+  {
+    "id": "tilmann-kern",
+    "name": "Tilmann Kern",
+    "value": -0.6879
+  },
+  {
+    "id": "petronela-bordeianu",
+    "name": "Petronela Bordeianu",
+    "value": -0.6394
+  },
+  {
+    "id": "antje-kapek",
+    "name": "Antje Kapek",
+    "value": -0.7492
+  },
+  {
+    "id": "nele-diekmann",
+    "name": "Nele Diekmann",
+    "value": -0.4591
+  },
+  {
+    "id": "kathleen-rabe",
+    "name": "Kathleen Rabe",
+    "value": 0.0511
+  },
+  {
+    "id": "christopher-linder",
+    "name": "Christopher Linder",
+    "value": -0.4595
+  },
+  {
+    "id": "thomas-thiel",
+    "name": "Thomas Thiel",
+    "value": -0.5003
+  },
+  {
+    "id": "justus-caspers",
+    "name": "Justus Caspers",
+    "value": -0.6993
+  },
+  {
+    "id": "wolfgang-schanderl",
+    "name": "Wolfgang Schanderl",
+    "value": -0.9325
+  },
+  {
+    "id": "juana-remus",
+    "name": "Juana Remus",
+    "value": -0.7626
+  },
+  {
+    "id": "tom-de-laar",
+    "name": "Tom de Laar",
+    "value": -0.8492
+  },
+  {
+    "id": "hartwig-berger",
+    "name": "Hartwig Berger",
+    "value": -1.0934
+  },
+  {
+    "id": "julia-scharf",
+    "name": "Julia Scharf",
+    "value": -0.9835
+  },
+  {
+    "id": "timur-ksianzou",
+    "name": "Timur Ksianzou",
+    "value": -0.4817
+  },
+  {
+    "id": "thomas-rost",
+    "name": "Thomas Rost",
+    "value": -0.4939
+  },
+  {
+    "id": "jan-dangendorf",
+    "name": "Jan Dangendorf",
+    "value": -0.6999
+  },
+  {
+    "id": "swantje-may",
+    "name": "Swantje May",
+    "value": -0.9605
+  },
+  {
+    "id": "tobias-jahn",
+    "name": "Tobias Jahn",
+    "value": -0.6511
+  },
+  {
+    "id": "andré-stephan",
+    "name": "André Stephan",
+    "value": 0.4909
+  },
+  {
+    "id": "kim-kohlmeyer",
+    "name": "Kim Kohlmeyer",
+    "value": 0.763
+  },
+  {
+    "id": "thaddaeus-jehle",
+    "name": "Thaddäus Jehle",
+    "value": 0.7406
+  },
+  {
+    "id": "emilia-engels",
+    "name": "Emilia Engels",
+    "value": -1.0794
+  },
+  {
+    "id": "dirk-jordan",
+    "name": "Dirk Jordan",
+    "value": 0.4612
+  },
+  {
+    "id": "hans-peter-klose",
+    "name": "Hans-Peter Klose",
+    "value": 0.3746
+  },
+  {
+    "id": "tim-heim",
+    "name": "Tim Heim",
+    "value": 0.5614
+  },
+  {
+    "id": "jasper-hahn",
+    "name": "Jasper Hahn",
+    "value": -0.7595
+  },
+  {
+    "id": "nico-wanke",
+    "name": "Nico Wanke",
+    "value": -0.6207
+  },
+  {
+    "id": "barbara-boeck-viebig",
+    "name": "Barbara Boeck-Viebig",
+    "value": -0.7101
+  },
+  {
+    "id": "muhammed-mansur-dogan",
+    "name": "Muhammed Mansur Dogan",
+    "value": -0.7464
+  },
+  {
+    "id": "maria-meier",
+    "name": "Maria Meier",
+    "value": -0.7032
+  },
+  {
+    "id": "elizaveta-kapinos",
+    "name": "Elizaveta Kapinos",
+    "value": -0.8796
+  },
+  {
+    "id": "tobias-philipp",
+    "name": "Tobias Philipp",
+    "value": -0.7488
+  },
+  {
+    "id": "bea-streicher",
+    "name": "Bea Streicher",
+    "value": -0.9085
+  },
+  {
+    "id": "thomas-wiskirchen",
+    "name": "Thomas Wiskirchen",
+    "value": -0.9896
+  },
+  {
+    "id": "lilly-aepfelbach",
+    "name": "Lilly Aepfelbach",
+    "value": -0.6915
+  },
+  {
+    "id": "kathleen-wabrowetz",
+    "name": "Kathleen Wabrowetz",
+    "value": -0.8526
+  },
+  {
+    "id": "jernej-biščak",
+    "name": "Jernej Biščak",
+    "value": -0.681
+  },
+  {
+    "id": "friedrich-adrian",
+    "name": "Friedrich Adrian",
+    "value": -0.6396
+  },
+  {
+    "id": "stephanie-frost",
+    "name": "Stephanie Frost",
+    "value": -0.6603
+  },
+  {
+    "id": "tim-junge",
+    "name": "Tim Junge",
+    "value": -0.3682
+  },
+  {
+    "id": "karin-schaedler",
+    "name": "Karin Schädler",
+    "value": -0.1179
+  },
+  {
+    "id": "ulrich-meuel",
+    "name": "Ulrich Meuel",
+    "value": 0.2599
+  },
+  {
+    "id": "nicolas-bock",
+    "name": "Nicolas Bock",
+    "value": -0.5903
+  },
+  {
+    "id": "hans-juergen-kuhn",
+    "name": "Hans-Jürgen Kuhn",
+    "value": 0.7761
+  },
+  {
+    "id": "maimouna-ouattara",
+    "name": "Maimouna Ouattara",
+    "value": -0.9546
+  },
+  {
+    "id": "konstantinos-kosmas",
+    "name": "Konstantinos Kosmas",
+    "value": 0.0284
+  },
+  {
+    "id": "daniel-wessling",
+    "name": "Daniel Weßling",
+    "value": 0.661
+  },
+  {
+    "id": "cedrik-schamberger",
+    "name": "Cedrik Schamberger",
+    "value": 0.4444
+  },
+  {
+    "id": "florian-maximilian-hahn",
+    "name": "Florian Maximilian Hahn",
+    "value": 0.6622
+  },
+  {
+    "id": "emil-pauls",
+    "name": "Emil Pauls",
+    "value": 0.6627
+  },
+  {
+    "id": "stephan-clemens",
+    "name": "Stephan Clemens",
+    "value": 0.6629
+  },
+  {
+    "id": "yvonne-steinert",
+    "name": "Yvonne Steinert",
+    "value": 0.6637
+  },
+  {
+    "id": "elias-enderlein",
+    "name": "Elias Enderlein",
+    "value": 1.0279
+  },
+  {
+    "id": "marcel-rohrlack",
+    "name": "Marcel Rohrlack",
+    "value": 0.9761
+  },
+  {
+    "id": "marianne-burkert-eulitz",
+    "name": "Marianne Burkert-Eulitz",
+    "value": -1.0558
+  },
+  {
+    "id": "tilmann-schade",
+    "name": "Tilmann Schade",
+    "value": -1.0243
+  },
+  {
+    "id": "lennart-gehrenkemper",
+    "name": "Lennart Gehrenkemper",
+    "value": -1.0367
+  },
+  {
+    "id": "annette-klemm",
+    "name": "Annette Klemm",
+    "value": -0.8921
+  },
+  {
+    "id": "ian-harknett",
+    "name": "Ian Harknett",
+    "value": -0.8311
+  },
+  {
+    "id": "saskia-hahn",
+    "name": "Saskia Hahn",
+    "value": -0.8062
+  },
+  {
+    "id": "kristin-otto",
+    "name": "Kristin Otto",
+    "value": -0.7749
+  },
+  {
+    "id": "maren-tepper",
+    "name": "Maren Tepper",
+    "value": -0.4557
+  },
+  {
+    "id": "janine-andrae",
+    "name": "Janine Andrä",
+    "value": -0.0799
+  },
+  {
+    "id": "karin-kayser",
+    "name": "Karin Kayser",
+    "value": -0.7252
+  },
+  {
+    "id": "carsten-gloeckner",
+    "name": "Carsten Glöckner",
+    "value": -0.2804
+  },
+  {
+    "id": "paul-schlueter",
+    "name": "Paul Schlüter",
+    "value": 0.0714
+  },
+  {
+    "id": "oda-hassepass",
+    "name": "Oda Hassepaß",
+    "value": -0.5174
+  },
+  {
+    "id": "sebastian-prassek",
+    "name": "Sebastian Prassek",
+    "value": -0.2121
+  },
+  {
+    "id": "dániel-fehér",
+    "name": "Dániel Fehér",
+    "value": -0.822
+  },
+  {
+    "id": "paul-schamuhn",
+    "name": "Paul Schamuhn",
+    "value": -0.2121
+  },
+  {
+    "id": "christoph-frost",
+    "name": "Christoph Frost",
+    "value": -0.7189
+  },
+  {
+    "id": "simon-muschick",
+    "name": "Simon Muschick",
+    "value": 0.6751
+  },
+  {
+    "id": "ann-kathrin-reichardt",
+    "name": "Ann-Kathrin Reichardt",
+    "value": -0.2121
+  },
+  {
+    "id": "falk-laemmermann",
+    "name": "Falk Lämmermann",
+    "value": -0.2121
+  },
+  {
+    "id": "thomas-dikant",
+    "name": "Thomas Dikant",
+    "value": -0.2121
+  },
+  {
+    "id": "jan-klaus-oczenasek",
+    "name": "Jan-Klaus Oczenasek",
+    "value": -0.173
+  },
+  {
+    "id": "maria-kottrup",
+    "name": "Maria Kottrup",
+    "value": -0.3939
+  },
+  {
+    "id": "santiago-rodriguez-salgado",
+    "name": "Santiago Rodriguez Salgado",
+    "value": -0.2121
+  },
+  {
+    "id": "lev-gordon",
+    "name": "Lev Gordon",
+    "value": -0.6092
+  },
+  {
+    "id": "jan-gerrit-keil",
+    "name": "Jan-Gerrit Keil",
+    "value": 0.5304
+  },
+  {
+    "id": "melanie-kramer",
+    "name": "Melanie Kramer",
+    "value": -0.7989
+  },
+  {
+    "id": "obinna-van-capelleveen",
+    "name": "Obinna van Capelleveen",
+    "value": -0.6576
+  },
+  {
+    "id": "ulrike-schenka-van-capelleveen",
+    "name": "Ulrike Schenka-van Capelleveen",
+    "value": -0.5988
+  },
+  {
+    "id": "dominik-weis",
+    "name": "Dominik Weis",
+    "value": -0.212
+  },
+  {
+    "id": "jana-schallau",
+    "name": "Jana Schallau",
+    "value": -0.212
+  },
+  {
+    "id": "roman-guski",
+    "name": "Roman Guski",
+    "value": -0.5797
+  },
+  {
+    "id": "martin-lang",
+    "name": "Martin Lang",
+    "value": 0.0894
+  },
+  {
+    "id": "jalal-mohamed-amin",
+    "name": "Jalal Mohamed Amin",
+    "value": -0.9005
+  },
+  {
+    "id": "paul-predatsch",
+    "name": "Paul Predatsch",
+    "value": -1.036
+  },
+  {
+    "id": "sabine-roeber",
+    "name": "Sabine Röber",
+    "value": -0.95
+  },
+  {
+    "id": "nino-sabanovic",
+    "name": "Nino Sabanovic",
+    "value": 1.3148
+  },
+  {
+    "id": "sascha-taschenberger",
+    "name": "Sascha Taschenberger",
+    "value": -1.0155
+  },
+  {
+    "id": "ellis-vorbeck",
+    "name": "Ellis Vorbeck",
+    "value": -0.9692
+  },
+  {
+    "id": "christoph-husemann",
+    "name": "Christoph Husemann",
+    "value": -1.0207
+  },
+  {
+    "id": "valentin-muenscher",
+    "name": "Valentin Münscher",
+    "value": -1.0207
+  },
+  {
+    "id": "renate-exner",
+    "name": "Renate Exner",
+    "value": -1.016
+  },
+  {
+    "id": "andreas-audretsch",
+    "name": "Andreas Audretsch",
+    "value": -1.0192
+  },
+  {
+    "id": "jian-omar",
+    "name": "Jian Omar",
+    "value": -0.9945
+  },
+  {
+    "id": "lukas-harkotte",
+    "name": "Lukas Harkotte",
+    "value": 2.8251
+  },
+  {
+    "id": "anton-waechter",
+    "name": "Anton Wächter",
+    "value": 2.8513
+  },
+  {
+    "id": "sarah-wuchner",
+    "name": "Sarah Wuchner",
+    "value": 2.8538
+  },
+  {
+    "id": "friederike-freund",
+    "name": "Friederike Freund",
+    "value": 2.8564
+  },
+  {
+    "id": "charlotte-kreft",
+    "name": "Charlotte Kreft",
+    "value": 1.6305
+  },
+  {
+    "id": "andré-schulze",
+    "name": "André Schulze",
+    "value": -0.976
+  },
+  {
+    "id": "vasili-franco",
+    "name": "Vasili Franco",
+    "value": -0.6741
+  },
+  {
+    "id": "karl-froehlich",
+    "name": "Karl Fröhlich",
+    "value": -0.5863
+  },
+  {
+    "id": "teresa-krause",
+    "name": "Teresa Krause",
+    "value": -0.8786
+  },
+  {
+    "id": "eva-meibeck-angelov",
+    "name": "Eva Meibeck-Angelov",
+    "value": -0.7202
+  },
+  {
+    "id": "marie-theres-knaepper",
+    "name": "Marie-Theres Knäpper",
+    "value": -0.7424
+  },
+  {
+    "id": "stefanie-klank-podlich",
+    "name": "Stefanie Klank-Podlich",
+    "value": -0.8845
+  },
+  {
+    "id": "ina-ravens",
+    "name": "Ina Ravens",
+    "value": -1.0426
+  },
+  {
+    "id": "sebastian-walter",
+    "name": "Sebastian Walter",
+    "value": -0.9401
+  },
+  {
+    "id": "filipe-fuerstenhoefer-de-figueiredo-e-silva",
+    "name": "Filipe Fürstenhöfer de Figueiredo e Silva",
+    "value": 0.8877
+  },
+  {
+    "id": "elias-kreutz",
+    "name": "Elias Kreutz",
+    "value": -0.7428
+  },
+  {
+    "id": "stefan-taschner",
+    "name": "Stefan Taschner",
+    "value": -1.0498
+  },
+  {
+    "id": "barbara-wuensche",
+    "name": "Barbara Wünsche",
+    "value": -0.9992
+  },
+  {
+    "id": "sandra-giglmaier",
+    "name": "Sandra Giglmaier",
+    "value": -1.0422
+  },
+  {
+    "id": "tonka-wojahn",
+    "name": "Tonka Wojahn",
+    "value": -0.1908
+  },
+  {
+    "id": "hartmut-hannemann",
+    "name": "Hartmut Hannemann",
+    "value": -0.3349
+  },
+  {
+    "id": "hanno-kress",
+    "name": "Hanno Kress",
+    "value": -0.1692
+  },
+  {
+    "id": "anne-krueger",
+    "name": "Anne Krüger",
+    "value": -0.5014
+  },
+  {
+    "id": "dorothee-richter",
+    "name": "Dorothee Richter",
+    "value": 0.899
+  },
+  {
+    "id": "christian-burtchen",
+    "name": "Christian Burtchen",
+    "value": -0.3513
+  },
+  {
+    "id": "notker-schweikhardt",
+    "name": "Notker Schweikhardt",
+    "value": 0.4213
+  },
+  {
+    "id": "stefan-nowack",
+    "name": "Stefan Nowack",
+    "value": -0.5642
+  },
+  {
+    "id": "carsten-rossenhoevel",
+    "name": "Carsten Rossenhövel",
+    "value": 0.7138
+  },
+  {
+    "id": "konstantin-ditschuneit",
+    "name": "Konstantin Ditschuneit",
+    "value": 0.2073
+  },
+  {
+    "id": "stephan-roch",
+    "name": "Stephan Roch",
+    "value": -0.6757
+  },
+  {
+    "id": "eric-heymann",
+    "name": "Eric Heymann",
+    "value": 0.0737
+  },
+  {
+    "id": "alberto-gobbi",
+    "name": "Alberto Gobbi",
+    "value": 0.0738
+  },
+  {
+    "id": "patric-rademacher",
+    "name": "Patric Rademacher",
+    "value": 0.1672
+  },
+  {
+    "id": "max-braun",
+    "name": "Max Braun",
+    "value": 0.074
+  },
+  {
+    "id": "rebecca-moebius",
+    "name": "Rebecca Möbius",
+    "value": 0.235
+  },
+  {
+    "id": "bernd-frieboese",
+    "name": "Bernd Frieboese",
+    "value": 0.0744
+  },
+  {
+    "id": "adrijana-jonjic",
+    "name": "Adrijana Jonjic",
+    "value": 0.2146
+  },
+  {
+    "id": "werner-behrendt",
+    "name": "Werner Behrendt",
+    "value": 0.2331
+  },
+  {
+    "id": "arturo-buchholz-berger",
+    "name": "Arturo Buchholz-Berger",
+    "value": 0.4047
+  },
+  {
+    "id": "friedrich-ehrhardt",
+    "name": "Friedrich Ehrhardt",
+    "value": 0.4048
+  },
+  {
+    "id": "susanne-von-below",
+    "name": "Susanne von Below",
+    "value": 0.5106
+  },
+  {
+    "id": "martina-zander-rade",
+    "name": "Martina Zander-Rade",
+    "value": 0.3429
+  },
+  {
+    "id": "cihan-mutlu",
+    "name": "Cihan Mutlu",
+    "value": 0.4056
+  },
+  {
+    "id": "oeztuerk-kiran",
+    "name": "Öztürk Kiran",
+    "value": -0.5495
+  },
+  {
+    "id": "karl-heinz-hage",
+    "name": "Karl-Heinz Hage",
+    "value": 0.1043
+  },
+  {
+    "id": "kathleen-kuppe",
+    "name": "Kathleen Kuppe",
+    "value": -0.5212
+  },
+  {
+    "id": "andreas-martin-selignow",
+    "name": "Andreas-Martin Selignow",
+    "value": -0.3832
+  },
+  {
+    "id": "jonathan-ziehr",
+    "name": "Jonathan Ziehr",
+    "value": -0.7216
+  },
+  {
+    "id": "matthias-loebsack",
+    "name": "Matthias Löbsack",
+    "value": -0.8711
+  },
+  {
+    "id": "jan-katins",
+    "name": "Jan Katins",
+    "value": -0.7996
+  },
+  {
+    "id": "joscha-pocha",
+    "name": "Joscha Pocha",
+    "value": 2.7214
+  },
+  {
+    "id": "veronika-kneissl",
+    "name": "Veronika Kneissl",
+    "value": 2.474
+  },
+  {
+    "id": "maximilian-buch",
+    "name": "Maximilian Buch",
+    "value": 2.8209
+  },
+  {
+    "id": "holger-lange-stede",
+    "name": "Holger Lange-Stede",
+    "value": 2.5851
+  },
+  {
+    "id": "christine-hassemer",
+    "name": "Christine Hassemer",
+    "value": 2.8138
+  },
+  {
+    "id": "tim-niclas-demisch",
+    "name": "Tim Niclas Demisch",
+    "value": 3.01
+  },
+  {
+    "id": "adrian-bothe",
+    "name": "Adrian Bothe",
+    "value": 0.066
+  },
+  {
+    "id": "mascha-poehls",
+    "name": "Mascha Pöhls",
+    "value": 0.1038
+  },
+  {
+    "id": "barbara-grutzig",
+    "name": "Barbara Grutzig",
+    "value": 0.3831
+  },
+  {
+    "id": "antje-loeffelholz",
+    "name": "Antje Löffelholz",
+    "value": -1.119
+  },
+  {
+    "id": "juergen-wolf",
+    "name": "Jürgen Wolf",
+    "value": -1.0835
+  },
+  {
+    "id": "alexander-klose",
+    "name": "Alexander Klose",
+    "value": 0.0442
+  },
+  {
+    "id": "diana-de-almeida",
+    "name": "Diana de Almeida",
+    "value": 0.0204
+  },
+  {
+    "id": "marion-bruesse",
+    "name": "Marion Brüsse",
+    "value": -0.3682
+  },
+  {
+    "id": "herrad-baurmann",
+    "name": "Herrad Baurmann",
+    "value": 0.0892
+  },
+  {
+    "id": "daniel-roevekamp",
+    "name": "Daniel Rövekamp",
+    "value": 0.1092
+  },
+  {
+    "id": "renate-kuenast",
+    "name": "Renate Künast",
+    "value": 0.1875
+  },
+  {
+    "id": "stefan-simon",
+    "name": "Stefan Simon",
+    "value": 0.0879
+  },
+  {
+    "id": "thomas-goetz",
+    "name": "Thomas Götz",
+    "value": 0.401
+  },
+  {
+    "id": "philipp-heintze",
+    "name": "Philipp Heintze",
+    "value": 0.3143
+  },
+  {
+    "id": "rainer-rossi",
+    "name": "Rainer Rossi",
+    "value": 0.3338
+  },
+  {
+    "id": "carolin-moser",
+    "name": "Carolin Moser",
+    "value": -1.1285
+  },
+  {
+    "id": "alena-dietl",
+    "name": "Alena Dietl",
+    "value": -1.1422
+  },
+  {
+    "id": "alida-nezamzadeh-kermani",
+    "name": "Alida Nezamzadeh Kermani",
+    "value": -0.0327
+  },
+  {
+    "id": "christoph-wapler",
+    "name": "Christoph Wapler",
+    "value": -0.8829
+  },
+  {
+    "id": "anna-butenschoen",
+    "name": "Anna Butenschön",
+    "value": -0.0325
+  },
+  {
+    "id": "oliver-schrage",
+    "name": "Oliver Schrage",
+    "value": -0.8123
+  },
+  {
+    "id": "kuebra-beydaş",
+    "name": "Kübra Beydaş",
+    "value": -1.0668
+  },
+  {
+    "id": "sam-hofmann",
+    "name": "Sam Hofmann",
+    "value": 0.4281
+  },
+  {
+    "id": "ulrich-oberdieck",
+    "name": "Ulrich Oberdieck",
+    "value": 0.576
+  },
+  {
+    "id": "lara-gromm",
+    "name": "Lara Gromm",
+    "value": 0.9186
+  },
+  {
+    "id": "heinz-jirout",
+    "name": "Heinz Jirout",
+    "value": 1.283
+  },
+  {
+    "id": "renate-giese",
+    "name": "Renate Giese",
+    "value": 1.2846
+  },
+  {
+    "id": "ulrike-gardeler",
+    "name": "Ulrike Gardeler",
+    "value": 1.2854
+  },
+  {
+    "id": "nikolaus-huss",
+    "name": "Nikolaus Huss",
+    "value": 1.2861
+  },
+  {
+    "id": "lea-aigner",
+    "name": "Lea Aigner",
+    "value": -0.5948
+  },
+  {
+    "id": "pascal-grothe",
+    "name": "Pascal Grothe",
+    "value": -0.5952
+  },
+  {
+    "id": "silke-gaenger",
+    "name": "Silke Gänger",
+    "value": 0.7134
+  },
+  {
+    "id": "jost-sarwoko",
+    "name": "Jost Sarwoko",
+    "value": 0.9811
+  },
+  {
+    "id": "josefine-koenig",
+    "name": "Josefine König",
+    "value": -0.5638
+  },
+  {
+    "id": "christoph-mayer",
+    "name": "Christoph Mayer",
+    "value": -0.7896
+  },
+  {
+    "id": "felix-hoffmann",
+    "name": "Felix Hoffmann",
+    "value": -0.3531
+  },
+  {
+    "id": "carl-witthauer",
+    "name": "Carl Witthauer",
+    "value": 0.5228
+  },
+  {
+    "id": "tobias-kraudzun",
+    "name": "Tobias Kraudzun",
+    "value": -0.2079
+  },
+  {
+    "id": "astrid-bialluch-liu",
+    "name": "Astrid Bialluch-Liu",
+    "value": -0.2047
+  },
+  {
+    "id": "felix-schachenmayr",
+    "name": "Felix Schachenmayr",
+    "value": -1.1423
+  },
+  {
+    "id": "lena-renner",
+    "name": "Lena Renner",
+    "value": -1.106
+  },
+  {
+    "id": "tariq-kandil",
+    "name": "Tariq Kandil",
+    "value": -1.0724
+  },
+  {
+    "id": "sebastian-kitzig",
+    "name": "Sebastian Kitzig",
+    "value": -1.0654
+  },
+  {
+    "id": "silke-palm",
+    "name": "Silke Palm",
+    "value": -0.3967
+  },
+  {
+    "id": "sabine-weyland",
+    "name": "Sabine Weyland",
+    "value": -1.1024
+  },
+  {
+    "id": "klaudia-noerenberg",
+    "name": "Klaudia Noerenberg",
+    "value": -1.1623
+  },
+  {
+    "id": "josefine-haase",
+    "name": "Josefine Haase",
+    "value": -1.0787
+  },
+  {
+    "id": "janine-raethke",
+    "name": "Janine Räthke",
+    "value": -1.0619
+  },
+  {
+    "id": "franziska-lorenz",
+    "name": "Franziska Lorenz",
+    "value": -0.8999
+  },
+  {
+    "id": "barbara-simmler",
+    "name": "Barbara Simmler",
+    "value": -0.9215
+  },
+  {
+    "id": "anja-blaku",
+    "name": "Anja Blaku",
+    "value": -1.041
+  },
+  {
+    "id": "filiz-kekuellueoglu",
+    "name": "Filiz Keküllüoglu",
+    "value": -0.8602
+  },
+  {
+    "id": "thorsten-eberding",
+    "name": "Thorsten Eberding",
+    "value": -0.7163
+  },
+  {
+    "id": "dennis-franz",
+    "name": "Dennis Franz",
+    "value": -0.775
+  },
+  {
+    "id": "erik-becker",
+    "name": "Erik Becker",
+    "value": -0.8558
+  },
+  {
+    "id": "elke-schaefer",
+    "name": "Elke Schäfer",
+    "value": -0.7927
+  },
+  {
+    "id": "mandy-riemer",
+    "name": "Mandy Riemer",
+    "value": -0.8499
+  },
+  {
+    "id": "karin-hausmann-kasper",
+    "name": "Karin Hausmann-Kasper",
+    "value": -0.8572
+  },
+  {
+    "id": "katrin-schmidberger",
+    "name": "Katrin Schmidberger",
+    "value": -1.0933
+  },
+  {
+    "id": "bennet-noah-dyllong",
+    "name": "Bennet Noah Dyllong",
+    "value": -1.0774
+  },
+  {
+    "id": "heike-leichsenring",
+    "name": "Heike Leichsenring",
+    "value": -1.0853
+  },
+  {
+    "id": "michael-knoll",
+    "name": "Michael Knoll",
+    "value": 0.1294
+  },
+  {
+    "id": "joshua-allen",
+    "name": "Joshua Allen",
+    "value": 0.039
+  },
+  {
+    "id": "tim-scherer",
+    "name": "Tim Scherer",
+    "value": 0.1359
+  },
+  {
+    "id": "gernot-lobenberg",
+    "name": "Gernot Lobenberg",
+    "value": 0.2541
+  },
+  {
+    "id": "caroline-falk",
+    "name": "Caroline Falk",
+    "value": 0.0055
+  },
+  {
+    "id": "tobias-jung",
+    "name": "Tobias Jung",
+    "value": 0.063
+  },
+  {
+    "id": "tobias-oertel",
+    "name": "Tobias Oertel",
+    "value": 0.2543
+  },
+  {
+    "id": "claudio-struck",
+    "name": "Claudio Struck",
+    "value": 0.2545
+  },
+  {
+    "id": "dante-esteban-davis",
+    "name": "Dante Esteban Davis",
+    "value": -0.84
+  },
+  {
+    "id": "maren-knabe-schultze",
+    "name": "Maren Knabe-Schultze",
+    "value": -0.7862
+  },
+  {
+    "id": "alexandra-heimerl",
+    "name": "Alexandra Heimerl",
+    "value": 0.1917
+  },
+  {
+    "id": "anna-tabea-bock",
+    "name": "Anna-Tabea Bock",
+    "value": -0.7762
+  },
+  {
+    "id": "timo-niedermeyer",
+    "name": "Timo Niedermeyer",
+    "value": 0.283
+  },
+  {
+    "id": "mirjam-niedermeyer",
+    "name": "Mirjam Niedermeyer",
+    "value": 0.2938
+  },
+  {
+    "id": "constanze-bickelmann",
+    "name": "Constanze Bickelmann",
+    "value": -0.0582
+  },
+  {
+    "id": "carlos-guemueşboğa",
+    "name": "Carlos Gümüşboğa",
+    "value": 0.2961
+  },
+  {
+    "id": "hannah-delius",
+    "name": "Hannah Delius",
+    "value": 0.2968
+  },
+  {
+    "id": "till-marvin-micke",
+    "name": "Till Marvin Micke",
+    "value": -0.8619
+  },
+  {
+    "id": "stefanie-aehnelt",
+    "name": "Stefanie Aehnelt",
+    "value": -0.874
+  },
+  {
+    "id": "norbert-gorissen",
+    "name": "Norbert Gorißen",
+    "value": -0.4624
+  },
+  {
+    "id": "lutz-weischer",
+    "name": "Lutz Weischer",
+    "value": -0.4636
+  },
+  {
+    "id": "lars-andersen",
+    "name": "Lars Andersen",
+    "value": -0.1063
+  },
+  {
+    "id": "alois-vedder",
+    "name": "Alois Vedder",
+    "value": -0.4637
+  },
+  {
+    "id": "miriam-ott",
+    "name": "Miriam Ott",
+    "value": -0.4637
+  },
+  {
+    "id": "monika-hopstock",
+    "name": "Monika Hopstock",
+    "value": -0.7197
+  },
+  {
+    "id": "marion-eschler",
+    "name": "Marion Eschler",
+    "value": -0.4638
+  },
+  {
+    "id": "astrid-harnisch",
+    "name": "Astrid Harnisch",
+    "value": -0.4639
+  },
+  {
+    "id": "claudia-loeber",
+    "name": "Claudia Löber",
+    "value": -0.8968
+  },
+  {
+    "id": "nujan-omar",
+    "name": "Nujan Omar",
+    "value": -1.0564
+  },
+  {
+    "id": "david-tischer",
+    "name": "David Tischer",
+    "value": 0.8131
+  },
+  {
+    "id": "laura-neugebauer",
+    "name": "Laura Neugebauer",
+    "value": -0.2891
+  },
+  {
+    "id": "deniz-yildirim-caliman",
+    "name": "Deniz Yildirim-Caliman",
+    "value": -0.7663
+  },
+  {
+    "id": "kadir-sahin",
+    "name": "Kadir Sahin",
+    "value": -0.4222
+  },
+  {
+    "id": "urban-aykal",
+    "name": "Urban Aykal",
+    "value": -0.4222
+  },
+  {
+    "id": "markus-humpert",
+    "name": "Markus Humpert",
+    "value": -0.4223
+  },
+  {
+    "id": "fadime-topac",
+    "name": "Fadime Topac",
+    "value": -0.4223
+  },
+  {
+    "id": "jan-michael-ihl",
+    "name": "Jan Michael Ihl",
+    "value": -0.4223
+  },
+  {
+    "id": "adalet-firat",
+    "name": "Adalet Firat",
+    "value": -0.4224
+  },
+  {
+    "id": "daniela-wannemacher",
+    "name": "Daniela Wannemacher",
+    "value": -0.4224
+  },
+  {
+    "id": "joachim-syska",
+    "name": "Joachim Syska",
+    "value": 0.599
+  },
+  {
+    "id": "sven-dohnalek",
+    "name": "Sven Dohnalek",
+    "value": -0.8612
+  },
+  {
+    "id": "paula-stark",
+    "name": "Paula Stark",
+    "value": -0.8615
+  },
+  {
+    "id": "torsten-kirschke",
+    "name": "Torsten Kirschke",
+    "value": -0.8617
+  },
+  {
+    "id": "lucas-gerrits",
+    "name": "Lucas Gerrits",
+    "value": 1.1215
+  },
+  {
+    "id": "martin-beck",
+    "name": "Martin Beck",
+    "value": 1.3633
+  },
+  {
+    "id": "julius-upmeier-zu-belzen",
+    "name": "Julius Upmeier zu Belzen",
+    "value": 1.194
+  },
+  {
+    "id": "tatjana-von-muenchhausen",
+    "name": "Tatjana von Münchhausen",
+    "value": 1.3644
+  },
+  {
+    "id": "florian-maass",
+    "name": "Florian Maaß",
+    "value": 1.3655
+  },
+  {
+    "id": "roman-léandre-schmidt",
+    "name": "Roman Léandre Schmidt",
+    "value": 1.3661
+  },
+  {
+    "id": "silke-leupold",
+    "name": "Silke Leupold",
+    "value": -1.051
+  },
+  {
+    "id": "peter-haack",
+    "name": "Peter Haack",
+    "value": -1.0484
+  },
+  {
+    "id": "jochen-bohne",
+    "name": "Jochen Bohne",
+    "value": 1.9742
+  },
+  {
+    "id": "miriam-zeller",
+    "name": "Miriam Zeller",
+    "value": 2.1511
+  },
+  {
+    "id": "mania-lohrengel",
+    "name": "Mania Lohrengel",
+    "value": 2.0262
+  },
+  {
+    "id": "christian-bohne",
+    "name": "Christian Bohne",
+    "value": 2.1605
+  },
+  {
+    "id": "leonie-von-arnim",
+    "name": "Leonie von Arnim",
+    "value": 1.9867
+  },
+  {
+    "id": "martina-franzen",
+    "name": "Martina Franzen",
+    "value": 1.9889
+  },
+  {
+    "id": "nina-otto",
+    "name": "Nina Otto",
+    "value": 1.9989
+  },
+  {
+    "id": "alma-kittler",
+    "name": "Alma Kittler",
+    "value": 1.9957
+  },
+  {
+    "id": "lucas-hoewner",
+    "name": "Lucas Höwner",
+    "value": -0.1067
+  },
+  {
+    "id": "vincent-scheller-hein",
+    "name": "Vincent Scheller-Hein",
+    "value": 0.1669
+  },
+  {
+    "id": "henrik-rubner",
+    "name": "Henrik Rubner",
+    "value": 0.1689
+  },
+  {
+    "id": "nina-freund",
+    "name": "Nina Freund",
+    "value": 0.1699
+  },
+  {
+    "id": "gerhard-roland",
+    "name": "Gerhard Roland",
+    "value": -0.5511
+  },
+  {
+    "id": "roland-bertelmann",
+    "name": "Roland Bertelmann",
+    "value": -0.1169
+  },
+  {
+    "id": "anna-sturm",
+    "name": "Anna Sturm",
+    "value": -0.1772
+  },
+  {
+    "id": "felix-francke",
+    "name": "Felix Francke",
+    "value": -0.0633
+  },
+  {
+    "id": "jules-weigel",
+    "name": "Jules Weigel",
+    "value": -0.7747
+  },
+  {
+    "id": "angela-korte",
+    "name": "Angela Korte",
+    "value": -0.7749
+  },
+  {
+    "id": "henrike-junge",
+    "name": "Henrike Junge",
+    "value": -0.7753
+  },
+  {
+    "id": "wolfgang-schmidt",
+    "name": "Wolfgang Schmidt",
+    "value": 0.1055
+  },
+  {
+    "id": "tjado-stemmermann",
+    "name": "Tjado Stemmermann",
+    "value": -0.921
+  },
+  {
+    "id": "maria-haberer",
+    "name": "Maria Haberer",
+    "value": -1.1431
+  },
+  {
+    "id": "sebastian-brux",
+    "name": "Sebastian Brux",
+    "value": -0.6777
+  },
+  {
+    "id": "malin-marie-muser",
+    "name": "Malin Marie Muser",
+    "value": -0.2426
+  },
+  {
+    "id": "max-stier",
+    "name": "Max Stier",
+    "value": -0.2426
+  },
+  {
+    "id": "rita-fakunmoju",
+    "name": "Rita Fakunmoju",
+    "value": -1.055
+  },
+  {
+    "id": "katja-syndikus",
+    "name": "Katja Syndikus",
+    "value": -1.0555
+  },
+  {
+    "id": "jochen-juergensen",
+    "name": "Jochen Jürgensen",
+    "value": -1.0568
+  },
+  {
+    "id": "christopher-peter",
+    "name": "Christopher Peter",
+    "value": -0.8384
+  },
+  {
+    "id": "atahan-demirel",
+    "name": "Atahan Demirel",
+    "value": -0.9286
+  },
+  {
+    "id": "sascha-krieger",
+    "name": "Sascha Krieger",
+    "value": -0.9365
+  },
+  {
+    "id": "henriette-spiering",
+    "name": "Henriette Spiering",
+    "value": -0.7601
+  },
+  {
+    "id": "daniela-wolter",
+    "name": "Daniela Wolter",
+    "value": 1.2156
+  },
+  {
+    "id": "markus-karner",
+    "name": "Markus Karner",
+    "value": -0.9475
+  },
+  {
+    "id": "susanne-litzel",
+    "name": "Susanne Litzel",
+    "value": -0.2088
+  },
+  {
+    "id": "wolfgang-ewert",
+    "name": "Wolfgang Ewert",
+    "value": 0.2012
+  },
+  {
+    "id": "nina-locher",
+    "name": "Nina Locher",
+    "value": -0.7359
+  },
+  {
+    "id": "martin-weiland",
+    "name": "Martin Weiland",
+    "value": -0.5998
+  },
+  {
+    "id": "anne-koenig",
+    "name": "Anne König",
+    "value": 0.3512
+  },
+  {
+    "id": "karsten-petzold",
+    "name": "Karsten Petzold",
+    "value": 1.3538
+  },
+  {
+    "id": "milan-bachmann",
+    "name": "Milan Bachmann",
+    "value": -1.1373
+  },
+  {
+    "id": "morris-reinmueller",
+    "name": "Morris Reinmüller",
+    "value": 0.9846
+  },
+  {
+    "id": "johannes-verch",
+    "name": "Johannes Verch",
+    "value": -1.0366
+  },
+  {
+    "id": "erika-romberg",
+    "name": "Erika Romberg",
+    "value": -1.0265
+  },
+  {
+    "id": "karsten-lindloff",
+    "name": "Karsten Lindloff",
+    "value": -1.0165
+  },
+  {
+    "id": "sabine-rumiz-luehrs",
+    "name": "Sabine Rumiz-Lührs",
+    "value": 0.873
+  },
+  {
+    "id": "jasper-stahl",
+    "name": "Jasper Stahl",
+    "value": 0.2731
+  },
+  {
+    "id": "jonas-kriegs",
+    "name": "Jonas Kriegs",
+    "value": 0.2439
+  },
+  {
+    "id": "anne-christin-beutel",
+    "name": "Anne-Christin Beutel",
+    "value": -1.008
+  },
+  {
+    "id": "heiko-glawe",
+    "name": "Heiko Glawe",
+    "value": -0.9766
+  },
+  {
+    "id": "mario-konstantin-pless",
+    "name": "Mario-Konstantin Pless",
+    "value": -1.0245
+  },
+  {
+    "id": "niklas-peters",
+    "name": "Niklas Peters",
+    "value": -0.9472
+  },
+  {
+    "id": "armin-schaefer",
+    "name": "Armin Schäfer",
+    "value": -0.9474
+  },
+  {
+    "id": "salomé-dick",
+    "name": "Salomé Dick",
+    "value": -0.93
+  },
+  {
+    "id": "angelica-schieder",
+    "name": "Angelica Schieder",
+    "value": -0.942
+  },
+  {
+    "id": "andreas-koenig",
+    "name": "Andreas König",
+    "value": -0.9475
+  },
+  {
+    "id": "christina-schoof",
+    "name": "Christina Schoof",
+    "value": -1.1278
+  },
+  {
+    "id": "christiane-fry",
+    "name": "Christiane Fry",
+    "value": -1.0186
+  },
+  {
+    "id": "nikola-kiwull",
+    "name": "Nikola Kiwull",
+    "value": -0.3171
+  },
+  {
+    "id": "reinhard-koppenleitner",
+    "name": "Reinhard Koppenleitner",
+    "value": -0.3169
+  },
+  {
+    "id": "michael-sebastian-schneiss",
+    "name": "Michael Sebastian Schneiß",
+    "value": -0.9489
+  },
+  {
+    "id": "silvia-rothmund",
+    "name": "Silvia Rothmund",
+    "value": -1.1736
+  },
+  {
+    "id": "laura-brehme",
+    "name": "Laura Brehme",
+    "value": -0.9555
+  },
+  {
+    "id": "anika-lison",
+    "name": "Anika Lison",
+    "value": -0.9566
+  },
+  {
+    "id": "erik-marquardt",
+    "name": "Erik Marquardt",
+    "value": -0.9571
+  },
+  {
+    "id": "daniela-billig",
+    "name": "Daniela Billig",
+    "value": 0.7103
+  },
+  {
+    "id": "anna-stina-naujoks",
+    "name": "Anna-Stina Naujoks",
+    "value": -1.0024
+  },
+  {
+    "id": "alexander-czempas",
+    "name": "Alexander Czempas",
+    "value": -0.8655
+  },
+  {
+    "id": "wayra-quispe-traub",
+    "name": "Wayra Quispe Traub",
+    "value": 0.4456
+  },
+  {
+    "id": "leonie-back",
+    "name": "Leonie Back",
+    "value": -1.0641
+  },
+  {
+    "id": "maik-brunkow",
+    "name": "Maik Brunkow",
+    "value": -0.9597
+  },
+  {
+    "id": "roman-vickery-barkow",
+    "name": "Roman Vickery-Barkow",
+    "value": 0.3567
+  },
+  {
+    "id": "june-tomiak",
+    "name": "June Tomiak",
+    "value": -1.145
+  },
+  {
+    "id": "wolfgang-remmers",
+    "name": "Wolfgang Remmers",
+    "value": -0.905
+  },
+  {
+    "id": "bertolt-eicke",
+    "name": "Bertolt Eicke",
+    "value": 0.3268
+  },
+  {
+    "id": "jan-kjell-lange",
+    "name": "Jan Kjell Lange",
+    "value": 0.3271
+  },
+  {
+    "id": "frank-unger-weber",
+    "name": "Frank Unger-Weber",
+    "value": 0.3273
+  },
+  {
+    "id": "hermann-e.-ott",
+    "name": "Hermann E. Ott",
+    "value": 0.3275
+  },
+  {
+    "id": "anja-soedler",
+    "name": "Anja Södler",
+    "value": -0.3703
+  },
+  {
+    "id": "ulrike-trappenberg",
+    "name": "Ulrike Trappenberg",
+    "value": -0.9909
+  },
+  {
+    "id": "axel-luessow",
+    "name": "Axel Lüssow",
+    "value": 0.1774
+  },
+  {
+    "id": "ronald-wenke",
+    "name": "Ronald Wenke",
+    "value": 0.4948
+  },
+  {
+    "id": "dorothea-wagner",
+    "name": "Dorothea Wagner",
+    "value": -0.9564
+  },
+  {
+    "id": "thea-ramm",
+    "name": "Thea Ramm",
+    "value": -0.957
+  },
+  {
+    "id": "christiane-hohensee",
+    "name": "Christiane Hohensee",
+    "value": -0.9601
+  },
+  {
+    "id": "clara-herrmann",
+    "name": "Clara Herrmann",
+    "value": -0.9383
+  }
+]

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Visualisierung der Personen-Positionen (R-Export)</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+        #toolbar { padding: 20px; border-bottom: 1px solid #dee2e6; background: white; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; }
+        h1 { margin: 0 0 10px 0; font-size: 1.2rem; color: #2c3e50; }
+        #search-container { margin-bottom: 10px; }
+        #searchInput { padding: 10px 15px; width: 400px; border: 1px solid #ced4da; border-radius: 20px; outline: none; transition: border-color 0.2s; }
+        #searchInput:focus { border-color: #4a90e2; box-shadow: 0 0 0 3px rgba(74,144,226,0.1); }
+        #container { position: relative; flex-grow: 1; width: 100%; overflow: hidden; }
+        canvas { cursor: move; display: block; }
+        .stats { font-size: 0.85rem; color: #6c757d; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="toolbar">
+    <h1>1D Personen-Visualisierung (R-Berechnung)</h1>
+    <div id="search-container">
+        <input type="text" id="searchInput" placeholder="Person suchen..." oninput="draw()">
+    </div>
+    <div class="stats" id="stats-text">Lade Daten...</div>
+    <div id="legend" style="display: flex; justify-content: center; gap: 15px; font-size: 0.75rem; color: #666; margin-top: 5px;">
+        <span style="display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; background:#e67e22; border-radius:50%;"></div> Eingereicht</span>
+        <span style="display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; background:#27ae60; border-radius:50%;"></div> Angenommen</span>
+        <span style="display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; background:#c0392b; border-radius:50%;"></div> Abgelehnt</span>
+        <span style="display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; background:#f1c40f; border-radius:50%;"></div> Zurückgezogen</span>
+        <span style="display:flex; align-items:center; gap:4px;"><div style="width:8px; height:8px; background:#8e44ad; border-radius:50%;"></div> Überwiesen</span>
+    </div>
+</div>
+
+<div id="container">
+    <canvas id="main-canvas"></canvas>
+</div>
+
+<script>
+    let nodes = [];
+    let amendments = [];
+    let densityData = [];
+
+    const statusColors = {
+        1: "#e67e22", // Eingereicht
+        2: "#27ae60", // Angenommen
+        3: "#c0392b", // Abgelehnt
+        4: "#f1c40f", // Zurückgezogen
+        5: "#8e44ad", // Überwiesen
+        6: "#34495e"  // Sonstiges
+    };
+
+    const canvas = document.getElementById("main-canvas");
+    const ctx = canvas.getContext("2d");
+    const container = document.getElementById("container");
+    
+    let width, height, centerY;
+    const margin = 100;
+    const dpr = window.devicePixelRatio || 1;
+    
+    let currentTransform = d3.zoomIdentity;
+    const zoom = d3.zoom()
+        .scaleExtent([0.1, 100])
+        .on("zoom", event => {
+            currentTransform = event.transform;
+            draw();
+        });
+
+    function resize() {
+        width = container.clientWidth;
+        height = container.clientHeight;
+        centerY = height * 0.5;
+        
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        canvas.style.width = width + "px";
+        canvas.style.height = height + "px";
+        ctx.scale(dpr, dpr);
+        draw();
+    }
+
+    window.addEventListener("resize", resize);
+    d3.select(canvas).call(zoom);
+
+    function kernelDensityEstimator(kernel, x) {
+        return function(sample) {
+            return x.map(v => [v, d3.mean(sample, d => kernel(v - d))]);
+        };
+    }
+
+    function kernelEpanechnikov(k) {
+        return v => Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+    }
+
+    // Daten laden
+    d3.json("person_positions_r.json").then(data => {
+        // Filtere ungültige Werte (NA/NaN aus R)
+        nodes = data.filter(d => d.value !== null && !isNaN(d.value));
+        
+        // Density berechnen
+        const values = nodes.map(d => d.value);
+        const kde = kernelDensityEstimator(kernelEpanechnikov(0.15), d3.range(-3, 3, 0.05));
+        densityData = kde(values);
+
+        document.getElementById("stats-text").textContent = `${nodes.length} Personen aus R-Export geladen`;
+        
+        // Anträge laden
+        return d3.json("amendment_positions_r.json");
+    }).then(data => {
+        amendments = data.filter(d => d.value !== null && !isNaN(d.value));
+        const currentStats = document.getElementById("stats-text").textContent;
+        document.getElementById("stats-text").textContent = `${currentStats}, ${amendments.length} Anträge`;
+        resize();
+    }).catch(err => {
+        console.error("Fehler beim Laden der JSON:", err);
+        document.getElementById("stats-text").textContent = "Fehler: person_positions_r.json konnte nicht geladen werden.";
+    });
+
+    function draw() {
+        if (nodes.length === 0) return;
+
+        ctx.clearRect(0, 0, width, height);
+        ctx.save();
+        
+        ctx.translate(currentTransform.x, currentTransform.y);
+        ctx.scale(currentTransform.k, currentTransform.k);
+
+        const xScale = d3.scaleLinear().domain([-2.5, 2.5]).range([margin, width - margin]);
+        const term = document.getElementById("searchInput").value.toLowerCase();
+
+        // Density zeichnen
+        if (densityData.length > 0) {
+            const yScaleDensity = d3.scaleLinear()
+                .domain([0, d3.max(densityData, d => d[1])])
+                .range([centerY, centerY - 150]);
+
+            ctx.beginPath();
+            ctx.moveTo(xScale(densityData[0][0]), centerY);
+            densityData.forEach(d => {
+                ctx.lineTo(xScale(d[0]), yScaleDensity(d[1]));
+            });
+            ctx.lineTo(xScale(densityData[densityData.length - 1][0]), centerY);
+            ctx.closePath();
+            
+            ctx.fillStyle = "rgba(74, 144, 226, 0.15)";
+            ctx.fill();
+            ctx.strokeStyle = "rgba(74, 144, 226, 0.4)";
+            ctx.lineWidth = 2 / currentTransform.k;
+            ctx.stroke();
+        }
+
+        // Achse zeichnen
+        ctx.beginPath();
+        ctx.moveTo(xScale(-3), centerY);
+        ctx.lineTo(xScale(3), centerY);
+        ctx.strokeStyle = "#dee2e6";
+        ctx.lineWidth = 1 / currentTransform.k;
+        ctx.stroke();
+
+        // Skalenstriche
+        for (let i = -2; i <= 2; i++) {
+            const sx = xScale(i);
+            ctx.beginPath();
+            ctx.moveTo(sx, centerY - 5);
+            ctx.lineTo(sx, centerY + 5);
+            ctx.stroke();
+            
+            ctx.save();
+            ctx.fillStyle = "#adb5bd";
+            ctx.font = `${10 / currentTransform.k}px sans-serif`;
+            ctx.textAlign = "center";
+            ctx.fillText(i, sx, centerY + 20);
+            ctx.restore();
+        }
+
+        // Anträge zeichnen (unter der Achse)
+        amendments.forEach(d => {
+            const x = xScale(d.value);
+            // Jitter für Anträge unter der Achse
+            const jitter = (Math.abs(Math.sin(d.id * 1.5)) * 30) / currentTransform.k;
+            const y = centerY + 30 + jitter; 
+            const isMatch = term && (d.title || "").toLowerCase().includes(term);
+            const color = statusColors[d.status_id] || "#95a5a6";
+
+            ctx.beginPath();
+            ctx.arc(x, y, (isMatch ? 5 : 2) / currentTransform.k, 0, 2 * Math.PI);
+            ctx.fillStyle = isMatch ? color : color + "80"; // 80 is ~50% alpha in hex
+            ctx.fill();
+
+            if (isMatch) {
+                ctx.fillStyle = color;
+                ctx.font = `${10 / currentTransform.k}px sans-serif`;
+                ctx.fillText(d.title, x + 5/currentTransform.k, y - 5/currentTransform.k);
+            }
+        });
+
+        // Personen zeichnen
+        nodes.forEach(p => {
+            const x = xScale(p.value);
+            const isMatch = term && (p.name.toLowerCase().includes(term) || (p.id && p.id.toLowerCase().includes(term)));
+            
+            // Punkt
+            ctx.beginPath();
+            ctx.arc(x, centerY, isMatch ? 8 : 4, 0, 2 * Math.PI);
+            ctx.fillStyle = isMatch ? "#e74c3c" : "#4a90e2";
+            ctx.globalAlpha = term && !isMatch ? 0.1 : 0.6;
+            ctx.fill();
+            
+            // Label
+            if (isMatch || currentTransform.k > 5) {
+                ctx.save();
+                ctx.globalAlpha = term && !isMatch ? 0.05 : 1.0;
+                ctx.translate(x, centerY + 12);
+                ctx.rotate(Math.PI / 4);
+                ctx.fillStyle = isMatch ? "#c0392b" : "#2c3e50";
+                ctx.font = (isMatch ? "bold " : "") + (11 / Math.sqrt(currentTransform.k) + 2) + "px sans-serif";
+                ctx.fillText(p.name, 0, 0);
+                ctx.restore();
+            }
+        });
+
+        ctx.restore();
+    }
+</script>
+
+</body>
+</html>
