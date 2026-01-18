@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Schülervertretung in Berlin</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <style>
+        :root {
+            --accent-brand: hsl(17, 100%, 70%);
+            --accent-main-000: hsl(17, 59%, 57%);
+            --accent-pro-000: hsl(16, 91%, 68%);
+            --accent-pro-100: hsl(16, 91%, 68%);
+            --accent-pro-200: hsl(17, 100%, 70%);
+            --accent-secondary-000: hsl(210, 73.7%, 40.2%);
+            --accent-secondary-100: hsl(210, 70.9%, 51.6%);
+            --danger-000: hsl(0, 58.6%, 34.1%);
+            --danger-100: hsl(0, 56.2%, 45.4%);
+            --danger-900: hsl(0, 50%, 95%);
+            --success-000: hsl(125, 100%, 18%);
+            --success-100: hsl(103, 72.3%, 26.9%);
+            --success-900: hsl(86, 45.1%, 90%);
+            --warning-000: hsl(45, 92%, 41%);
+            --warning-100: hsl(39, 92%, 37%);
+            --warning-900: hsl(38, 65.9%, 92%);
+            --text-000: hsl(60, 2.6%, 7.6%);
+            --text-200: hsl(60, 2.5%, 23.3%);
+            --text-400: hsl(51, 3.1%, 43.7%);
+            --bg-000: hsl(0, 0%, 100%);
+            --bg-100: hsl(48, 33.3%, 97.1%);
+            --bg-300: hsl(48, 25%, 92.2%);
+            --border-100: hsl(30, 3.3%, 11.8%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-100);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-000);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-000);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--accent-pro-000);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.2);
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: var(--success-100);
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .quiz-content {
+            padding: 40px;
+        }
+
+        .question-section {
+            margin-bottom: 30px;
+        }
+
+        .question-number {
+            color: var(--accent-pro-100);
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-000);
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        /* Worterklärungen Akkordeon */
+        .word-explanations {
+            background: var(--bg-100);
+            border-radius: 10px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            border: 2px solid var(--accent-main-000);
+        }
+
+        .word-explanations-header {
+            padding: 15px 20px;
+            background: var(--accent-brand);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: 0.3s ease;
+        }
+
+        .word-explanations-header:hover {
+            background: var(--accent-main-000);
+        }
+
+        .word-explanations-header .icon {
+            font-size: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .word-explanations-header.active .icon {
+            transform: rotate(180deg);
+        }
+
+        .word-explanations-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .word-explanations-content.active {
+            max-height: 800px;
+        }
+
+        .word-item {
+            padding: 15px 20px;
+            border-top: 1px solid var(--accent-brand);
+        }
+
+        .word-item:first-child {
+            border-top: none;
+        }
+
+        .word-question {
+            font-weight: 600;
+            color: var(--text-200);
+            margin-bottom: 8px;
+        }
+
+        .word-answer {
+            color: var(--text-200);
+            line-height: 1.6;
+        }
+
+        /* Tipp-Box */
+        .tip-box {
+            background: var(--warning-900);
+            border-left: 4px solid var(--warning-000);
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .tip-box.visible {
+            display: block;
+        }
+
+        .tip-header {
+            font-weight: bold;
+            color: var(--warning-100);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .tip-header::before {
+            content: "💡";
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        .tip-text {
+            color: var(--text-200);
+            line-height: 1.5;
+        }
+
+        .tip-button {
+            background: var(--warning-000);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .tip-button:hover {
+            background: var(--warning-100);
+            transform: translateY(-2px);
+        }
+
+        .answer-option {
+            background: var(--bg-100);
+            border: 2px solid var(--bg-300);
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .answer-option:hover {
+            background: var(--bg-300);
+            border-color: var(--accent-pro-100);
+            transform: translateX(5px);
+        }
+
+        .answer-option.selected-correct {
+            background: var(--success-900);
+            border-color: var(--success-000);
+            color: var(--success-000);
+        }
+
+        .answer-option.selected-wrong {
+            background: var(--danger-900);
+            border-color: var(--danger-000);
+            color: var(--danger-000);
+        }
+
+        .answer-option.show-correct {
+            background: var(--success-900);
+            border-color: var(--success-000);
+        }
+
+        .answer-option input[type="radio"] {
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .answer-label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .explanation {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease, margin 0.4s ease;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 0;
+        }
+
+        .explanation.active {
+            max-height: 500px;
+            padding: 15px;
+            margin-top: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .explanation.correct {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        .explanation.wrong {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        .explanation-icon {
+            display: inline-block;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .results {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .results h2 {
+            color: var(--accent-pro-100);
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            background: var(--accent-pro-000);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .results-text {
+            font-size: 18px;
+            color: var(--text-200);
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 18px;
+            color: var(--accent-pro-100);
+        }
+
+        @media (max-width: 600px) {
+            .quiz-content {
+                padding: 20px;
+            }
+
+            .question-text {
+                font-size: 18px;
+            }
+
+            .answer-label {
+                font-size: 14px;
+            }
+        }
+    </style>
+    <script src="https://cdn.counter.dev/script.js" data-id="cc374409-0445-4b38-8542-07de9fab0a99" data-utcoffset="1"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>GSV-Quiz am KKG</h1>
+            <p>Rechte und Pflichten von Schülervertretern</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            Lade Quiz-Daten...
+        </div>
+
+        <div class="quiz-content hidden" id="quizContent">
+            <!-- Quiz questions will be inserted here -->
+        </div>
+
+        <div class="results hidden" id="results">
+            <h2>Quiz abgeschlossen! 🎉</h2>
+            <div class="score-circle" id="scoreCircle"></div>
+            <div class="results-text" id="resultsText"></div>
+            <button class="btn btn-primary" onclick="restartQuiz()">Quiz neu starten</button>
+        </div>
+    </div>
+
+    <script>
+        // State variables - NO localStorage usage
+        let quizData = [];
+        let currentQuestion = 0;
+        let score = 0; // Punktzahl kann jetzt auch halbe Punkte sein
+        let selectedAnswer = null;
+        let tipUsed = false;
+
+        // Load YAML data
+        async function loadQuizData() {
+            try {
+                // Versuche die YAML-Datei zu laden
+                const response = await fetch('quiz-fragen.yaml');
+                const yamlText = await response.text();
+                
+                // Parse YAML zu JavaScript-Objekt
+                const data = jsyaml.load(yamlText);
+                
+                // Konvertiere YAML-Struktur in das benötigte Array-Format
+                quizData = Object.keys(data).map(key => {
+                    const q = data[key];
+                    
+                    // Finde die richtige Antwort (Index)
+                    let correctIndex = -1;
+                    const answers = [];
+                    const explanations = [];
+                    
+                    q.antworten.forEach((ant, idx) => {
+                        // Hole den ersten Schlüssel des Antwort-Objekts
+                        const answerKey = Object.keys(ant).find(k => k.startsWith('antwort-text'));
+                        answers.push(ant[answerKey]);
+                        explanations.push(ant.information);
+                        
+                        if (ant.richtig === true) {
+                            correctIndex = idx;
+                        }
+                    });
+                    
+                    return {
+                        question: q['frage-text'],
+                        answers: answers,
+                        correct: correctIndex,
+                        explanations: explanations,
+                        tip: q.tip || null,
+                        wordExplanations: q['erklaerung-woerter'] || null
+                    };
+                });
+                
+                // Verstecke Ladebildschirm und zeige Quiz
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('quizContent').classList.remove('hidden');
+                
+                // Starte Quiz
+                initQuiz();
+            } catch (error) {
+                console.error('Fehler beim Laden der Quiz-Daten:', error);
+                document.getElementById('loading').innerHTML = `
+                    <p style="color: #dc3545;">Fehler beim Laden der Quiz-Daten.</p>
+                    <p style="font-size: 14px; margin-top: 10px;">Bitte stelle sicher, dass die Datei "quiz-fragen.yaml" im selben Verzeichnis liegt.</p>
+                `;
+            }
+        }
+
+        // Initialize quiz
+        function initQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswer = null;
+            tipUsed = false;
+            showQuestion();
+            updateProgressBar();
+        }
+
+        // Toggle word explanations accordion
+        function toggleWordExplanations() {
+            const header = document.getElementById('wordExpHeader');
+            const content = document.getElementById('wordExpContent');
+            
+            header.classList.toggle('active');
+            content.classList.toggle('active');
+        }
+
+        // Show tip
+        function showTip() {
+            const tipBox = document.getElementById('tipBox');
+            const tipButton = document.getElementById('tipButton');
+            
+            tipBox.classList.add('visible');
+            tipButton.style.display = 'none';
+            tipUsed = true;
+        }
+
+        // Display current question
+        function showQuestion() {
+            const question = quizData[currentQuestion];
+            const quizContent = document.getElementById('quizContent');
+            
+            let html = `
+                <div class="question-section">
+                    <div class="question-number">Frage ${currentQuestion + 1} von ${quizData.length}</div>
+                    <div class="question-text">${question.question}</div>
+            `;
+            
+            // Worterklärungen Akkordeon (falls vorhanden)
+            if (question.wordExplanations && Object.keys(question.wordExplanations).length > 0) {
+                html += `
+                    <div class="word-explanations">
+                        <div class="word-explanations-header" id="wordExpHeader" onclick="toggleWordExplanations()">
+                            <span>📚 Worterklärungen</span>
+                            <span class="icon">▼</span>
+                        </div>
+                        <div class="word-explanations-content" id="wordExpContent">
+                `;
+                
+                Object.keys(question.wordExplanations).forEach(wordKey => {
+                    const word = question.wordExplanations[wordKey];
+                    html += `
+                        <div class="word-item">
+                            <div class="word-question">${word['wort-frage']}</div>
+                            <div class="word-answer">${word.erklaerung}</div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Tipp-Button (falls vorhanden)
+            if (question.tip) {
+                html += `
+                    <button class="tip-button" id="tipButton" onclick="showTip()">
+                        💡 Tipp anzeigen (halber Punkt)
+                    </button>
+                    <div class="tip-box" id="tipBox">
+                        <div class="tip-header">Tipp</div>
+                        <div class="tip-text">${question.tip}</div>
+                    </div>
+                `;
+            }
+            
+            html += `<div class="answers">`;
+            
+            question.answers.forEach((answer, index) => {
+                html += `
+                    <div class="answer-option" id="option-${index}">
+                        <label class="answer-label">
+                            <input type="radio" name="answer" value="${index}" onchange="selectAnswer(${index})">
+                            ${answer}
+                        </label>
+                        <div class="explanation" id="explanation-${index}">
+                            ${question.explanations[index]}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                    
+                    <div class="navigation">
+                        <button class="btn btn-secondary" onclick="previousQuestion()" ${currentQuestion === 0 ? 'style="visibility: hidden;"' : ''}>
+                            ← Zurück
+                        </button>
+                        <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>
+                            ${currentQuestion === quizData.length - 1 ? 'Ergebnis anzeigen' : 'Nächste Frage →'}
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            quizContent.innerHTML = html;
+            
+            // Reset tip state für neue Frage
+            tipUsed = false;
+        }
+
+        // Handle answer selection
+        function selectAnswer(index) {
+            if (selectedAnswer !== null) return; // Prevent multiple selections
+            
+            selectedAnswer = index;
+            const question = quizData[currentQuestion];
+            const isCorrect = index === question.correct;
+            
+            // Update score - voller Punkt wenn richtig und kein Tipp, halber Punkt wenn Tipp benutzt
+            if (isCorrect) {
+                if (tipUsed) {
+                    score += 0.5;
+                } else {
+                    score += 1;
+                }
+            }
+            
+            // Show feedback for selected answer
+            const selectedOption = document.getElementById(`option-${index}`);
+            const selectedExplanation = document.getElementById(`explanation-${index}`);
+            
+            if (isCorrect) {
+                selectedOption.classList.add('selected-correct');
+                selectedExplanation.classList.add('active', 'correct');
+            } else {
+                selectedOption.classList.add('selected-wrong');
+                selectedExplanation.classList.add('active', 'wrong');
+                
+                // Also show the correct answer
+                const correctOption = document.getElementById(`option-${question.correct}`);
+                const correctExplanation = document.getElementById(`explanation-${question.correct}`);
+                correctOption.classList.add('show-correct');
+                correctExplanation.classList.add('active', 'correct');
+            }
+            
+            // Disable all radio buttons
+            const radioButtons = document.querySelectorAll('input[type="radio"]');
+            radioButtons.forEach(btn => btn.disabled = true);
+            
+            // Enable next button
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        // Next question
+        function nextQuestion() {
+            if (currentQuestion < quizData.length - 1) {
+                currentQuestion++;
+                selectedAnswer = null;
+                showQuestion();
+                updateProgressBar();
+            } else {
+                showResults();
+            }
+        }
+
+        // Previous question (Note: geht zurück ohne Punkte zu ändern)
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                selectedAnswer = null;
+                showQuestion();
+                updateProgressBar();
+            }
+        }
+
+        // Update progress bar
+        function updateProgressBar() {
+            const progress = ((currentQuestion + 1) / quizData.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // Show final results
+        function showResults() {
+            document.getElementById('quizContent').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+            
+            const maxScore = quizData.length;
+            const percentage = Math.round((score / maxScore) * 100);
+            
+            // Zeige Score mit Dezimalstellen falls nötig
+            const scoreDisplay = score % 1 === 0 ? score : score.toFixed(1);
+            document.getElementById('scoreCircle').textContent = `${scoreDisplay}/${maxScore}`;
+            
+            let evaluation = '';
+            if (score >= maxScore * 0.86) { // 30/35 = 85.7%
+                evaluation = `🌟 Ausgezeichnet! Mit ${scoreDisplay} von ${maxScore} Punkten (${percentage}%) kennst du dich hervorragend mit den Rechten und Pflichten der Schülervertretung in Berlin aus. Du bist bestens vorbereitet, um in der SV aktiv mitzuwirken!`;
+            } else if (score >= maxScore * 0.71) { // 25/35 = 71.4%
+                evaluation = `👏 Sehr gut! Du hast ${scoreDisplay} von ${maxScore} Punkten erreicht (${percentage}%). Du hast ein solides Verständnis der Berliner SV-Strukturen und kannst damit gut in der Schülervertretung arbeiten.`;
+            } else if (score >= maxScore * 0.57) { // 20/35 = 57.1%
+                evaluation = `👍 Gut! Mit ${scoreDisplay} von ${maxScore} Punkten (${percentage}%) kennst du die wichtigsten Grundlagen. Es gibt noch einige Details, die du vertiefen könntest, aber du hast eine gute Basis.`;
+            } else if (score >= maxScore * 0.43) { // 15/35 = 42.9%
+                evaluation = `📚 Befriedigend. Du hast ${scoreDisplay} von ${maxScore} Punkten erreicht (${percentage}%). Es gibt noch einige Bereiche, in denen du dich weiter einlesen solltest, um sicher in der SV-Arbeit zu werden.`;
+            } else {
+                evaluation = `📖 Hier besteht noch Nachholbedarf. Mit ${scoreDisplay} von ${maxScore} Punkten (${percentage}%) solltest du dir das Berliner Schulgesetz (§§ 83-87, 75-78, 110) noch einmal genau durchlesen!`;
+            }
+            
+            document.getElementById('resultsText').innerHTML = evaluation;
+        }
+
+        // Restart quiz
+        function restartQuiz() {
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('quizContent').classList.remove('hidden');
+            initQuiz();
+        }
+
+        // Start loading quiz data on page load
+        window.onload = loadQuizData;
+    </script>
+</body>
+</html>

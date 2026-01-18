@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Schülervertretung in Berlin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.2);
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #4CAF50;
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .quiz-content {
+            padding: 40px;
+        }
+
+        .question-section {
+            margin-bottom: 30px;
+        }
+
+        .question-number {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .answer-option {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .answer-option:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .answer-option.selected-correct {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .answer-option.selected-wrong {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .answer-option.show-correct {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .answer-option input[type="radio"] {
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .answer-label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .explanation {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease, margin 0.4s ease;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 0;
+        }
+
+        .explanation.active {
+            max-height: 500px;
+            padding: 15px;
+            margin-top: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .explanation.correct {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        .explanation.wrong {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        .explanation-icon {
+            display: inline-block;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .results {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .results h2 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .results-text {
+            font-size: 18px;
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .quiz-content {
+                padding: 20px;
+            }
+
+            .question-text {
+                font-size: 18px;
+            }
+
+            .answer-label {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Quiz: Schülervertretung in Berlin</h1>
+            <p>Rechte und Pflichten von Schülervertretern</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="quiz-content" id="quizContent">
+            <!-- Quiz questions will be inserted here -->
+        </div>
+
+        <div class="results hidden" id="results">
+            <h2>Quiz abgeschlossen! 🎉</h2>
+            <div class="score-circle" id="scoreCircle"></div>
+            <div class="results-text" id="resultsText"></div>
+            <button class="btn btn-primary" onclick="restartQuiz()">Quiz neu starten</button>
+        </div>
+    </div>
+
+    <script>
+        // Quiz data - alle 35 Fragen aus dem Markdown-Quiz
+        const quizData = [
+            {
+                question: "Welche Aufgabe hat die Schülervertretung laut § 83 SchulG Berlin?",
+                answers: [
+                    "Sie organisiert Schulveranstaltungen für die Schulleitung",
+                    "Sie wirkt bei der Verwirklichung der Bildungs- und Erziehungsziele aktiv und eigenverantwortlich mit",
+                    "Sie kontrolliert die Arbeit der Lehrkräfte",
+                    "Sie verwaltet das Schulbudget"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das ist nicht die Hauptaufgabe der SV. Die Organisation von Veranstaltungen kann Teil ihrer Arbeit sein, aber die SV arbeitet eigenverantwortlich, nicht für die Schulleitung.",
+                    "Genau richtig! Nach § 83 SchulG wirkt die Schülervertretung bei der Verwirklichung der Bildungs- und Erziehungsziele durch ihre Arbeit aktiv und eigenverantwortlich mit. Das ist ihre zentrale gesetzliche Aufgabe.",
+                    "Die Kontrolle der Lehrkräfte gehört nicht zu den Aufgaben der SV. Die SV vertritt die Interessen der Schüler und wirkt im Rahmen der Mitwirkungsgremien mit.",
+                    "Die Verwaltung des Schulbudgets ist Aufgabe der Schulleitung, nicht der Schülervertretung."
+                ]
+            },
+            {
+                question: "Wer wählt die Schülervertreter in Berlin?",
+                answers: [
+                    "Die Schulleitung",
+                    "Die Lehrkräfte",
+                    "Die Schülerinnen und Schüler",
+                    "Die Elternvertretung"
+                ],
+                correct: 2,
+                explanations: [
+                    "Nein, die Schulleitung wählt nicht die Schülervertreter. Das würde dem demokratischen Prinzip der Schülermitbestimmung widersprechen.",
+                    "Auch die Lehrkräfte wählen nicht die Schülervertreter. Sie haben ihre eigenen Gremien und Vertretungen.",
+                    "Richtig! Nach § 83 Abs. 3 SchulG werden die Schülervertreter von den Schülerinnen und Schülern gewählt und können auch nur durch sie abgewählt werden. Das garantiert die demokratische Legitimation der SV.",
+                    "Die Elternvertretung wählt ihre eigenen Vertreter, nicht die der Schüler. Jede Gruppe hat das Recht auf ihre eigene Vertretung."
+                ]
+            },
+            {
+                question: "Dürfen Schülervertreter wegen ihrer Funktion benachteiligt werden?",
+                answers: [
+                    "Ja, wenn sie zu viele Sitzungen haben",
+                    "Nein, sie dürfen weder bevorzugt noch benachteiligt werden",
+                    "Ja, bei schlechten schulischen Leistungen",
+                    "Nur mit Zustimmung der Schulkonferenz"
+                ],
+                correct: 1,
+                explanations: [
+                    "Nein, auch bei vielen Sitzungen dürfen Schülervertreter nicht benachteiligt werden. Die Anzahl der Sitzungen ist im Schulgesetz geregelt.",
+                    "Korrekt! § 83 Abs. 3 SchulG stellt klar, dass Schülervertreter unbeschadet ihrer Verantwortung für eigenes Handeln wegen ihrer Funktion weder bevorzugt noch benachteiligt werden dürfen. Das ist ein wichtiger Schutz für Schülervertreter.",
+                    "Schlechte schulische Leistungen sind kein Grund für eine Benachteiligung aufgrund der SV-Funktion. Allerdings bleiben Schülervertreter natürlich für ihre schulischen Leistungen verantwortlich.",
+                    "Eine Benachteiligung wegen der SV-Funktion ist grundsätzlich nicht zulässig, unabhängig von Zustimmungen."
+                ]
+            },
+            {
+                question: "Bis wann müssen die Klassensprecher in Berlin spätestens gewählt werden?",
+                answers: [
+                    "Innerhalb von zwei Wochen nach Schuljahresbeginn",
+                    "Spätestens einen Monat nach Beginn des neuen Schuljahres",
+                    "Bis zu den Herbstferien",
+                    "Innerhalb der ersten drei Monate"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das ist zu kurz. Zwei Wochen würden den Klassen nicht genug Zeit geben, sich kennenzulernen und eine informierte Wahl durchzuführen.",
+                    "Richtig! Nach § 84 Abs. 1 SchulG müssen die Klassensprecher spätestens einen Monat nach Beginn des neuen Schuljahres gewählt werden. Das gibt den Klassen ausreichend Zeit für den Wahlprozess.",
+                    "Die Herbstferien sind kein fester Termin im Schulgesetz. Die Frist ist genau definiert als ein Monat.",
+                    "Das ist zu lange. Die Klassensprecher müssen bereits nach einem Monat gewählt sein, damit die weiteren SV-Wahlen rechtzeitig stattfinden können."
+                ]
+            },
+            {
+                question: "Bis wann müssen die Wahlen für Schulsprecher und Gesamtschülervertretung erfolgen?",
+                answers: [
+                    "Innerhalb von einem Monat ab Unterrichtsbeginn",
+                    "Innerhalb von zwei Monaten ab Unterrichtsbeginn",
+                    "Innerhalb von drei Monaten ab Unterrichtsbeginn",
+                    "Bis zum Jahresende"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das ist zu früh. Die GSV-Wahlen können erst stattfinden, nachdem die Klassensprecher gewählt wurden, was bis zu einem Monat dauern kann.",
+                    "Genau! § 85 Abs. 1 SchulG schreibt vor, dass die Wahlen für Schulsprecher und GSV innerhalb von zwei Monaten ab Unterrichtsbeginn durchgeführt werden müssen. Das gibt Zeit für die vorherige Wahl der Klassensprecher.",
+                    "Das wäre zu spät. Die SV-Strukturen müssen früher im Schuljahr etabliert sein, um effektiv arbeiten zu können.",
+                    "Bis zum Jahresende wäre viel zu spät. Die SV muss zu Beginn des Schuljahres arbeitsfähig sein."
+                ]
+            },
+            {
+                question: "Wie viele Stellvertreter kann der Schulsprecher/die Schulsprecherin in Berlin haben?",
+                answers: [
+                    "Einen Stellvertreter",
+                    "Zwei Stellvertreter",
+                    "Bis zu drei Stellvertreter",
+                    "Vier Stellvertreter"
+                ],
+                correct: 2,
+                explanations: [
+                    "Das ist zu wenig. In Berlin ist eine flexiblere Stellvertreterregelung vorgesehen.",
+                    "Noch nicht ganz richtig. Berlin erlaubt mehr Stellvertreter.",
+                    "Richtig! Nach § 85 Abs. 3 SchulG können bis zu drei Stellvertreter gewählt werden. Das ermöglicht eine gute Vertretung und Lastverteilung in der Schülervertretung.",
+                    "Das ist zu viel. Die maximale Anzahl liegt bei drei Stellvertretern."
+                ]
+            },
+            {
+                question: "Wer sind die stimmberechtigten Mitglieder der Gesamtschülervertretung?",
+                answers: [
+                    "Nur die Klassensprecher",
+                    "Nur der Schulsprecher und seine Stellvertreter",
+                    "Alle gewählten Sprecher sowie der Schulsprecher und seine Stellvertreter",
+                    "Alle Schüler der Schule"
+                ],
+                correct: 2,
+                explanations: [
+                    "Das ist nicht vollständig. Auch der Schulsprecher und seine Stellvertreter gehören zur GSV.",
+                    "Das ist zu eng gefasst. Auch die Klassensprecher und andere gewählte Sprecher sind Teil der GSV.",
+                    "Genau richtig! Nach § 85 Abs. 1 SchulG sind alle gewählten Sprecher (also Klassensprecher, Kurssprecher etc.) sowie der Schulsprecher und dessen Stellvertreter stimmberechtigte Mitglieder der GSV.",
+                    "Das wäre unpraktikabel. Die GSV ist ein Vertretungsgremium, nicht eine Vollversammlung aller Schüler."
+                ]
+            },
+            {
+                question: "Wie oft kann der Schulsprecher die GSV während der Unterrichtszeit zu Sitzungen einladen?",
+                answers: [
+                    "Einmal im Monat für eine Stunde",
+                    "Zweimal im Monat für jeweils zwei Unterrichtsstunden",
+                    "Dreimal im Monat für jeweils eine Stunde",
+                    "So oft wie nötig"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das ist sowohl bei der Häufigkeit als auch bei der Dauer nicht korrekt. Die GSV darf häufiger und länger tagen.",
+                    "Richtig! Nach § 85 Abs. 5 SchulG kann der Schulsprecher die GSV bis zu zweimal im Monat für jeweils zwei Unterrichtsstunden einberufen. Das ermöglicht regelmäßige Arbeitssitzungen.",
+                    "Die Häufigkeit wäre zu hoch und die Dauer zu kurz. Die gesetzliche Regelung ist anders.",
+                    "Es gibt eine klare gesetzliche Begrenzung, um den Unterrichtsausfall zu begrenzen und eine Balance zwischen SV-Arbeit und Unterricht zu gewährleisten."
+                ]
+            },
+            {
+                question: "Wie viele Mitglieder wählt die GSV für die Schulkonferenz?",
+                answers: [
+                    "Zwei Mitglieder",
+                    "Drei Mitglieder",
+                    "Vier Mitglieder",
+                    "Sechs Mitglieder"
+                ],
+                correct: 2,
+                explanations: [
+                    "Das ist zu wenig. Die Schüler haben in der Schulkonferenz eine stärkere Vertretung.",
+                    "Noch nicht ganz richtig. Die Schülervertretung ist stärker in der Schulkonferenz vertreten.",
+                    "Korrekt! Nach § 85 Abs. 4 Nr. 1 SchulG wählt die GSV vier Mitglieder für die Schulkonferenz. Das entspricht auch der paritätischen Zusammensetzung mit Lehrern und Eltern.",
+                    "Das wäre zu viel. Die Schulkonferenz ist paritätisch besetzt, und mehr Schülervertreter würden diese Balance stören."
+                ]
+            },
+            {
+                question: "Wie viele Mitglieder entsendet die GSV in den Bezirksschülerausschuss (BSA)?",
+                answers: [
+                    "Ein Mitglied",
+                    "Zwei Mitglieder",
+                    "Drei Mitglieder",
+                    "Vier Mitglieder"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das ist zu wenig. Jede Schule soll im BSA angemessen vertreten sein.",
+                    "Richtig! Nach § 85 Abs. 4 Nr. 2 SchulG wählt die GSV zwei Mitglieder für den Bezirksschülerausschuss. So kann jede Schule im Bezirk mitwirken.",
+                    "Das wäre zu viel und würde den BSA unnötig groß machen.",
+                    "Das ist deutlich zu viel. Die Regelung sieht zwei Vertreter pro Schule vor."
+                ]
+            },
+            {
+                question: "Wie oft kann die GSV während der Unterrichtszeit eine Schülerversammlung einberufen?",
+                answers: [
+                    "Einmal im Schulhalbjahr",
+                    "Zweimal im Schulhalbjahr",
+                    "Einmal im Monat",
+                    "Nach Bedarf mit Zustimmung der Schulleitung"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das ist zu wenig. Die GSV hat das Recht, häufiger Schülerversammlungen einzuberufen.",
+                    "Korrekt! Nach § 85 Abs. 7 SchulG kann die GSV zweimal im Schulhalbjahr für bis zu zwei Stunden eine Schülerversammlung einberufen. Darüber hinaus nur mit Zustimmung der Schulkonferenz.",
+                    "Das wäre zu häufig. Die gesetzliche Regelung begrenzt die Schülerversammlungen auf zweimal pro Halbjahr.",
+                    "Für weitere Versammlungen wird die Zustimmung benötigt, aber nicht der Schulleitung, sondern der Schulkonferenz."
+                ]
+            },
+            {
+                question: "Wie lange darf eine Schülerversammlung während der Unterrichtszeit maximal dauern?",
+                answers: [
+                    "Eine Stunde",
+                    "Zwei Stunden",
+                    "Drei Stunden",
+                    "Vier Stunden"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das ist zu kurz. Für wichtige Themen braucht die Schülerschaft mehr Zeit zum Diskutieren und Abstimmen.",
+                    "Richtig! Nach § 85 Abs. 7 SchulG darf eine Schülerversammlung bis zu zwei Stunden dauern. Das ist ein Kompromiss zwischen Mitbestimmung und Unterrichtsausfall.",
+                    "Das wäre zu lang und würde zu viel Unterricht ausfallen lassen.",
+                    "Das ist deutlich zu lang. Die gesetzliche Obergrenze liegt bei zwei Stunden."
+                ]
+            },
+            {
+                question: "Wann gelten Veranstaltungen der Schülervertretung als Veranstaltungen der Schule?",
+                answers: [
+                    "Immer automatisch",
+                    "Nur wenn sie im Schulgebäude stattfinden",
+                    "Wenn sie im Einvernehmen mit der Schulleitung auf dem Schulgelände stattfinden",
+                    "Niemals"
+                ],
+                correct: 2,
+                explanations: [
+                    "Nein, es gibt bestimmte Voraussetzungen, die erfüllt sein müssen.",
+                    "Der Ort allein reicht nicht aus. Es bedarf zusätzlich des Einvernehmens mit der Schulleitung.",
+                    "Genau! Nach § 83 Abs. 4 SchulG gelten SV-Veranstaltungen als Schulveranstaltungen, wenn sie im Einvernehmen mit der Schulleitung auf dem Schulgelände stattfinden. Das ist wichtig für Versicherungsschutz und Aufsichtspflicht.",
+                    "Das stimmt nicht. Unter bestimmten Bedingungen können SV-Veranstaltungen durchaus Schulveranstaltungen sein."
+                ]
+            },
+            {
+                question: "Wann darf die Schulleitung das Einvernehmen für eine SV-Veranstaltung versagen?",
+                answers: [
+                    "Nach freiem Ermessen",
+                    "Wenn die Veranstaltung zu laut wird",
+                    "Wenn zu erwarten ist, dass die Veranstaltung gegen Rechtsvorschriften verstößt oder den Bildungsauftrag gefährdet",
+                    "Wenn zu viele Schüler teilnehmen möchten"
+                ],
+                correct: 2,
+                explanations: [
+                    "Nein, die Schulleitung kann nicht nach freiem Ermessen entscheiden. Es gibt klare gesetzliche Grenzen.",
+                    "Lautstärke allein ist kein ausreichender Grund. Es müssen schwerwiegendere Gründe vorliegen.",
+                    "Richtig! Nach § 83 Abs. 4 SchulG darf das Einvernehmen nur versagt werden, wenn die Durchführung erwarten lässt, dass die Veranstaltung gegen Rechtsvorschriften verstößt oder den Bildungs- und Erziehungsauftrag gefährdet. Das schützt die Autonomie der SV.",
+                    "Die Anzahl der Teilnehmer ist kein Grund zur Versagung, solange die Veranstaltung organisatorisch durchführbar ist."
+                ]
+            },
+            {
+                question: "Aus wie vielen stimmberechtigten Mitgliedern besteht die Schulkonferenz in der Regel?",
+                answers: [
+                    "10 Mitgliedern",
+                    "12 Mitgliedern",
+                    "14 Mitgliedern",
+                    "16 Mitgliedern"
+                ],
+                correct: 2,
+                explanations: [
+                    "Das ist zu wenig. Die Schulkonferenz ist größer, um alle Gruppen angemessen zu repräsentieren.",
+                    "Das ist noch nicht ganz richtig. Die Regelgröße ist etwas höher.",
+                    "Genau! Nach § 77 Abs. 1 SchulG besteht die Schulkonferenz in der Regel aus 14 stimmberechtigten Mitgliedern: Schulleitung (1), Gesamtkonferenz (4), GSV (4), Eltern (4), plus ein externes Mitglied (1). Das gewährleistet eine ausgewogene Vertretung.",
+                    "Das ist zu viel. Die Regelgröße liegt bei 14 Mitgliedern."
+                ]
+            },
+            {
+                question: "Wann ist die Schulkonferenz beschlussfähig?",
+                answers: [
+                    "Wenn mindestens ein Drittel der Mitglieder anwesend ist",
+                    "Wenn die Mehrheit der stimmberechtigten Mitglieder anwesend ist",
+                    "Wenn alle Mitglieder anwesend sind",
+                    "Wenn die Schulleitung anwesend ist"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das ist die allgemeine Regel für Gremien, aber für die Schulkonferenz gilt eine strengere Anforderung.",
+                    "Korrekt! Nach § 78 Abs. 1 SchulG ist die Schulkonferenz beschlussfähig, wenn die Mehrheit der stimmberechtigten Mitglieder anwesend ist. Bei 14 Mitgliedern also mindestens 8 Personen.",
+                    "Das wäre zu streng und würde die Arbeitsfähigkeit der Schulkonferenz gefährden.",
+                    "Die Anwesenheit der Schulleitung allein macht die Konferenz nicht beschlussfähig. Es kommt auf die Gesamtzahl an."
+                ]
+            },
+            {
+                question: "Welche Mehrheit ist für wichtige Beschlüsse in der Schulkonferenz erforderlich?",
+                answers: [
+                    "Einfache Mehrheit der anwesenden Mitglieder",
+                    "Zwei Drittel der stimmberechtigten Mitglieder",
+                    "Drei Viertel der anwesenden Mitglieder",
+                    "Einstimmigkeit"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das reicht für wichtige Beschlüsse nicht aus. Hier ist eine qualifizierte Mehrheit erforderlich.",
+                    "Richtig! Wichtige Beschlüsse nach § 76 Abs. 1 SchulG benötigen eine Mehrheit von zwei Dritteln der stimmberechtigten Mitglieder – also der gesetzlich vorgeschriebenen Anzahl, nicht nur der anwesenden. Das stellt sicher, dass wichtige Entscheidungen breite Unterstützung haben.",
+                    "Die Bezugsgröße ist nicht die Zahl der anwesenden, sondern aller stimmberechtigten Mitglieder.",
+                    "Einstimmigkeit wäre zu streng und würde Entscheidungen nahezu unmöglich machen."
+                ]
+            },
+            {
+                question: "Haben Schülervertreter in der Grundschule Stimmrecht in der Schulkonferenz?",
+                answers: [
+                    "Nein, sie haben nur beratende Stimme",
+                    "Ja, ab Jahrgangsstufe 1",
+                    "Ja, aber nur ab Jahrgangsstufe 5",
+                    "Grundschulen haben keine Schülervertreter in der Schulkonferenz"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das war früher so, wurde aber geändert. Seit dem Schuljahr 2022/23 gibt es eine neue Regelung.",
+                    "Korrekt! Seit dem Schuljahr 2022/23 können nach § 77 Abs. 1 Nr. 3 SchulG auch Schüler ab Jahrgangsstufe 1 als stimmberechtigte Mitglieder in die Schulkonferenz gewählt werden. Das stärkt die Mitbestimmung auch jüngerer Schüler.",
+                    "Diese Einschränkung gibt es nicht mehr. Auch jüngere Grundschüler können teilnehmen.",
+                    "Das stimmt nicht. Grundschulen haben seit 2022/23 Schülervertreter mit vollem Stimmrecht in der Schulkonferenz."
+                ]
+            },
+            {
+                question: "Wie viele Vertrauenslehrkräfte wählt die GSV?",
+                answers: [
+                    "Eine Vertrauenslehrkraft",
+                    "Zwei Vertrauenslehrkräfte",
+                    "Drei Vertrauenslehrkräfte",
+                    "Bis zu vier Vertrauenslehrkräfte"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das ist zu wenig. Es sollen mehrere Ansprechpartner für die Schülerschaft zur Verfügung stehen.",
+                    "Richtig! Nach § 85 Abs. 6 SchulG wählt die GSV zwei Vertrauenslehrkräfte. So gibt es mehrere Ansprechpersonen für unterschiedliche Anliegen.",
+                    "Das wäre zu viel. Die Regelung sieht genau zwei Vertrauenslehrkräfte vor.",
+                    "Das ist deutlich zu viel. Es werden genau zwei Vertrauenslehrkräfte gewählt."
+                ]
+            },
+            {
+                question: "Welches besondere Recht haben Vertrauenslehrkräfte?",
+                answers: [
+                    "Sie dürfen Noten ändern",
+                    "Sie sind berechtigt, Auskünfte gegenüber Vorgesetzten zu verweigern (außer bei strafrechtlichen Tatbeständen)",
+                    "Sie haben in allen Konferenzen Stimmrecht",
+                    "Sie können Schüler vom Unterricht befreien"
+                ],
+                correct: 1,
+                explanations: [
+                    "Nein, Vertrauenslehrkräfte haben keine besonderen Rechte bei der Notengebung. Das wäre mit dem Bewertungssystem nicht vereinbar.",
+                    "Korrekt! Nach § 85 Abs. 6 SchulG sind Vertrauenslehrkräfte berechtigt, Auskünfte über Angelegenheiten, die ihnen anvertraut wurden, gegenüber Vorgesetzten zu verweigern, soweit nicht strafrechtliche Tatbestände betroffen sind. Das schützt das Vertrauensverhältnis zu den Schülern.",
+                    "Vertrauenslehrkräfte haben kein automatisches Stimmrecht in allen Konferenzen. Ihre besondere Rolle liegt in der Beratung.",
+                    "Die Befreiung vom Unterricht ist nicht Teil der Befugnisse von Vertrauenslehrkräften."
+                ]
+            },
+            {
+                question: "Woraus setzt sich der Bezirksschülerausschuss zusammen?",
+                answers: [
+                    "Aus allen Schülersprechern des Bezirks",
+                    "Aus je zwei gewählten Vertretern jeder Schule im Bezirk",
+                    "Aus den Klassensprechers aller Schulen",
+                    "Aus Vertretern der Schulleitung"
+                ],
+                correct: 1,
+                explanations: [
+                    "Nicht nur die Schülersprecher, sondern jeweils zwei Vertreter pro Schule bilden den BSA.",
+                    "Richtig! Nach § 110 SchulG besteht der BSA aus je zwei von den GSVs gewählten Schülern jeder staatlichen Oberschule im Bezirk. So sind alle weiterführenden Schulen vertreten.",
+                    "Das wäre viel zu groß und unpraktikabel. Die Klassensprecher arbeiten in der jeweiligen Schul-GSV.",
+                    "Der BSA ist ein reines Schülergremium ohne Schulleitung oder Lehrkräfte."
+                ]
+            },
+            {
+                question: "Wie viele Mitglieder wählt der BSA für den Bezirksschulbeirat?",
+                answers: [
+                    "Sechs Mitglieder",
+                    "Acht Mitglieder",
+                    "Zehn Mitglieder",
+                    "Zwölf Mitglieder"
+                ],
+                correct: 3,
+                explanations: [
+                    "Das ist zu wenig. Die Schülervertretung auf Bezirksebene ist stärker im Bezirksschulbeirat vertreten.",
+                    "Das ist noch nicht ausreichend. Es werden mehr Vertreter gewählt.",
+                    "Noch nicht ganz richtig. Die Zahl ist etwas höher.",
+                    "Genau! Der BSA wählt zwölf Mitglieder für den Bezirksschulbeirat. Das ermöglicht eine starke Schülervertretung auf Bezirksebene."
+                ]
+            },
+            {
+                question: "Wie viele Vertreter entsendet der BSA in den Landesschülerausschuss?",
+                answers: [
+                    "Einen Vertreter",
+                    "Zwei Vertreter",
+                    "Drei Vertreter",
+                    "Vier Vertreter"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das wäre zu wenig, um den Bezirk angemessen auf Landesebene zu vertreten.",
+                    "Richtig! Nach § 110 SchulG wählt der BSA zwei Vertreter für den Landesschülerausschuss. So ist jeder Bezirk auf Landesebene vertreten.",
+                    "Das wäre zu viel. Mit 12 Bezirken in Berlin würde der LSA dann zu groß werden.",
+                    "Das ist deutlich zu viel und würde den LSA unpraktikabel machen."
+                ]
+            },
+            {
+                question: "In welchen Konferenzen haben Schülervertreter beratende Stimme?",
+                answers: [
+                    "Nur in der Gesamtkonferenz",
+                    "In der Gesamtkonferenz und den Fachkonferenzen",
+                    "In allen Konferenzen außer Klassenkonferenzen bei Versetzungen und Zeugnissen",
+                    "In keinen Konferenzen"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das ist nicht vollständig. Schülervertreter haben noch in weiteren Konferenzen beratende Stimme.",
+                    "Korrekt! Nach § 85 Abs. 4 Nr. 3 SchulG wählt die GSV je zwei beratende Mitglieder für die Gesamtkonferenz und die Fachkonferenzen. So können Schüler ihre Perspektive einbringen.",
+                    "Diese Formulierung ist zu weit gefasst. Die konkrete Regelung betrifft Gesamtkonferenz und Fachkonferenzen.",
+                    "Das stimmt nicht. Schülervertreter haben in mehreren Konferenzarten beratende Stimme."
+                ]
+            },
+            {
+                question: "Haben Mitglieder der Schulkonferenz ein besonderes Informationsrecht?",
+                answers: [
+                    "Nein, sie erhalten nur die Sitzungsprotokolle",
+                    "Ja, sie können an allen anderen Konferenzen der Schule mit beratender Stimme teilnehmen",
+                    "Ja, aber nur an Lehrerkonferenzen",
+                    "Nur mit Genehmigung der Schulleitung"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das ist zu wenig. Mitglieder der Schulkonferenz haben weitergehende Informationsrechte.",
+                    "Richtig! Nach § 75 Abs. 3 SchulG können Mitglieder der Schulkonferenz an allen anderen Konferenzen der Schule mit beratender Stimme teilnehmen (mit bestimmten Einschränkungen bei Klassenkonferenzen). Das ermöglicht umfassende Information.",
+                    "Das ist zu eingeschränkt. Das Teilnahmerecht gilt breiter.",
+                    "Es ist ein gesetzliches Recht, keine ermessenabhängige Genehmigung."
+                ]
+            },
+            {
+                question: "Haben Schüler das Recht, Schülergruppen zu bilden?",
+                answers: [
+                    "Nein, das ist nicht erlaubt",
+                    "Ja, aber nur mit Genehmigung der Schulleitung",
+                    "Ja, sie müssen die Bildung nur der Schulleitung anzeigen",
+                    "Ja, aber nur außerhalb der Schulzeit"
+                ],
+                correct: 2,
+                explanations: [
+                    "Das stimmt nicht. Schüler haben ausdrücklich das Recht zur Bildung von Schülergruppen.",
+                    "Es ist kein Genehmigungsvorbehalt, sondern nur eine Anzeigepflicht. Das ist ein wichtiger Unterschied.",
+                    "Genau! Nach § 82 SchulG haben Schüler das Recht, Schülergruppen zu bilden. Die Bildung ist der Schulleitung anzuzeigen, bedarf aber keiner Genehmigung. Das schützt die Versammlungsfreiheit der Schüler.",
+                    "Zeitliche Einschränkungen gibt es nicht. Schülergruppen können sich auch während der Schulzeit treffen."
+                ]
+            },
+            {
+                question: "Können Schülergruppen Räume der Schule nutzen?",
+                answers: [
+                    "Nein, das ist grundsätzlich nicht möglich",
+                    "Ja, aber nur gegen Gebühr",
+                    "Ja, unentgeltlich, wenn der Bildungsauftrag nicht beeinträchtigt wird",
+                    "Nur mit Genehmigung der Schulkonferenz"
+                ],
+                correct: 2,
+                explanations: [
+                    "Das stimmt nicht. Schülergruppen haben unter bestimmten Voraussetzungen Anspruch auf Räume.",
+                    "Für schulische Zwecke werden keine Gebühren erhoben. Die Nutzung ist unentgeltlich.",
+                    "Richtig! Nach § 82 Abs. 2 SchulG können Schülergruppen Räumlichkeiten unentgeltlich zur Verfügung gestellt werden, wenn dadurch der Bildungs- und Erziehungsauftrag nicht beeinträchtigt wird. Das unterstützt außerunterrichtliches Engagement.",
+                    "Die Entscheidung liegt bei der Schulleitung, nicht bei der Schulkonferenz."
+                ]
+            },
+            {
+                question: "Wann ist ein Schulgremium in der Regel beschlussfähig?",
+                answers: [
+                    "Wenn alle Mitglieder anwesend sind",
+                    "Wenn mehr als die Hälfte der Mitglieder anwesend ist",
+                    "Wenn mehr als ein Drittel der stimmberechtigten Mitglieder anwesend ist",
+                    "Wenn die Schulleitung anwesend ist"
+                ],
+                correct: 2,
+                explanations: [
+                    "Das wäre zu streng und würde die Arbeitsfähigkeit von Gremien stark einschränken.",
+                    "Das gilt für die Schulkonferenz, aber die allgemeine Regel für Gremien ist anders.",
+                    "Korrekt! Nach § 77 Abs. 3 SchulG ist ein Gremium beschlussfähig, wenn mehr als ein Drittel der stimmberechtigten Mitglieder anwesend ist. Das gewährleistet Arbeitsfähigkeit bei realistischen Anwesenheitsquoten.",
+                    "Die Anwesenheit einzelner Personen bestimmt nicht die Beschlussfähigkeit. Es kommt auf die Gesamtzahl an."
+                ]
+            },
+            {
+                question: "Wie müssen Wahlen in Berlin grundsätzlich durchgeführt werden?",
+                answers: [
+                    "Immer offen per Handzeichen",
+                    "Grundsätzlich geheim (schriftlich)",
+                    "Per Zuruf",
+                    "Digital"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das wäre keine geheime Wahl und könnte Druck auf Wähler ausüben.",
+                    "Richtig! Nach § 116 SchulG sind alle im Schulgesetz vorgesehenen Wahlen grundsätzlich geheim (schriftlich). Sie können nur offen erfolgen, wenn ALLE anwesenden Wahlberechtigten dafür sind. Das schützt die Freiheit der Wahl.",
+                    "Zuruf ist keine geheime Wahl und nur in Ausnahmefällen bei Einstimmigkeit zulässig.",
+                    "Digitale Wahlen sind im Schulgesetz nicht vorgesehen. Die Wahlen müssen schriftlich erfolgen."
+                ]
+            },
+            {
+                question: "Was passiert, wenn bei einer Wahl Stimmengleichheit herrscht?",
+                answers: [
+                    "Der älteste Kandidat gewinnt",
+                    "Die Schulleitung entscheidet",
+                    "Es erfolgt eine Stichwahl",
+                    "Beide Kandidaten teilen sich das Amt"
+                ],
+                correct: 2,
+                explanations: [
+                    "Das Alter ist kein Kriterium bei Wahlen. Das wäre auch rechtlich problematisch.",
+                    "Die Schulleitung hat bei Wahlen kein Entscheidungsrecht. Das würde die demokratische Wahl untergraben.",
+                    "Korrekt! Nach § 116 SchulG erfolgt bei Stimmengleichheit eine Stichwahl. So wird sichergestellt, dass der gewählte Kandidat eine klare Mehrheit hat.",
+                    "Eine Amtsteilung ist nicht vorgesehen. Es wird ein einzelner Kandidat gewählt."
+                ]
+            },
+            {
+                question: "Können Schülervertreter selbst gestellte Aufgaben in eigener Verantwortung durchführen?",
+                answers: [
+                    "Nein, nur mit Genehmigung der Schulleitung",
+                    "Ja, im Rahmen des Bildungs- und Erziehungsauftrags",
+                    "Nur nach Abstimmung mit der Schulkonferenz",
+                    "Nein, sie müssen sich immer an die Schulleitung wenden"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das würde die Autonomie der SV zu stark einschränken. Die SV hat eigene Gestaltungsspielräume.",
+                    "Richtig! Nach § 83 Abs. 2 SchulG kann die Schülervertretung im Rahmen des Bildungs- und Erziehungsauftrags selbst gestellte Aufgaben in eigener Verantwortung durchführen. Das garantiert die Eigenständigkeit der SV.",
+                    "Eine generelle Abstimmungspflicht besteht nicht. Die SV arbeitet eigenverantwortlich.",
+                    "Das ist zu einschränkend. Die SV hat ausdrücklich eigenverantwortliche Handlungsmöglichkeiten."
+                ]
+            },
+            {
+                question: "Kann ein Schülervertreter gegen seinen Willen abgewählt werden?",
+                answers: [
+                    "Nein, das ist nicht möglich",
+                    "Ja, aber nur durch die Schulleitung",
+                    "Ja, durch die Schüler, die ihn gewählt haben",
+                    "Ja, durch die Schulkonferenz"
+                ],
+                correct: 2,
+                explanations: [
+                    "Das stimmt nicht. Es gibt die Möglichkeit der Abwahl, um die demokratische Kontrolle zu gewährleisten.",
+                    "Die Schulleitung hat kein Abwahlrecht. Das würde die Unabhängigkeit der SV gefährden.",
+                    "Korrekt! Nach § 83 Abs. 3 SchulG können Schülervertreter nur durch die Schüler abgewählt werden, die sie gewählt haben. Für die Abwahl ist eine besondere Beschlussfähigkeit erforderlich (mindestens die Hälfte der stimmberechtigten Mitglieder).",
+                    "Die Schulkonferenz ist kein Wahlorgan für Schülervertreter und kann diese daher auch nicht abwählen."
+                ]
+            },
+            {
+                question: "Wann lädt die Schulleitung die GSV zu einem gemeinsamen Gespräch ein?",
+                answers: [
+                    "Einmal pro Monat",
+                    "Spätestens zwei Wochen nach der Neubildung der GSV",
+                    "Zu Beginn jedes Halbjahres",
+                    "Nur auf Anfrage der GSV"
+                ],
+                correct: 1,
+                explanations: [
+                    "Eine monatliche Verpflichtung gibt es nicht. Die Regelung bezieht sich auf den Beginn der Amtszeit.",
+                    "Richtig! Nach § 85 Abs. 5 SchulG lädt die Schulleitung die GSV spätestens zwei Wochen nach ihrer Neubildung zu einem gemeinsamen Gespräch über alle wichtigen schulischen Angelegenheiten ein. Das fördert die Zusammenarbeit.",
+                    "Das ist nicht die gesetzliche Regelung. Der Zeitpunkt ist an die Neubildung der GSV gekoppelt.",
+                    "Es ist eine aktive Verpflichtung der Schulleitung, nicht nur auf Anfrage."
+                ]
+            },
+            {
+                question: "Können Teilschülervertretungen gebildet werden?",
+                answers: [
+                    "Nein, das ist nicht vorgesehen",
+                    "Ja, wenn für organisatorische Bereiche Teilkonferenzen eingerichtet wurden",
+                    "Nur an Oberstufenzentren",
+                    "Nur mit Genehmigung der Schulaufsicht"
+                ],
+                correct: 1,
+                explanations: [
+                    "Das stimmt nicht. Das Schulgesetz sieht diese Möglichkeit ausdrücklich vor.",
+                    "Korrekt! Nach § 85 Abs. 8 SchulG kann die GSV entsprechende Teilschülervertretungen bilden, wenn für einzelne organisatorische Bereiche Teilkonferenzen eingerichtet wurden. Das ermöglicht Vertretung in größeren Schulen mit mehreren Standorten oder Abteilungen.",
+                    "Die Regelung gilt nicht nur für OSZ, sondern für alle Schulen mit entsprechender Struktur.",
+                    "Es ist eine schulinterne Entscheidung, keine Aufsichtssache."
+                ]
+            },
+            {
+                question: "Wer ist die Interessenvertretung der Berliner Schüler auf Landesebene?",
+                answers: [
+                    "Die Senatsverwaltung",
+                    "Der Landesschülerausschuss (LSA)",
+                    "Die Schulleiter der Schulen",
+                    "Der Landeselternausschuss"
+                ],
+                correct: 1,
+                explanations: [
+                    "Die Senatsverwaltung ist die Schulaufsichtsbehörde, nicht die Interessenvertretung der Schüler.",
+                    "Richtig! Der Landesschülerausschuss (LSA) ist die Interessenvertretung der Schüler auf Landesebene und wird von den Bezirksschülerausschüssen gewählt. Er vertritt die Schülerinteressen gegenüber Politik und Verwaltung.",
+                    "Schulleiter vertreten die Schulen, nicht die Schülerinteressen.",
+                    "Der Landeselternausschuss vertritt die Eltern, nicht die Schüler."
+                ]
+            }
+        ];
+
+        // State variables - NO localStorage usage
+        let currentQuestion = 0;
+        let correctAnswers = 0;
+        let selectedAnswer = null;
+
+        // Initialize quiz
+        function initQuiz() {
+            currentQuestion = 0;
+            correctAnswers = 0;
+            selectedAnswer = null;
+            showQuestion();
+            updateProgressBar();
+        }
+
+        // Display current question
+        function showQuestion() {
+            const question = quizData[currentQuestion];
+            const quizContent = document.getElementById('quizContent');
+            
+            let html = `
+                <div class="question-section">
+                    <div class="question-number">Frage ${currentQuestion + 1} von ${quizData.length}</div>
+                    <div class="question-text">${question.question}</div>
+                    
+                    <div class="answers">
+            `;
+            
+            question.answers.forEach((answer, index) => {
+                html += `
+                    <div class="answer-option" id="option-${index}">
+                        <label class="answer-label">
+                            <input type="radio" name="answer" value="${index}" onchange="selectAnswer(${index})">
+                            ${answer}
+                        </label>
+                        <div class="explanation" id="explanation-${index}">
+                            ${question.explanations[index]}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                    
+                    <div class="navigation">
+                        <button class="btn btn-secondary" onclick="previousQuestion()" ${currentQuestion === 0 ? 'style="visibility: hidden;"' : ''}>
+                            ← Zurück
+                        </button>
+                        <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>
+                            ${currentQuestion === quizData.length - 1 ? 'Ergebnis anzeigen' : 'Nächste Frage →'}
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            quizContent.innerHTML = html;
+        }
+
+        // Handle answer selection
+        function selectAnswer(index) {
+            if (selectedAnswer !== null) return; // Prevent multiple selections
+            
+            selectedAnswer = index;
+            const question = quizData[currentQuestion];
+            const isCorrect = index === question.correct;
+            
+            // Update score
+            if (isCorrect) {
+                correctAnswers++;
+            }
+            
+            // Show feedback for selected answer
+            const selectedOption = document.getElementById(`option-${index}`);
+            const selectedExplanation = document.getElementById(`explanation-${index}`);
+            
+            if (isCorrect) {
+                selectedOption.classList.add('selected-correct');
+                selectedExplanation.classList.add('active', 'correct');
+            } else {
+                selectedOption.classList.add('selected-wrong');
+                selectedExplanation.classList.add('active', 'wrong');
+                
+                // Also show the correct answer
+                const correctOption = document.getElementById(`option-${question.correct}`);
+                const correctExplanation = document.getElementById(`explanation-${question.correct}`);
+                correctOption.classList.add('show-correct');
+                correctExplanation.classList.add('active', 'correct');
+            }
+            
+            // Disable all radio buttons
+            const radioButtons = document.querySelectorAll('input[type="radio"]');
+            radioButtons.forEach(btn => btn.disabled = true);
+            
+            // Enable next button
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        // Next question
+        function nextQuestion() {
+            if (currentQuestion < quizData.length - 1) {
+                currentQuestion++;
+                selectedAnswer = null;
+                showQuestion();
+                updateProgressBar();
+            } else {
+                showResults();
+            }
+        }
+
+        // Previous question
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                selectedAnswer = null;
+                showQuestion();
+                updateProgressBar();
+            }
+        }
+
+        // Update progress bar
+        function updateProgressBar() {
+            const progress = ((currentQuestion + 1) / quizData.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // Show final results
+        function showResults() {
+            document.getElementById('quizContent').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+            
+            const percentage = Math.round((correctAnswers / quizData.length) * 100);
+            document.getElementById('scoreCircle').textContent = `${correctAnswers}/${quizData.length}`;
+            
+            let evaluation = '';
+            if (correctAnswers >= 30) {
+                evaluation = `🌟 Ausgezeichnet! Mit ${correctAnswers} von ${quizData.length} richtigen Antworten (${percentage}%) kennst du dich hervorragend mit den Rechten und Pflichten der Schülervertretung in Berlin aus. Du bist bestens vorbereitet, um in der SV aktiv mitzuwirken!`;
+            } else if (correctAnswers >= 25) {
+                evaluation = `👏 Sehr gut! Du hast ${correctAnswers} von ${quizData.length} Fragen richtig beantwortet (${percentage}%). Du hast ein solides Verständnis der Berliner SV-Strukturen und kannst damit gut in der Schülervertretung arbeiten.`;
+            } else if (correctAnswers >= 20) {
+                evaluation = `👍 Gut! Mit ${correctAnswers} von ${quizData.length} richtigen Antworten (${percentage}%) kennst du die wichtigsten Grundlagen. Es gibt noch einige Details, die du vertiefen könntest, aber du hast eine gute Basis.`;
+            } else if (correctAnswers >= 15) {
+                evaluation = `📚 Befriedigend. Du hast ${correctAnswers} von ${quizData.length} Fragen richtig beantwortet (${percentage}%). Es gibt noch einige Bereiche, in denen du dich weiter einlesen solltest, um sicher in der SV-Arbeit zu werden.`;
+            } else {
+                evaluation = `📖 Hier besteht noch Nachholbedarf. Mit ${correctAnswers} von ${quizData.length} richtigen Antworten (${percentage}%) solltest du dir das Berliner Schulgesetz (§§ 83-87, 75-78, 110) noch einmal genau durchlesen!`;
+            }
+            
+            document.getElementById('resultsText').innerHTML = evaluation;
+        }
+
+        // Restart quiz
+        function restartQuiz() {
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('quizContent').classList.remove('hidden');
+            initQuiz();
+        }
+
+        // Start quiz on page load
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>

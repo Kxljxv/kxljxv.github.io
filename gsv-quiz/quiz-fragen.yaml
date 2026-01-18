@@ -1,0 +1,732 @@
+# Quiz-Fragen zur Schülervertretung in Berlin
+# Basierend auf dem Berliner Schulgesetz (SchulG)
+
+frage-1:
+  frage-text: "Welche Aufgabe hat die Schülervertretung laut § 83 SchulG Berlin?"
+  antworten:
+    - antwort-text-1: "Sie organisiert Schulveranstaltungen für die Schulleitung"
+      information: "Das ist nicht die Hauptaufgabe der SV. Die Organisation von Veranstaltungen kann Teil ihrer Arbeit sein, aber die SV arbeitet eigenverantwortlich, nicht für die Schulleitung."
+      richtig: false
+    - antwort-text-2: "Sie wirkt bei der Verwirklichung der Bildungs- und Erziehungsziele aktiv und eigenverantwortlich mit"
+      information: "Genau richtig! Nach § 83 SchulG wirkt die Schülervertretung bei der Verwirklichung der Bildungs- und Erziehungsziele durch ihre Arbeit aktiv und eigenverantwortlich mit. Das ist ihre zentrale gesetzliche Aufgabe."
+      richtig: true
+    - antwort-text-3: "Sie kontrolliert die Arbeit der Lehrkräfte"
+      information: "Die Kontrolle der Lehrkräfte gehört nicht zu den Aufgaben der SV. Die SV vertritt die Interessen der Schüler und wirkt im Rahmen der Mitwirkungsgremien mit."
+      richtig: false
+    - antwort-text-4: "Sie verwaltet das Schulbudget"
+      information: "Die Verwaltung des Schulbudgets ist Aufgabe der Schulleitung, nicht der Schülervertretung."
+      richtig: false
+  tip: "Überlege, was das Wort 'eigenverantwortlich' bedeutet. Die SV arbeitet selbstständig an den Zielen der Schule mit."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was bedeutet 'Bildungs- und Erziehungsziele'?"
+      erklaerung: "Das sind die Ziele, die eine Schule erreichen möchte, zum Beispiel dass Schüler etwas lernen, sich gut entwickeln und zu verantwortungsvollen Menschen werden."
+    wort-2:
+      wort-frage: "Was heißt 'eigenverantwortlich'?"
+      erklaerung: "Eigenverantwortlich bedeutet, dass die Schülervertretung selbstständig arbeitet und ihre eigenen Entscheidungen trifft, ohne dass sie jemand dazu zwingt oder ihr genau sagt, was sie tun muss."
+
+frage-2:
+  frage-text: "Wer wählt die Schülervertreter in Berlin?"
+  antworten:
+    - antwort-text-1: "Die Schulleitung"
+      information: "Nein, die Schulleitung wählt nicht die Schülervertreter. Das würde dem demokratischen Prinzip der Schülermitbestimmung widersprechen."
+      richtig: false
+    - antwort-text-2: "Die Lehrkräfte"
+      information: "Auch die Lehrkräfte wählen nicht die Schülervertreter. Sie haben ihre eigenen Gremien und Vertretungen."
+      richtig: false
+    - antwort-text-3: "Die Schülerinnen und Schüler"
+      information: "Richtig! Nach § 83 Abs. 3 SchulG werden die Schülervertreter von den Schülerinnen und Schülern gewählt und können auch nur durch sie abgewählt werden. Das garantiert die demokratische Legitimation der SV."
+      richtig: true
+    - antwort-text-4: "Die Elternvertretung"
+      information: "Die Elternvertretung wählt ihre eigenen Vertreter, nicht die der Schüler. Jede Gruppe hat das Recht auf ihre eigene Vertretung."
+      richtig: false
+  tip: "Überlege: Wer kennt die Interessen und Wünsche der Schüler am besten?"
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist ein Schülervertreter?"
+      erklaerung: "Ein Schülervertreter ist ein Schüler, der von anderen Schülern gewählt wird, um ihre Interessen und Wünsche gegenüber Lehrern und der Schulleitung zu vertreten."
+    wort-2:
+      wort-frage: "Was bedeutet 'demokratisches Prinzip'?"
+      erklaerung: "Demokratie bedeutet, dass die Menschen selbst entscheiden, wer sie vertritt. In einer Demokratie wählt man seine Vertreter durch Wahlen."
+
+frage-3:
+  frage-text: "Dürfen Schülervertreter wegen ihrer Funktion benachteiligt werden?"
+  antworten:
+    - antwort-text-1: "Ja, wenn sie zu viele Sitzungen haben"
+      information: "Nein, auch bei vielen Sitzungen dürfen Schülervertreter nicht benachteiligt werden. Die Anzahl der Sitzungen ist im Schulgesetz geregelt."
+      richtig: false
+    - antwort-text-2: "Nein, sie dürfen weder bevorzugt noch benachteiligt werden"
+      information: "Korrekt! § 83 Abs. 3 SchulG stellt klar, dass Schülervertreter unbeschadet ihrer Verantwortung für eigenes Handeln wegen ihrer Funktion weder bevorzugt noch benachteiligt werden dürfen. Das ist ein wichtiger Schutz für Schülervertreter."
+      richtig: true
+    - antwort-text-3: "Ja, bei schlechten schulischen Leistungen"
+      information: "Schlechte schulische Leistungen sind kein Grund für eine Benachteiligung aufgrund der SV-Funktion. Allerdings bleiben Schülervertreter natürlich für ihre schulischen Leistungen verantwortlich."
+      richtig: false
+    - antwort-text-4: "Nur mit Zustimmung der Schulkonferenz"
+      information: "Eine Benachteiligung wegen der SV-Funktion ist grundsätzlich nicht zulässig, unabhängig von Zustimmungen."
+      richtig: false
+  tip: "Denke daran, dass Schülervertreter besonders geschützt werden sollen, damit sie ihre Arbeit frei ausüben können."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was heißt 'benachteiligt werden'?"
+      erklaerung: "Benachteiligt werden bedeutet, dass man schlechter behandelt wird als andere, zum Beispiel schlechtere Noten bekommt oder nicht zu etwas zugelassen wird, obwohl man die gleichen Rechte haben sollte."
+
+frage-4:
+  frage-text: "Bis wann müssen die Klassensprecher in Berlin spätestens gewählt werden?"
+  antworten:
+    - antwort-text-1: "Innerhalb von zwei Wochen nach Schuljahresbeginn"
+      information: "Das ist zu kurz. Zwei Wochen würden den Klassen nicht genug Zeit geben, sich kennenzulernen und eine informierte Wahl durchzuführen."
+      richtig: false
+    - antwort-text-2: "Spätestens einen Monat nach Beginn des neuen Schuljahres"
+      information: "Richtig! Nach § 84 Abs. 1 SchulG müssen die Klassensprecher spätestens einen Monat nach Beginn des neuen Schuljahres gewählt werden. Das gibt den Klassen ausreichend Zeit für den Wahlprozess."
+      richtig: true
+    - antwort-text-3: "Bis zu den Herbstferien"
+      information: "Die Herbstferien sind kein fester Termin im Schulgesetz. Die Frist ist genau definiert als ein Monat."
+      richtig: false
+    - antwort-text-4: "Innerhalb der ersten drei Monate"
+      information: "Das ist zu lange. Die Klassensprecher müssen bereits nach einem Monat gewählt sein, damit die weiteren SV-Wahlen rechtzeitig stattfinden können."
+      richtig: false
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist ein Klassensprecher?"
+      erklaerung: "Ein Klassensprecher ist ein Schüler, der von seiner Klasse gewählt wird, um die Interessen und Wünsche der Klasse zu vertreten, zum Beispiel bei Klassenlehrern oder in der Gesamtschülervertretung."
+
+frage-5:
+  frage-text: "Bis wann müssen die Wahlen für Schulsprecher und Gesamtschülervertretung erfolgen?"
+  antworten:
+    - antwort-text-1: "Innerhalb von einem Monat ab Unterrichtsbeginn"
+      information: "Das ist zu früh. Die GSV-Wahlen können erst stattfinden, nachdem die Klassensprecher gewählt wurden, was bis zu einem Monat dauern kann."
+      richtig: false
+    - antwort-text-2: "Innerhalb von zwei Monaten ab Unterrichtsbeginn"
+      information: "Genau! § 85 Abs. 1 SchulG schreibt vor, dass die Wahlen für Schulsprecher und GSV innerhalb von zwei Monaten ab Unterrichtsbeginn durchgeführt werden müssen. Das gibt Zeit für die vorherige Wahl der Klassensprecher."
+      richtig: true
+    - antwort-text-3: "Innerhalb von drei Monaten ab Unterrichtsbeginn"
+      information: "Das wäre zu spät. Die SV-Strukturen müssen früher im Schuljahr etabliert sein, um effektiv arbeiten zu können."
+      richtig: false
+    - antwort-text-4: "Bis zum Jahresende"
+      information: "Bis zum Jahresende wäre viel zu spät. Die SV muss zu Beginn des Schuljahres arbeitsfähig sein."
+      richtig: false
+  tip: "Bedenke, dass zuerst die Klassensprecher gewählt werden müssen, bevor die Gesamtschülervertretung gewählt werden kann. Daher braucht man mehr Zeit."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist ein Schulsprecher?"
+      erklaerung: "Der Schulsprecher ist der oberste Vertreter aller Schüler einer Schule. Er wird von der Gesamtschülervertretung gewählt und vertritt die Interessen aller Schüler gegenüber der Schulleitung."
+    wort-2:
+      wort-frage: "Was ist die Gesamtschülervertretung (GSV)?"
+      erklaerung: "Die Gesamtschülervertretung ist eine Versammlung aller gewählten Klassensprecher und anderer Schülervertreter einer Schule. Sie trifft wichtige Entscheidungen für alle Schüler."
+
+frage-6:
+  frage-text: "Wie viele Stellvertreter kann der Schulsprecher/die Schulsprecherin in Berlin haben?"
+  antworten:
+    - antwort-text-1: "Einen Stellvertreter"
+      information: "Das ist zu wenig. In Berlin ist eine flexiblere Stellvertreterregelung vorgesehen."
+      richtig: false
+    - antwort-text-2: "Zwei Stellvertreter"
+      information: "Noch nicht ganz richtig. Berlin erlaubt mehr Stellvertreter."
+      richtig: false
+    - antwort-text-3: "Bis zu drei Stellvertreter"
+      information: "Richtig! Nach § 85 Abs. 3 SchulG können bis zu drei Stellvertreter gewählt werden. Das ermöglicht eine gute Vertretung und Lastverteilung in der Schülervertretung."
+      richtig: true
+    - antwort-text-4: "Vier Stellvertreter"
+      information: "Das ist zu viel. Die maximale Anzahl liegt bei drei Stellvertretern."
+      richtig: false
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist ein Stellvertreter?"
+      erklaerung: "Ein Stellvertreter ist jemand, der die Aufgaben einer anderen Person übernimmt, wenn diese verhindert ist, zum Beispiel krank oder im Urlaub. Der Stellvertreter hat dann die gleichen Rechte und Pflichten."
+
+frage-7:
+  frage-text: "Wer sind die stimmberechtigten Mitglieder der Gesamtschülervertretung?"
+  antworten:
+    - antwort-text-1: "Nur die Klassensprecher"
+      information: "Das ist nicht vollständig. Auch der Schulsprecher und seine Stellvertreter gehören zur GSV."
+      richtig: false
+    - antwort-text-2: "Nur der Schulsprecher und seine Stellvertreter"
+      information: "Das ist zu eng gefasst. Auch die Klassensprecher und andere gewählte Sprecher sind Teil der GSV."
+      richtig: false
+    - antwort-text-3: "Alle gewählten Sprecher sowie der Schulsprecher und seine Stellvertreter"
+      information: "Genau richtig! Nach § 85 Abs. 1 SchulG sind alle gewählten Sprecher (also Klassensprecher, Kurssprecher etc.) sowie der Schulsprecher und dessen Stellvertreter stimmberechtigte Mitglieder der GSV."
+      richtig: true
+    - antwort-text-4: "Alle Schüler der Schule"
+      information: "Das wäre unpraktikabel. Die GSV ist ein Vertretungsgremium, nicht eine Vollversammlung aller Schüler."
+      richtig: false
+  tip: "Die GSV besteht aus allen gewählten Vertretern der Schüler, nicht nur aus einer Gruppe."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was bedeutet 'stimmberechtigt'?"
+      erklaerung: "Stimmberechtigt bedeutet, dass man bei Abstimmungen seine Stimme abgeben darf. Nur wer stimmberechtigt ist, darf bei Entscheidungen mitwählen."
+    wort-2:
+      wort-frage: "Was ist ein Kurssprecher?"
+      erklaerung: "Ein Kurssprecher ist ähnlich wie ein Klassensprecher, aber für einen einzelnen Kurs in der Oberstufe. Er vertritt die Schüler seines Kurses."
+
+frage-8:
+  frage-text: "Wie oft kann der Schulsprecher die GSV während der Unterrichtszeit zu Sitzungen einladen?"
+  antworten:
+    - antwort-text-1: "Einmal im Monat für eine Stunde"
+      information: "Das ist sowohl bei der Häufigkeit als auch bei der Dauer nicht korrekt. Die GSV darf häufiger und länger tagen."
+      richtig: false
+    - antwort-text-2: "Zweimal im Monat für jeweils zwei Unterrichtsstunden"
+      information: "Richtig! Nach § 85 Abs. 5 SchulG kann der Schulsprecher die GSV bis zu zweimal im Monat für jeweils zwei Unterrichtsstunden einberufen. Das ermöglicht regelmäßige Arbeitssitzungen."
+      richtig: true
+    - antwort-text-3: "Dreimal im Monat für jeweils eine Stunde"
+      information: "Die Häufigkeit wäre zu hoch und die Dauer zu kurz. Die gesetzliche Regelung ist anders."
+      richtig: false
+    - antwort-text-4: "So oft wie nötig"
+      information: "Es gibt eine klare gesetzliche Begrenzung, um den Unterrichtsausfall zu begrenzen und eine Balance zwischen SV-Arbeit und Unterricht zu gewährleisten."
+      richtig: false
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist eine Sitzung?"
+      erklaerung: "Eine Sitzung ist ein Treffen, bei dem sich mehrere Personen zusammensetzen, um über bestimmte Themen zu sprechen und Entscheidungen zu treffen."
+    wort-2:
+      wort-frage: "Was sind Unterrichtsstunden?"
+      erklaerung: "Unterrichtsstunden sind die Zeiteinheiten in der Schule, in denen Unterricht stattfindet. Eine Unterrichtsstunde dauert meistens 45 Minuten."
+
+frage-9:
+  frage-text: "Wie viele Mitglieder wählt die GSV für die Schulkonferenz?"
+  antworten:
+    - antwort-text-1: "Zwei Mitglieder"
+      information: "Das ist zu wenig. Die Schüler haben in der Schulkonferenz eine stärkere Vertretung."
+      richtig: false
+    - antwort-text-2: "Drei Mitglieder"
+      information: "Noch nicht ganz richtig. Die Schülervertretung ist stärker in der Schulkonferenz vertreten."
+      richtig: false
+    - antwort-text-3: "Vier Mitglieder"
+      information: "Korrekt! Nach § 85 Abs. 4 Nr. 1 SchulG wählt die GSV vier Mitglieder für die Schulkonferenz. Das entspricht auch der paritätischen Zusammensetzung mit Lehrern und Eltern."
+      richtig: true
+    - antwort-text-4: "Sechs Mitglieder"
+      information: "Das wäre zu viel. Die Schulkonferenz ist paritätisch besetzt, und mehr Schülervertreter würden diese Balance stören."
+      richtig: false
+  tip: "In der Schulkonferenz sind Schüler, Lehrer und Eltern gleichberechtigt vertreten. Überlege, wie viele Vertreter jede Gruppe haben könnte."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist die Schulkonferenz?"
+      erklaerung: "Die Schulkonferenz ist das wichtigste Gremium einer Schule. Hier treffen sich Vertreter der Schüler, Lehrer, Eltern und die Schulleitung, um wichtige Entscheidungen für die Schule zu treffen."
+    wort-2:
+      wort-frage: "Was bedeutet 'paritätisch'?"
+      erklaerung: "Paritätisch bedeutet, dass verschiedene Gruppen gleichberechtigt vertreten sind, also die gleiche Anzahl an Vertretern haben."
+
+frage-10:
+  frage-text: "Wie viele Mitglieder entsendet die GSV in den Bezirksschülerausschuss (BSA)?"
+  antworten:
+    - antwort-text-1: "Ein Mitglied"
+      information: "Das ist zu wenig. Jede Schule soll im BSA angemessen vertreten sein."
+      richtig: false
+    - antwort-text-2: "Zwei Mitglieder"
+      information: "Richtig! Nach § 85 Abs. 4 Nr. 2 SchulG wählt die GSV zwei Mitglieder für den Bezirksschülerausschuss. So kann jede Schule im Bezirk mitwirken."
+      richtig: true
+    - antwort-text-3: "Drei Mitglieder"
+      information: "Das wäre zu viel und würde den BSA unnötig groß machen."
+      richtig: false
+    - antwort-text-4: "Vier Mitglieder"
+      information: "Das ist deutlich zu viel. Die Regelung sieht zwei Vertreter pro Schule vor."
+      richtig: false
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist der Bezirksschülerausschuss (BSA)?"
+      erklaerung: "Der Bezirksschülerausschuss ist ein Gremium, in dem Schülervertreter von allen Schulen eines Bezirks zusammenkommen. Sie vertreten die Interessen aller Schüler des Bezirks."
+    wort-2:
+      wort-frage: "Was bedeutet 'entsenden'?"
+      erklaerung: "Entsenden bedeutet, dass jemand geschickt oder geschickt wird, um eine Gruppe zu vertreten. Die GSV entsendet also Vertreter in den BSA."
+
+frage-11:
+  frage-text: "Wie oft kann die GSV während der Unterrichtszeit eine Schülerversammlung einberufen?"
+  antworten:
+    - antwort-text-1: "Einmal im Schulhalbjahr"
+      information: "Das ist zu wenig. Die GSV hat das Recht, häufiger Schülerversammlungen einzuberufen."
+      richtig: false
+    - antwort-text-2: "Zweimal im Schulhalbjahr"
+      information: "Korrekt! Nach § 85 Abs. 7 SchulG kann die GSV zweimal im Schulhalbjahr für bis zu zwei Stunden eine Schülerversammlung einberufen. Darüber hinaus nur mit Zustimmung der Schulkonferenz."
+      richtig: true
+    - antwort-text-3: "Einmal im Monat"
+      information: "Das wäre zu häufig. Die gesetzliche Regelung begrenzt die Schülerversammlungen auf zweimal pro Halbjahr."
+      richtig: false
+    - antwort-text-4: "Nach Bedarf mit Zustimmung der Schulleitung"
+      information: "Für weitere Versammlungen wird die Zustimmung benötigt, aber nicht der Schulleitung, sondern der Schulkonferenz."
+      richtig: false
+  tip: "Ein Schulhalbjahr dauert etwa ein halbes Jahr. Überlege, wie oft in dieser Zeit eine große Versammlung sinnvoll ist."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist eine Schülerversammlung?"
+      erklaerung: "Eine Schülerversammlung ist ein Treffen, bei dem alle Schüler einer Schule zusammenkommen. Hier können wichtige Themen besprochen und Entscheidungen getroffen werden, die alle Schüler betreffen."
+    wort-2:
+      wort-frage: "Was ist ein Schulhalbjahr?"
+      erklaerung: "Ein Schulhalbjahr ist die Hälfte eines Schuljahres. Das Schuljahr ist in zwei Halbjahre unterteilt: das erste Halbjahr (meist August bis Januar) und das zweite Halbjahr (meist Februar bis Juli)."
+
+frage-12:
+  frage-text: "Wie lange darf eine Schülerversammlung während der Unterrichtszeit maximal dauern?"
+  antworten:
+    - antwort-text-1: "Eine Stunde"
+      information: "Das ist zu kurz. Für wichtige Themen braucht die Schülerschaft mehr Zeit zum Diskutieren und Abstimmen."
+      richtig: false
+    - antwort-text-2: "Zwei Stunden"
+      information: "Richtig! Nach § 85 Abs. 7 SchulG darf eine Schülerversammlung bis zu zwei Stunden dauern. Das ist ein Kompromiss zwischen Mitbestimmung und Unterrichtsausfall."
+      richtig: true
+    - antwort-text-3: "Drei Stunden"
+      information: "Das wäre zu lang und würde zu viel Unterricht ausfallen lassen."
+      richtig: false
+    - antwort-text-4: "Vier Stunden"
+      information: "Das ist deutlich zu lang. Die gesetzliche Obergrenze liegt bei zwei Stunden."
+      richtig: false
+
+frage-13:
+  frage-text: "Wann gelten Veranstaltungen der Schülervertretung als Veranstaltungen der Schule?"
+  antworten:
+    - antwort-text-1: "Immer automatisch"
+      information: "Nein, es gibt bestimmte Voraussetzungen, die erfüllt sein müssen."
+      richtig: false
+    - antwort-text-2: "Nur wenn sie im Schulgebäude stattfinden"
+      information: "Der Ort allein reicht nicht aus. Es bedarf zusätzlich des Einvernehmens mit der Schulleitung."
+      richtig: false
+    - antwort-text-3: "Wenn sie im Einvernehmen mit der Schulleitung auf dem Schulgelände stattfinden"
+      information: "Genau! Nach § 83 Abs. 4 SchulG gelten SV-Veranstaltungen als Schulveranstaltungen, wenn sie im Einvernehmen mit der Schulleitung auf dem Schulgelände stattfinden. Das ist wichtig für Versicherungsschutz und Aufsichtspflicht."
+      richtig: true
+    - antwort-text-4: "Niemals"
+      information: "Das stimmt nicht. Unter bestimmten Bedingungen können SV-Veranstaltungen durchaus Schulveranstaltungen sein."
+      richtig: false
+  tip: "Überlege, wer für die Sicherheit der Schüler verantwortlich ist und wann eine Veranstaltung offiziell zur Schule gehört."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was bedeutet 'im Einvernehmen'?"
+      erklaerung: "Im Einvernehmen bedeutet, dass beide Seiten zustimmen und sich einig sind. Die Schulleitung und die SV müssen sich also einig sein, dass die Veranstaltung stattfinden kann."
+    wort-2:
+      wort-frage: "Was ist eine Schulveranstaltung?"
+      erklaerung: "Eine Schulveranstaltung ist eine offizielle Veranstaltung der Schule. Bei Schulveranstaltungen sind die Schüler versichert und die Schule ist verantwortlich für die Aufsicht."
+
+frage-14:
+  frage-text: "Wann darf die Schulleitung das Einvernehmen für eine SV-Veranstaltung versagen?"
+  antworten:
+    - antwort-text-1: "Nach freiem Ermessen"
+      information: "Nein, die Schulleitung kann nicht nach freiem Ermessen entscheiden. Es gibt klare gesetzliche Grenzen."
+      richtig: false
+    - antwort-text-2: "Wenn die Veranstaltung zu laut wird"
+      information: "Lautstärke allein ist kein ausreichender Grund. Es müssen schwerwiegendere Gründe vorliegen."
+      richtig: false
+    - antwort-text-3: "Wenn zu erwarten ist, dass die Veranstaltung gegen Rechtsvorschriften verstößt oder den Bildungsauftrag gefährdet"
+      information: "Richtig! Nach § 83 Abs. 4 SchulG darf das Einvernehmen nur versagt werden, wenn die Durchführung erwarten lässt, dass die Veranstaltung gegen Rechtsvorschriften verstößt oder den Bildungs- und Erziehungsauftrag gefährdet. Das schützt die Autonomie der SV."
+      richtig: true
+    - antwort-text-4: "Wenn zu viele Schüler teilnehmen möchten"
+      information: "Die Anzahl der Teilnehmer ist kein Grund zur Versagung, solange die Veranstaltung organisatorisch durchführbar ist."
+      richtig: false
+  tip: "Wenn die Schulleitung das frei entscheiden dürfte, könnte sie ja jede SV-Veranstaltung beeinflussen!"
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was sind Rechtsvorschriften?"
+      erklaerung: "Rechtsvorschriften sind Regeln und Gesetze, die man befolgen muss. Sie legen fest, was erlaubt ist und was nicht."
+    wort-2:
+      wort-frage: "Was ist der Bildungsauftrag?"
+      erklaerung: "Der Bildungsauftrag ist die Aufgabe der Schule, den Schülern Wissen und Fähigkeiten beizubringen und sie zu verantwortungsvollen Menschen zu erziehen."
+
+frage-15:
+  frage-text: "Aus wie vielen stimmberechtigten Mitgliedern besteht die Schulkonferenz in der Regel?"
+  antworten:
+    - antwort-text-1: "10 Mitgliedern"
+      information: "Das ist zu wenig. Die Schulkonferenz ist größer, um alle Gruppen angemessen zu repräsentieren."
+      richtig: false
+    - antwort-text-2: "12 Mitgliedern"
+      information: "Das ist noch nicht ganz richtig. Die Regelgröße ist etwas höher."
+      richtig: false
+    - antwort-text-3: "14 Mitgliedern"
+      information: "Genau! Nach § 77 Abs. 1 SchulG besteht die Schulkonferenz in der Regel aus 14 stimmberechtigten Mitgliedern: Schulleitung (1), Gesamtkonferenz (4), GSV (4), Eltern (4), plus ein externes Mitglied (1). Das gewährleistet eine ausgewogene Vertretung."
+      richtig: true
+    - antwort-text-4: "16 Mitgliedern"
+      information: "Das ist zu viel. Die Regelgröße liegt bei 14 Mitgliedern."
+      richtig: false
+  tip: "Rechne: 1 (Schulleitung) + 4 (Lehrer) + 4 (Schüler) + 4 (Eltern) + 1 (Extern)."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist ein externes Mitglied?"
+      erklaerung: "Das ist eine Person, die nicht direkt zur Schule gehört (also kein Lehrer, Schüler oder Elternteil dort ist), aber die Schule unterstützt, z.B. jemand aus einem Betrieb im Kiez."
+
+frage-16:
+  frage-text: "Wann ist die Schulkonferenz beschlussfähig?"
+  antworten:
+    - antwort-text-1: "Wenn mindestens ein Drittel der Mitglieder anwesend ist"
+      information: "Das ist die allgemeine Regel für Gremien, aber für die Schulkonferenz gilt eine strengere Anforderung."
+      richtig: false
+    - antwort-text-2: "Wenn die Mehrheit der stimmberechtigten Mitglieder anwesend ist"
+      information: "Korrekt! Nach § 78 Abs. 1 SchulG ist die Schulkonferenz beschlussfähig, wenn die Mehrheit der stimmberechtigten Mitglieder anwesend ist. Bei 14 Mitgliedern also mindestens 8 Personen."
+      richtig: true
+    - antwort-text-3: "Wenn alle Mitglieder anwesend sind"
+      information: "Das wäre zu streng und würde die Arbeitsfähigkeit der Schulkonferenz gefährden."
+      richtig: false
+    - antwort-text-4: "Wenn die Schulleitung anwesend ist"
+      information: "Die Anwesenheit der Schulleitung allein macht die Konferenz nicht beschlussfähig. Es kommt auf die Gesamtzahl an."
+      richtig: false"
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was bedeutet beschlussfähig?"
+      erklaerung: "Ein Gremium ist beschlussfähig, wenn genug Leute da sind, damit eine Abstimmung offiziell gültig ist."
+
+frage-17:
+  frage-text: "Welche Mehrheit ist für wichtige Beschlüsse in der Schulkonferenz erforderlich?"
+  antworten:
+    - antwort-text-1: "Einfache Mehrheit der anwesenden Mitglieder"
+      information: "Das reicht für wichtige Beschlüsse nicht aus. Hier ist eine qualifizierte Mehrheit erforderlich."
+      richtig: false
+    - antwort-text-2: "Zwei Drittel der stimmberechtigten Mitglieder"
+      information: "Richtig! Wichtige Beschlüsse nach § 76 Abs. 1 SchulG benötigen eine Mehrheit von zwei Dritteln der stimmberechtigten Mitglieder – also der gesetzlich vorgeschriebenen Anzahl, nicht nur der anwesenden. Das stellt sicher, dass wichtige Entscheidungen breite Unterstützung haben."
+      richtig: true
+    - antwort-text-3: "Drei Viertel der anwesenden Mitglieder"
+      information: "Die Bezugsgröße ist nicht die Zahl der anwesenden, sondern aller stimmberechtigten Mitglieder."
+      richtig: false
+    - antwort-text-4: "Einstimmigkeit"
+      information: "Einstimmigkeit wäre zu streng und würde Entscheidungen nahezu unmöglich machen."
+      richtig: false
+  tip: "Denke daran, dass wichtige Entscheidungen eine stärkere Zustimmung brauchen, um sicherzustellen, dass sie von fast allen getragen werden."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist eine qualifizierte Mehrheit?"
+      erklaerung: "Das ist eine Mehrheit, die höher ist als die normale Hälfte (z.B. zwei Drittel), damit man sicher ist, dass fast alle für eine wichtige Sache sind."
+
+frage-18:
+  frage-text: "Haben Schülervertreter in der Grundschule Stimmrecht in der Schulkonferenz?"
+  antworten:
+    - antwort-text-1: "Nein, sie haben nur beratende Stimme"
+      information: "Das war früher so, wurde aber geändert. Seit dem Schuljahr 2022/23 gibt es eine neue Regelung."
+      richtig: false
+    - antwort-text-2: "Ja, ab Jahrgangsstufe 1"
+      information: "Korrekt! Seit dem Schuljahr 2022/23 können nach § 77 Abs. 1 Nr. 3 SchulG auch Schüler ab Jahrgangsstufe 1 als stimmberechtigte Mitglieder in die Schulkonferenz gewählt werden. Das stärkt die Mitbestimmung auch jüngerer Schüler."
+      richtig: true
+    - antwort-text-3: "Ja, aber nur ab Jahrgangsstufe 5"
+      information: "Diese Einschränkung gibt es nicht mehr. Auch jüngere Grundschüler können teilnehmen."
+      richtig: false
+    - antwort-text-4: "Grundschulen haben keine Schülervertreter in der Schulkonferenz"
+      information: "Das stimmt nicht. Grundschulen haben seit 2022/23 Schülervertreter mit vollem Stimmrecht in der Schulkonferenz."
+      richtig: false
+  tip: "Das Gesetz wurde modernisiert – Mitbestimmung fängt in Berlin jetzt ganz früh an."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist eine Jahrgangsstufe?"
+      erklaerung: "Das ist ein anderes Wort für die Klassenstufe, also z.B. alle Schüler, die in der 3. Klasse sind."
+
+frage-19:
+  frage-text: "Welches besondere Recht haben Vertrauenslehrkräfte?"
+  antworten:
+    - antwort-text-1: "Sie dürfen Noten ändern"
+      information: "Nein, Vertrauenslehrkräfte haben keine besonderen Rechte bei der Notengebung. Das wäre mit dem Bewertungssystem nicht vereinbar."
+      richtig: false
+    - antwort-text-2: "Sie sind berechtigt, Auskünfte gegenüber Vorgesetzten zu verweigern (außer bei strafrechtlichen Tatbeständen)"
+      information: "Korrekt! Nach § 85 Abs. 6 SchulG sind Vertrauenslehrkräfte berechtigt, Auskünfte über Angelegenheiten, die ihnen anvertraut wurden, gegenüber Vorgesetzten zu verweigern, soweit nicht strafrechtliche Tatbestände betroffen sind. Das schützt das Vertrauensverhältnis zu den Schülern."
+      richtig: true
+    - antwort-text-3: "Sie haben in allen Konferenzen Stimmrecht"
+      information: "Vertrauenslehrkräfte haben kein automatisches Stimmrecht in allen Konferenzen. Ihre besondere Rolle liegt in der Beratung."
+      richtig: false
+    - antwort-text-4: "Sie können Schüler vom Unterricht befreien"
+      information: "Die Befreiung vom Unterricht ist nicht Teil der Befugnisse von Vertrauenslehrkräften."
+      richtig: false
+  tip: "VERTRAUENSlehrkräfte"
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was bedeutet Auskunft verweigern?"
+      erklaerung: "Es bedeutet, dass man eine Information nicht weitersagen muss, auch wenn der Chef (Schulleiter) danach fragt."
+
+frage-20:
+  frage-text: "Woraus setzt sich der Bezirksschülerausschuss zusammen?"
+  antworten:
+    - antwort-text-1: "Aus allen Schülersprechern des Bezirks"
+      information: "Nicht nur die Schülersprecher, sondern jeweils zwei Vertreter pro Schule bilden den BSA."
+      richtig: false
+    - antwort-text-2: "Aus je zwei gewählten Vertretern jeder Schule im Bezirk"
+      information: "Richtig! Nach § 110 SchulG besteht der BSA aus je zwei von den GSVs gewählten Schülern jeder staatlichen Oberschule im Bezirk. So sind alle weiterführenden Schulen vertreten."
+      richtig: true
+    - antwort-text-3: "Aus den Klassensprechers aller Schulen"
+      information: "Das wäre viel zu groß und unpraktikabel. Die Klassensprecher arbeiten in der jeweiligen Schul-GSV."
+      richtig: false
+    - antwort-text-4: "Aus Vertretern der Schulleitung"
+      information: "Der BSA ist ein reines Schülergremium ohne Schulleitung oder Lehrkräfte."
+      richtig: false
+  tip: "Es ist die Ebene über der Schule – alle Schulen eines Bezirks schicken Vertreter dorthin."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist eine Oberschule?"
+      erklaerung: "In Berlin sind das alle Schulen nach der Grundschule, also Gymnasien und Sekundarschulen."
+
+frage-21:
+  frage-text: "Wie viele Mitglieder wählt der BSA für den Bezirksschulbeirat?"
+  antworten:
+    - antwort-text-1: "Sechs Mitglieder"
+      information: "Das ist zu wenig. Die Schülervertretung auf Bezirksebene ist stärker im Bezirksschulbeirat vertreten."
+      richtig: false
+    - antwort-text-2: "Acht Mitglieder"
+      information: "Das ist noch nicht ausreichend. Es werden mehr Vertreter gewählt."
+      richtig: false
+    - antwort-text-3: "Zehn Mitglieder"
+      information: "Noch nicht ganz richtig. Die Zahl ist etwas höher."
+      richtig: false
+    - antwort-text-4: "Zwölf Mitglieder"
+      information: "Genau! Der BSA wählt zwölf Mitglieder für den Bezirksschulbeirat. Das ermöglicht eine starke Schülervertretung auf Bezirksebene."
+      richtig: true
+  tip: "Es ist genau ein Dutzend Personen."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist der Bezirksschulbeirat?"
+      erklaerung: "Ein Gremium auf Bezirksebene, in dem Lehrer, Eltern und Schüler den Bezirk in Schulfragen beraten."
+
+frage-22:
+  frage-text: "Wie viele Vertreter entsendet der BSA in den Landesschülerausschuss?"
+  antworten:
+    - antwort-text-1: "Einen Vertreter"
+      information: "Das wäre zu wenig, um den Bezirk angemessen auf Landesebene zu vertreten."
+      richtig: false
+    - antwort-text-2: "Zwei Vertreter"
+      information: "Richtig! Nach § 110 SchulG wählt der BSA zwei Vertreter für den Landesschülerausschuss. So ist jeder Bezirk auf Landesebene vertreten."
+      richtig: true
+    - antwort-text-3: "Drei Vertreter"
+      information: "Das wäre zu viel. Mit 12 Bezirken in Berlin würde der LSA dann zu groß werden."
+      richtig: false
+    - antwort-text-4: "Vier Vertreter"
+      information: "Das ist deutlich zu viel und würde den LSA unpraktikabel machen."
+      richtig: false
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist der Landesschülerausschuss (LSA)?"
+      erklaerung: "Das ist die Gruppe, die alle Schüler von ganz Berlin vertritt und z.B. mit dem Bildungssenator spricht."
+
+frage-23:
+  frage-text: "In welchen Konferenzen haben Schülervertreter beratende Stimme?"
+  antworten:
+    - antwort-text-1: "Nur in der Gesamtkonferenz"
+      information: "Das ist nicht vollständig. Schülervertreter haben noch in weiteren Konferenzen beratende Stimme."
+      richtig: false
+    - antwort-text-2: "In der Gesamtkonferenz und den Fachkonferenzen"
+      information: "Korrekt! Nach § 85 Abs. 4 Nr. 3 SchulG wählt die GSV je zwei beratende Mitglieder für die Gesamtkonferenz und die Fachkonferenzen. So können Schüler ihre Perspektive einbringen."
+      richtig: true
+    - antwort-text-3: "In allen Konferenzen außer Klassenkonferenzen bei Versetzungen und Zeugnissen"
+      information: "Diese Formulierung ist zu weit gefasst. Die konkrete Regelung betrifft Gesamtkonferenz und Fachkonferenzen."
+      richtig: false
+    - antwort-text-4: "In keinen Konferenzen"
+      information: "Das stimmt nicht. Schülervertreter haben in mehreren Konferenzarten beratende Stimme."
+      richtig: false
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist eine beratende Stimme?"
+      erklaerung: "Man darf bei einer Versammlung mitdiskutieren und seine Meinung sagen, darf aber bei der finalen Abstimmung nicht mitwählen."
+
+frage-24:
+  frage-text: "Haben Mitglieder der Schulkonferenz ein besonderes Informationsrecht?"
+  antworten:
+    - antwort-text-1: "Nein, sie erhalten nur die Sitzungsprotokolle"
+      information: "Das ist zu wenig. Mitglieder der Schulkonferenz haben weitergehende Informationsrechte."
+      richtig: false
+    - antwort-text-2: "Ja, sie können an allen anderen Konferenzen der Schule mit beratender Stimme teilnehmen"
+      information: "Richtig! Nach § 75 Abs. 3 SchulG können Mitglieder der Schulkonferenz an allen anderen Konferenzen der Schule mit beratender Stimme teilnehmen (mit bestimmten Einschränkungen bei Klassenkonferenzen). Das ermöglicht umfassende Information."
+      richtig: true
+    - antwort-text-3: "Ja, aber nur an Lehrerkonferenzen"
+      information: "Das ist zu eingeschränkt. Das Teilnahmerecht gilt breiter."
+      richtig: false
+    - antwort-text-4: "Nur mit Genehmigung der Schulleitung"
+      information: "Es ist ein gesetzliches Recht, keine ermessenabhängige Genehmigung."
+      richtig: false'
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist ein Sitzungsprotokoll?"
+      erklaerung: "Ein Papier, auf dem aufgeschrieben wurde, was bei einem Treffen genau besprochen und entschieden wurde."
+
+frage-25:
+  frage-text: "Haben Schüler das Recht, Schülergruppen zu bilden?"
+  antworten:
+    - antwort-text-1: "Nein, das ist nicht erlaubt"
+      information: "Das stimmt nicht. Schüler haben ausdrücklich das Recht zur Bildung von Schülergruppen."
+      richtig: false
+    - antwort-text-2: "Ja, aber nur mit Genehmigung der Schulleitung"
+      information: "Es ist kein Genehmigungsvorbehalt, sondern nur eine Anzeigepflicht. Das ist ein wichtiger Unterschied."
+      richtig: false
+    - antwort-text-3: "Ja, sie müssen die Bildung nur der Schulleitung anzeigen"
+      information: "Genau! Nach § 82 SchulG haben Schüler das Recht, Schülergruppen zu bilden. Die Bildung ist der Schulleitung anzuzeigen, bedarf aber keiner Genehmigung. Das schützt die Versammlungsfreiheit der Schüler."
+      richtig: true
+    - antwort-text-4: "Ja, aber nur außerhalb der Schulzeit"
+      information: "Zeitliche Einschränkungen gibt es nicht. Schülergruppen können sich auch während der Schulzeit treffen."
+      richtig: false
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist eine Anzeigepflicht?"
+      erklaerung: "Man muss eine Information nur mitteilen (Bescheid sagen), braucht aber keine offizielle Erlaubnis."
+
+frage-26:
+  frage-text: "Können Schülergruppen Räume der Schule nutzen?"
+  antworten:
+    - antwort-text-1: "Nein, das ist grundsätzlich nicht möglich"
+      information: "Das stimmt nicht. Schülergruppen haben unter bestimmten Voraussetzungen Anspruch auf Räume."
+      richtig: false
+    - antwort-text-2: "Ja, aber nur gegen Gebühr"
+      information: "Für schulische Zwecke werden keine Gebühren erhoben. Die Nutzung ist unentgeltlich."
+      richtig: false
+    - antwort-text-3: "Ja, unentgeltlich, wenn der Bildungsauftrag nicht beeinträchtigt wird"
+      information: "Richtig! Nach § 82 Abs. 2 SchulG können Schülergruppen Räumlichkeiten unentgeltlich zur Verfügung gestellt werden, wenn dadurch der Bildungs- und Erziehungsauftrag nicht beeinträchtigt wird. Das unterstützt außerunterrichtliches Engagement."
+      richtig: true
+    - antwort-text-4: "Nur mit Genehmigung der Schulkonferenz"
+      information: "Die Entscheidung liegt bei der Schulleitung, nicht bei der Schulkonferenz."
+      richtig: false
+  tip: "Die Schule ist für alle da."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was bedeutet unentgeltlich?"
+      erklaerung: "Das ist ein anderes Wort für kostenlos. Man muss kein Geld bezahlen."
+
+frage-27:
+  frage-text: "Wann ist ein Schulgremium in der Regel beschlussfähig?"
+  antworten:
+    - antwort-text-1: "Wenn alle Mitglieder anwesend sind"
+      information: "Das wäre zu streng und würde die Arbeitsfähigkeit von Gremien stark einschränken."
+      richtig: false
+    - antwort-text-2: "Wenn mehr als die Hälfte der Mitglieder anwesend ist"
+      information: "Das gilt für die Schulkonferenz, aber die allgemeine Regel für Gremien ist anders."
+      richtig: false
+    - antwort-text-3: "Wenn mehr als ein Drittel der stimmberechtigten Mitglieder anwesend ist"
+      information: "Korrekt! Nach § 77 Abs. 3 SchulG ist ein Gremium beschlussfähig, wenn mehr als ein Drittel der stimmberechtigten Mitglieder anwesend ist. Das gewährleistet Arbeitsfähigkeit bei realistischen Anwesenheitsquoten."
+      richtig: true
+    - antwort-text-4: "Wenn die Schulleitung anwesend ist"
+      information: "Die Anwesenheit einzelner Personen bestimmt nicht die Beschlussfähigkeit. Es kommt auf die Gesamtzahl an."
+      richtig: false
+  tip: "Ein Drittel der Leute reicht aus, damit ein normales Gremium anfangen kann zu arbeiten."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Wer sind stimmberechtigte Mitglieder?"
+      erklaerung: "Personen, die offiziell gewählt wurden und bei einer Abstimmung mitzählen dürfen. Beratende Mitglieder dürfen nur mitreden, aber nicht mitwählen."
+
+frage-28:
+  frage-text: "Wie müssen Wahlen in Berlin grundsätzlich durchgeführt werden?"
+  antworten:
+    - antwort-text-1: "Immer offen per Handzeichen"
+      information: "Das wäre keine geheime Wahl und könnte Druck auf Wähler ausüben."
+      richtig: false
+    - antwort-text-2: "Grundsätzlich geheim (schriftlich)"
+      information: "Richtig! Nach § 116 SchulG sind alle im Schulgesetz vorgesehenen Wahlen grundsätzlich geheim (schriftlich). Sie können nur offen erfolgen, wenn ALLE anwesenden Wahlberechtigten dafür sind. Das schützt die Freiheit der Wahl."
+      richtig: true
+    - antwort-text-3: "Per Zuruf"
+      information: "Zuruf ist keine geheime Wahl und nur in Ausnahmefällen bei Einstimmigkeit zulässig."
+      richtig: false
+    - antwort-text-4: "Digital"
+      information: "Digitale Wahlen sind im Schulgesetz nicht vorgesehen. Die Wahlen müssen schriftlich erfolgen."
+      richtig: false
+  tip: "Wenn niemand sieht, wen du wählst, kann das manchmal vor Ärger schützen, falls jemandem deine Wahl nicht gefällt."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist eine schriftliche Wahl?"
+      erklaerung: "Man schreibt den Namen der Person, die man wählen möchte, auf einen Zettel und wirft ihn in eine Box."
+
+frage-29:
+  frage-text: "Was passiert, wenn bei einer Wahl Stimmengleichheit herrscht?"
+  antworten:
+    - antwort-text-1: "Der älteste Kandidat gewinnt"
+      information: "Das Alter ist kein Kriterium bei Wahlen. Das wäre auch rechtlich problematisch."
+      richtig: false
+    - antwort-text-2: "Die Schulleitung entscheidet"
+      information: "Die Schulleitung hat bei Wahlen kein Entscheidungsrecht. Das würde die demokratische Wahl untergraben."
+      richtig: false
+    - antwort-text-3: "Es erfolgt eine Stichwahl"
+      information: "Korrekt! Nach § 116 SchulG erfolgt bei Stimmengleichheit eine Stichwahl. So wird sichergestellt, dass der gewählte Kandidat eine klare Mehrheit hat."
+      richtig: true
+    - antwort-text-4: "Beide Kandidaten teilen sich das Amt"
+      information: "Eine Amtsteilung ist nicht vorgesehen. Es wird ein einzelner Kandidat gewählt."
+      richtig: false
+  tip: "Wenn es unentschieden steht, müssen wir einfach nochmal zwischen den besten zwei wählen."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist eine Stichwahl?"
+      erklaerung: "Eine zweite Wahlrunde, bei der nur noch die Kandidaten antreten, die in der ersten Runde die meisten (und gleich viele) Stimmen hatten."
+
+frage-30:
+  frage-text: "Können Schülervertreter selbst gestellte Aufgaben in eigener Verantwortung durchführen?"
+  antworten:
+    - antwort-text-1: "Nein, nur mit Genehmigung der Schulleitung"
+      information: "Das würde die Autonomie der SV zu stark einschränken. Die SV hat eigene Gestaltungsspielräume."
+      richtig: false
+    - antwort-text-2: "Ja, im Rahmen des Bildungs- und Erziehungsauftrags"
+      information: "Richtig! Nach § 83 Abs. 2 SchulG kann die Schülervertretung im Rahmen des Bildungs- und Erziehungsauftrags selbst gestellte Aufgaben in eigener Verantwortung durchführen. Das garantiert die Eigenständigkeit der SV."
+      richtig: true
+    - antwort-text-3: "Nur nach Abstimmung mit der Schulkonferenz"
+      information: "Eine generelle Abstimmungspflicht besteht nicht. Die SV arbeitet eigenverantwortlich."
+      richtig: false
+    - antwort-text-4: "Nein, sie müssen sich immer an die Schulleitung wenden"
+      information: "Das ist zu einschränkend. Die SV hat ausdrücklich eigenverantwortliche Handlungsmöglichkeiten."
+      richtig: false
+  tip: "Die SV ist kein 'Befehlsempfänger' der Schulleitung, sondern ihr eigener Chef."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was bedeutet Autonomie?"
+      erklaerung: "Selbstständigkeit. Dass man selbst entscheiden kann, was man tut, ohne ständig fragen zu müssen."
+
+frage-31:
+  frage-text: "Kann ein Schülervertreter gegen seinen Willen abgewählt werden?"
+  antworten:
+    - antwort-text-1: "Nein, das ist nicht möglich"
+      information: "Das stimmt nicht. Es gibt die Möglichkeit der Abwahl, um die demokratische Kontrolle zu gewährleisten."
+      richtig: false
+    - antwort-text-2: "Ja, aber nur durch die Schulleitung"
+      information: "Die Schulleitung hat kein Abwahlrecht. Das würde die Unabhängigkeit der SV gefährden."
+      richtig: false
+    - antwort-text-3: "Ja, durch die Schüler, die ihn gewählt haben"
+      information: "Korrekt! Nach § 83 Abs. 3 SchulG können Schülervertreter nur durch die Schüler abgewählt werden, die sie gewählt haben. Für die Abwahl ist eine besondere Beschlussfähigkeit erforderlich (mindestens die Hälfte der stimmberechtigten Mitglieder)."
+      richtig: true
+    - antwort-text-4: "Ja, durch die Schulkonferenz"
+      information: "Die Schulkonferenz ist kein Wahlorgan für Schülervertreter und kann diese daher auch nicht abwählen."
+      richtig: false
+  tip: "Nur wer dich gewählt hat, kann dich auch wieder aus dem Amt herausholen."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist eine Abwahl?"
+      erklaerung: "Wenn die Wähler entscheiden, dass ein Vertreter sein Amt sofort verlassen muss, noch bevor das Schuljahr vorbei ist."
+
+frage-32:
+  frage-text: "Wann lädt die Schulleitung die GSV zu einem gemeinsamen Gespräch ein?"
+  antworten:
+    - antwort-text-1: "Einmal pro Monat"
+      information: "Eine monatliche Verpflichtung gibt es nicht. Die Regelung bezieht sich auf den Beginn der Amtszeit."
+      richtig: false
+    - antwort-text-2: "Spätestens zwei Wochen nach der Neubildung der GSV"
+      information: "Richtig! Nach § 85 Abs. 5 SchulG lädt die Schulleitung die GSV spätestens zwei Wochen nach ihrer Neubildung zu einem gemeinsamen Gespräch über alle wichtigen schulischen Angelegenheiten ein. Das fördert die Zusammenarbeit."
+      richtig: true
+    - antwort-text-3: "Zu Beginn jedes Halbjahres"
+      information: "Das ist nicht die gesetzliche Regelung. Der Zeitpunkt ist an die Neubildung der GSV gekoppelt."
+      richtig: false
+    - antwort-text-4: "Nur auf Anfrage der GSV"
+      information: "Es ist eine aktive Verpflichtung der Schulleitung, nicht nur auf Anfrage."
+      richtig: false
+  tip: "Das erste Treffen zwischen SV und Chef (Schulleitung) muss ganz schnell am Anfang passieren."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist eine Neubildung?"
+      erklaerung: "Der Moment direkt nach den Wahlen, wenn die neuen Schülervertreter ihre Arbeit zum ersten Mal aufnehmen."
+
+frage-33:
+  frage-text: "Können Teilschülervertretungen gebildet werden?"
+  antworten:
+    - antwort-text-1: "Nein, das ist nicht vorgesehen"
+      information: "Das stimmt nicht. Das Schulgesetz sieht diese Möglichkeit ausdrücklich vor."
+      richtig: false
+    - antwort-text-2: "Ja, wenn für organisatorische Bereiche Teilkonferenzen eingerichtet wurden"
+      information: "Korrekt! Nach § 85 Abs. 8 SchulG kann die GSV entsprechende Teilschülervertretungen bilden, wenn für einzelne organisatorische Bereiche Teilkonferenzen eingerichtet wurden. Das ermöglicht Vertretung in größeren Schulen mit mehreren Standorten oder Abteilungen."
+      richtig: true
+    - antwort-text-3: "Nur an Oberstufenzentren"
+      information: "Die Regelung gilt nicht nur für OSZ, sondern für alle Schulen mit entsprechender Struktur."
+      richtig: false
+    - antwort-text-4: "Nur mit Genehmigung der Schulaufsicht"
+      information: "Es ist eine schulinterne Entscheidung, keine Aufsichtssache."
+      richtig: false
+  tip: "Große Schulen mit mehreren Gebäuden brauchen oft Unter-Teams für jeden Standort."
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist eine Teilschülervertretung?"
+      erklaerung: "Eine kleinere Gruppe von Vertretern, die sich nur um einen bestimmten Teil der Schule kümmert (z.B. nur die Filiale in der Nebenstraße)."
+
+frage-34:
+  frage-text: "Wer ist die Interessenvertretung der Berliner Schüler auf Landesebene?"
+  antworten:
+    - antwort-text-1: "Die Senatsverwaltung"
+      information: "Die Senatsverwaltung ist die Schulaufsichtsbehörde, nicht die Interessenvertretung der Schüler."
+      richtig: false
+    - antwort-text-2: "Der Landesschülerausschuss (LSA)"
+      information: "Richtig! Der Landesschülerausschuss (LSA) ist die Interessenvertretung der Schüler auf Landesebene und wird von den Bezirksschülerausschüssen gewählt. Er vertritt die Schülerinteressen gegenüber Politik und Verwaltung."
+      richtig: true
+    - antwort-text-3: "Die Schulleiter der Schulen"
+      information: "Schulleiter vertreten die Schulen, nicht die Schülerinteressen."
+      richtig: false
+    - antwort-text-4: "Der Landeselternausschuss"
+      information: "Der Landeselternausschuss vertritt die Eltern, nicht die Schüler."
+      richtig: false
+  tip: 'Wofür könnte "L" stehen?'
+  erklaerung-woerter:
+    wort-1:
+      wort-frage: "Was ist eine Interessenvertretung?"
+      erklaerung: "Eine Gruppe von Menschen, die sich dafür einsetzt, dass die Wünsche und Rechte einer anderen Gruppe (hier: Schüler) erfüllt werden."
