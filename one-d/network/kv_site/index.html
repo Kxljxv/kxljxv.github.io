@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>KV Violin Plot - X-Koordinaten</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        #chartdiv {
+            width: 100%;
+            height: 800px;
+            background-color: #1a1a1a;
+        }
+        h1 {
+            text-align: center;
+            font-weight: 300;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gewichtete Violin-Darstellung der X-Koordinaten pro Kreisverband</h1>
+    <div id="chartdiv"></div>
+
+    <!-- Resources -->
+    <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+
+    <script>
+        // Data will be loaded from external file for better performance if possible, 
+        // but here we embed it as requested for a "static" site.
+        async function init() {
+            try {
+                const response = await fetch('../kv_centroids.json');
+                const rawData = await response.json();
+                
+                // Transform data for amCharts and calculate weighted averages
+                const sourceData = {};
+                const kvAverages = [];
+
+                for (const kv in rawData) {
+                    let sumXW = 0;
+                    let sumW = 0;
+                    
+                    const persons = rawData[kv].persons.map(p => {
+                        const w = Math.sqrt(p.weight_sum);
+                        sumXW += p.centroid[0] * w;
+                        sumW += w;
+                        return {
+                            x: p.centroid[0],
+                            w: w
+                        };
+                    });
+
+                    sourceData[kv] = persons;
+                    const avgX = sumW > 0 ? sumXW / sumW : 0;
+                    kvAverages.push({ kv: kv, avgX: avgX });
+                }
+
+                // Sort KVs: highest average X first (top)
+                kvAverages.sort((a, b) => b.avgX - a.avgX);
+                const sortedKVs = kvAverages.map(item => item.kv);
+
+                renderChart(sourceData, sortedKVs);
+            } catch (e) {
+                console.error("Fehler beim Laden der Daten:", e);
+                document.body.innerHTML += "<p style='color:red; text-align:center;'>Fehler beim Laden der kv_centroids.json. Stelle sicher, dass die Datei existiert.</p>";
+            }
+        }
+
+        function renderChart(sourceData, sortedKVs) {
+            am5.ready(function() {
+                var root = am5.Root.new("chartdiv");
+
+                root.setThemes([
+                    am5themes_Animated.new(root)
+                ]);
+
+                var chart = root.container.children.push(
+                    am5xy.XYChart.new(root, {
+                        panX: true,
+                        panY: true,
+                        wheelX: "panX",
+                        wheelY: "zoomX",
+                        layout: root.verticalLayout
+                    })
+                );
+
+                // Increment size for X axis ranges
+                const incrementSize = 0.05;
+
+                function calculateData(points, step) {
+                    const increments = {};
+                    points.forEach(p => {
+                        const range = Math.floor(p.x / step) * step;
+                        const rangeLabel = range.toFixed(2);
+                        if (!increments[rangeLabel]) increments[rangeLabel] = 0;
+                        increments[rangeLabel] += p.w;
+                    });
+
+                    // Convert to array and ensure we have a label
+                    return Object.keys(increments).map(label => ({
+                        range: label,
+                        low: increments[label] / -2,
+                        high: increments[label] / 2,
+                        count: increments[label]
+                    })).sort((a, b) => parseFloat(a.range) - parseFloat(b.range));
+                }
+
+                // Create common X-Axis
+                var xAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, {
+                    categoryField: "range",
+                    renderer: am5xy.AxisRendererX.new(root, {
+                        minGridDistance: 30
+                    }),
+                    tooltip: am5.Tooltip.new(root, {})
+                }));
+
+                var xRenderer = xAxis.get("renderer");
+                xRenderer.labels.template.setAll({
+                    rotation: -45,
+                    location: 0.5,
+                    multiLocation: 0.5,
+                    centerX: am5.p100,
+                    centerY: am5.p50,
+                    fill: am5.color(0xcccccc)
+                });
+
+                // Calculate all possible ranges for the X-axis
+                let allPoints = [];
+                for (let kv in sourceData) {
+                    allPoints = allPoints.concat(sourceData[kv]);
+                }
+                xAxis.data.setAll(calculateData(allPoints, incrementSize));
+
+                // Stack Y-axes
+                chart.leftAxesContainer.setAll({
+                    layout: root.verticalLayout
+                });
+
+                // Calculate all series data first to find global max
+                const seriesData = {};
+                let globalMax = 0;
+                sortedKVs.forEach(category => {
+                    const data = calculateData(sourceData[category], incrementSize);
+                    seriesData[category] = data;
+                    data.forEach(d => {
+                        if (d.high > globalMax) globalMax = d.high;
+                    });
+                });
+
+                // Create ColorSet for more variety
+                var colorSet = am5.ColorSet.new(root, {
+                    step: 2,
+                    colors: [
+                        am5.color(0xff6666), am5.color(0x66ff66), am5.color(0x6666ff),
+                        am5.color(0xffff66), am5.color(0xff66ff), am5.color(0x66ffff),
+                        am5.color(0xffa500), am5.color(0x800080), am5.color(0x008000),
+                        am5.color(0xff00ff), am5.color(0x00ffff), am5.color(0xffff00),
+                        am5.color(0x00ff00), am5.color(0xff0000), am5.color(0x0000ff),
+                        am5.color(0x800000), am5.color(0x008080), am5.color(0x808000),
+                        am5.color(0xff7f50), am5.color(0x6495ed), am5.color(0xda70d6),
+                        am5.color(0x32cd32), am5.color(0xba55d3), am5.color(0x40e0d0)
+                    ]
+                });
+
+                // Create series for each KV in sorted order
+                sortedKVs.forEach((category, index) => {
+                    createSeries(category, seriesData[category], globalMax, colorSet.getIndex(index));
+                });
+
+                function createSeries(category, data, yMax, color) {
+                    var yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
+                        maxDeviation: 0,
+                        strictMinMax: true,
+                        min: -yMax,
+                        max: yMax,
+                        renderer: am5xy.AxisRendererY.new(root, {})
+                    }));
+
+                    var yRenderer = yAxis.get("renderer");
+                    yRenderer.labels.template.setAll({ forceHidden: true });
+                    yRenderer.grid.template.setAll({ visible: false });
+
+                    var series = chart.series.push(am5xy.SmoothedXLineSeries.new(root, {
+                        xAxis: xAxis,
+                        yAxis: yAxis,
+                        valueYField: "high",
+                        openValueYField: "low",
+                        categoryXField: "range",
+                        fill: color,
+                        stroke: color,
+                        tooltip: am5.Tooltip.new(root, {
+                            pointerOrientation: "horizontal",
+                            labelText: "{categoryX}: [bold]{valueY}[/]"
+                        })
+                    }));
+
+                    series.fills.template.setAll({
+                        fillOpacity: 0.7,
+                        visible: true
+                    });
+
+                    series.data.setAll(data);
+
+                    // Add label to Y-axis
+                    yAxis.children.unshift(am5.Label.new(root, {
+                        rotation: 0,
+                        text: category,
+                        y: am5.p50,
+                        centerX: am5.p0,
+                        x: am5.p0,
+                        dx: 5,
+                        fill: am5.color(0xffffff),
+                        fontSize: "0.8em",
+                        background: am5.RoundedRectangle.new(root, {
+                            fill: color,
+                            fillOpacity: 0.8
+                        })
+                    }));
+                }
+
+                var cursor = chart.set("cursor", am5xy.XYCursor.new(root, {
+                    xAxis: xAxis
+                }));
+                cursor.lineY.set("visible", false);
+
+                chart.set("scrollbarX", am5.Scrollbar.new(root, {
+                    orientation: "horizontal"
+                }));
+
+                chart.appear(1000, 100);
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
