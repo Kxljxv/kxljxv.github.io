@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Barnes-Hut Gravitations-Visualisierung</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #050510; color: #eee; font-family: 'Segoe UI', sans-serif; display: flex; }
+        #sidebar { width: 300px; background: #1a1a2e; border-right: 1px solid #333; padding: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 10; height: 100vh; }
+        #main { flex-grow: 1; position: relative; cursor: crosshair; }
+        canvas { display: block; width: 100%; height: 100%; }
+        
+        h3 { margin: 0 0 10px 0; color: #4ecca3; }
+        .control-group { background: #16213e; padding: 10px; border-radius: 6px; border-left: 4px solid #4ecca3; }
+        label { display: block; margin-bottom: 5px; font-size: 12px; }
+        input[type="range"] { width: 100%; }
+        button { cursor: pointer; padding: 8px; border: none; border-radius: 4px; background: #0f3460; color: white; width: 100%; margin-top: 5px; }
+        button:hover { background: #1a1a2e; border: 1px solid #4ecca3; }
+        
+        .info { font-size: 11px; color: #888; margin-top: auto; line-height: 1.4; }
+        .stat { font-family: monospace; font-size: 12px; color: #4ecca3; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <h3>Gravity Barnes-Hut</h3>
+    
+    <div class="control-group">
+        <label>Interaktion:</label>
+        <div class="info" style="margin-bottom: 5px">Klicke/Ziehe um Masse hinzuzufügen</div>
+    </div>
+
+    <div class="control-group">
+        <label>Parameter:</label>
+        <label>Grid Größe: <span id="val-grid">40</span>px</label>
+        <input type="range" min="2" max="100" value="40" oninput="updateParam('grid', this.value)">
+
+        <label>Masse (Pinsel): <span id="val-weight">10</span></label>
+        <input type="range" min="1" max="50" value="10" oninput="updateParam('weight', this.value)">
+        
+        <label>Theta (Genauigkeit): <span id="val-theta">0.5</span></label>
+        <input type="range" min="0" max="2" step="0.1" value="0.5" oninput="updateParam('theta', this.value)">
+        
+        <label>Gravitationskonstante (G): <span id="val-force">1000</span></label>
+        <input type="range" min="100" max="5000" step="100" value="1000" oninput="updateParam('force', this.value)">
+    </div>
+
+    <div class="control-group">
+        <label>Visualisierung:</label>
+        <label><input type="checkbox" id="chk-tree" checked onchange="draw()"> Quadtree anzeigen</label>
+        <label><input type="checkbox" id="chk-com" checked onchange="draw()"> Center of Mass (CoM)</label>
+        <label><input type="radio" name="vis-mode" value="vector" checked onchange="draw()"> Kraftfeld (Anziehung)</label>
+        <label><input type="radio" name="vis-mode" value="heatmap" onchange="draw()"> Potential-Karte</label>
+    </div>
+
+    <div class="control-group">
+        <button onclick="clearParticles()">Universum leeren</button>
+    </div>
+
+    <div id="stats" class="stat">
+        Massen: 0<br>
+        Tree Nodes: 0<br>
+        Force Calc: 0 ops
+    </div>
+
+    <div class="info">
+        <b>Gravitations-Simulation</b><br>
+        Berechnet Anziehungskräfte in O(n log n).<br>
+        Blaue Quadrate: Quadtree Zellen.<br>
+        Grüne Punkte: Massenschwerpunkte.<br>
+        Pfeile: Zeigen zum Zentrum der Masse.
+    </div>
+</div>
+
+<div id="main">
+    <canvas id="canvas"></canvas>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    // State
+    let params = {
+        grid: 40,
+        weight: 10,
+        theta: 0.5,
+        forceConst: 1000
+    };
+    
+    let particles = []; 
+    let isMouseDown = false;
+    let rootNode = null;
+    let totalNodes = 0;
+    let forceOps = 0;
+
+    class QuadNode {
+        constructor(x, y, w, h) {
+            this.bounds = { x, y, w, h };
+            this.children = null;
+            this.body = null;
+            this.mass = 0;
+            this.com = { x: 0, y: 0 };
+        }
+
+        isLeaf() { return this.children === null; }
+
+        insert(p) {
+            if (this.mass === 0) {
+                this.body = p;
+                this.mass = p.weight;
+                this.com.x = p.x;
+                this.com.y = p.y;
+                return;
+            }
+            if (this.isLeaf()) {
+                if (Math.abs(this.body.x - p.x) < 0.01 && Math.abs(this.body.y - p.y) < 0.01) {
+                    this.body.weight += p.weight;
+                    this.mass += p.weight;
+                    return;
+                }
+                this.subdivide();
+                this.insertToChild(this.body);
+                this.body = null;
+            }
+            this.insertToChild(p);
+            this.updateCoM(p);
+        }
+
+        subdivide() {
+            const { x, y, w, h } = this.bounds;
+            const hw = w / 2;
+            const hh = h / 2;
+            this.children = [
+                new QuadNode(x, y, hw, hh),
+                new QuadNode(x + hw, y, hw, hh),
+                new QuadNode(x, y + hh, hw, hh),
+                new QuadNode(x + hw, y + hh, hw, hh)
+            ];
+            totalNodes += 4;
+        }
+
+        insertToChild(p) {
+            const { x, y, w, h } = this.bounds;
+            const hw = w / 2;
+            const hh = h / 2;
+            let idx = 0;
+            if (p.x >= x + hw) idx += 1;
+            if (p.y >= y + hh) idx += 2;
+            this.children[idx].insert(p);
+        }
+
+        updateCoM(p) {
+            const newMass = this.mass + p.weight;
+            this.com.x = (this.com.x * this.mass + p.x * p.weight) / newMass;
+            this.com.y = (this.com.y * this.mass + p.y * p.weight) / newMass;
+            this.mass = newMass;
+        }
+    }
+
+    function buildTree() {
+        rootNode = new QuadNode(0, 0, width, height);
+        totalNodes = 1;
+        particles.forEach(p => {
+            if (p.x >= 0 && p.x < width && p.y >= 0 && p.y < height) rootNode.insert(p);
+        });
+    }
+
+    function calculateForce(node, target) {
+        if (!node || node.mass === 0) return { fx: 0, fy: 0 };
+        const dx = node.com.x - target.x;
+        const dy = node.com.y - target.y;
+        const distSq = dx*dx + dy*dy;
+        const dist = Math.sqrt(distSq);
+        const s = Math.max(node.bounds.w, node.bounds.h);
+
+        if ((s / dist < params.theta) || node.isLeaf()) {
+            forceOps++;
+            if (dist < 10) return { fx: 0, fy: 0 };
+            
+            // Gravitation: F = G * (m1 * m2) / r^2
+            // Anziehung -> Vektor zeigt ZUM Knoten (dx, dy)
+            const force = params.forceConst * (target.weight * node.mass) / distSq;
+            
+            return {
+                fx: force * (dx / dist),
+                fy: force * (dy / dist)
+            };
+        } else {
+            let totalFx = 0;
+            let totalFy = 0;
+            for (let child of node.children) {
+                const f = calculateForce(child, target);
+                totalFx += f.fx;
+                totalFy += f.fy;
+            }
+            return { fx: totalFx, fy: totalFy };
+        }
+    }
+
+    function resize() {
+        width = canvas.width = document.getElementById('main').clientWidth;
+        height = canvas.height = document.getElementById('main').clientHeight;
+        if (particles.length > 0) buildTree();
+        draw();
+    }
+    window.addEventListener('resize', resize);
+
+    function updateParam(key, val) {
+        params[key] = parseFloat(val);
+        document.getElementById('val-'+key).innerText = val;
+        draw();
+    }
+
+    function clearParticles() {
+        particles = [];
+        rootNode = null;
+        draw();
+    }
+
+    canvas.addEventListener('mousedown', e => {
+        isMouseDown = true;
+        handleMouse(e);
+    });
+    canvas.addEventListener('mousemove', e => { if (isMouseDown) handleMouse(e); });
+    window.addEventListener('mouseup', () => isMouseDown = false);
+
+    function handleMouse(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        particles.push({
+            x: x + (Math.random()-0.5)*20, 
+            y: y + (Math.random()-0.5)*20, 
+            weight: params.weight 
+        });
+        buildTree();
+        draw();
+    }
+
+    function draw() {
+        ctx.fillStyle = '#050510';
+        ctx.fillRect(0, 0, width, height);
+
+        if (!rootNode && particles.length > 0) buildTree();
+        const visMode = document.querySelector('input[name="vis-mode"]:checked').value;
+
+        if (rootNode && visMode === 'heatmap') drawHeatmap();
+
+        particles.forEach(p => {
+            const r = Math.sqrt(p.weight);
+            ctx.fillStyle = visMode === 'heatmap' ? 'rgba(255, 255, 255, 0.4)' : `rgba(100, 200, 255, ${0.3 + p.weight/100})`;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+            ctx.fill();
+        });
+
+        if (rootNode && document.getElementById('chk-tree').checked) drawNode(rootNode);
+
+        forceOps = 0;
+        if (rootNode && visMode === 'vector') {
+            const step = params.grid;
+            for (let y = step/2; y < height; y += step) {
+                for (let x = step/2; x < width; x += step) {
+                    const f = calculateForce(rootNode, { x, y, weight: 1 });
+                    drawVector(x, y, f.fx, f.fy, step * 0.8);
+                }
+            }
+        }
+        
+        document.getElementById('stats').innerHTML = `
+            Massen: ${particles.length}<br>
+            Tree Nodes: ${totalNodes}<br>
+            Force Ops: ${forceOps} (${visMode})
+        `;
+    }
+
+    function drawHeatmap() {
+        const step = params.grid;
+        for (let y = 0; y < height; y += step) {
+            for (let x = 0; x < width; x += step) {
+                const f = calculateForce(rootNode, { x, y, weight: 1 });
+                const forceMag = Math.sqrt(f.fx * f.fx + f.fy * f.fy);
+                const intensity = Math.min(255, Math.log(forceMag + 1) * 20);
+                ctx.fillStyle = `rgb(${intensity/4}, ${intensity/2}, ${intensity})`;
+                ctx.fillRect(x, y, step, step);
+            }
+        }
+    }
+
+    function drawNode(node) {
+        if (!node) return;
+        ctx.strokeStyle = 'rgba(78, 204, 163, 0.15)';
+        ctx.strokeRect(node.bounds.x, node.bounds.y, node.bounds.w, node.bounds.h);
+        if (document.getElementById('chk-com').checked && node.mass > 0) {
+            const size = Math.min(4, Math.log(node.mass + 1));
+            ctx.fillStyle = 'rgba(0, 255, 100, 0.5)';
+            ctx.fillRect(node.com.x - size/2, node.com.y - size/2, size, size);
+        }
+        if (node.children) node.children.forEach(child => drawNode(child));
+    }
+
+    function drawVector(x, y, fx, fy, maxLength = 40) {
+        const len = Math.sqrt(fx*fx + fy*fy);
+        if (len < 0.1) return;
+        const scale = Math.min(maxLength, Math.log(len + 1) * 8); 
+        const normX = fx / len;
+        const normY = fy / len;
+        const endX = x + normX * scale;
+        const endY = y + normY * scale;
+        const intensity = Math.min(255, len * 5);
+        ctx.strokeStyle = `rgb(100, ${255-intensity}, ${intensity})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+        const angle = Math.atan2(normY, normX);
+        const headLen = scale * 0.3;
+        ctx.beginPath();
+        ctx.moveTo(endX, endY);
+        ctx.lineTo(endX - headLen * Math.cos(angle - Math.PI/6), endY - headLen * Math.sin(angle - Math.PI/6));
+        ctx.lineTo(endX - headLen * Math.cos(angle + Math.PI/6), endY - headLen * Math.sin(angle + Math.PI/6));
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.fill();
+    }
+
+    setTimeout(resize, 100);
+</script>
+</body>
+</html>
