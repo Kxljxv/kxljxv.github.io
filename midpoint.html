@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Geometrie Master: 8 Mittelpunkte</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; display: flex; background: #111; color: #eee; margin: 0; height: 100vh; overflow: hidden; }
+        #sidebar { width: 300px; background: #222; border-right: 1px solid #444; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; }
+        #main { flex-grow: 1; position: relative; background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%); }
+        canvas { width: 100%; height: 100%; cursor: crosshair; }
+        .point-control { background: #333; padding: 10px; margin-bottom: 8px; border-radius: 6px; border-left: 4px solid #00d4ff; }
+        .legend { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 10px; border: 1px solid #555; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .legend-item { display: flex; align-items: center; font-size: 11px; cursor: default; }
+        .dot { width: 12px; height: 12px; border-radius: 2px; margin-right: 8px; }
+        button { cursor: pointer; padding: 10px; border: none; border-radius: 5px; background: #007bff; color: white; font-weight: bold; margin-bottom: 15px; }
+        button:hover { background: #0056b3; }
+        .info { font-size: 12px; color: #888; margin-top: auto; }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <h3>Mittelpunkt Labor</h3>
+    <button onclick="clearPoints()">Leinwand leeren</button>
+    <div id="controls-container"></div>
+    <div class="info">Klicke zum Hinzufügen.<br>Ziehe Punkte zum Bewegen.</div>
+</div>
+
+<div id="main">
+    <canvas id="canvas"></canvas>
+    
+    <div class="legend" id="legend">
+        <div class="legend-item"><span class="dot" style="background: #ff4444;"></span> Arithmetisch</div>
+        <div class="legend-item"><span class="dot" style="background: #4444ff;"></span> Geo. Median</div>
+        <div class="legend-item"><span class="dot" style="background: #00ff00;"></span> Bounding Center</div>
+        <div class="legend-item"><span class="dot" style="background: #ffaa00;"></span> Mid-Range</div>
+        <div class="legend-item"><span class="dot" style="background: #ff00ff;"></span> Harmonisch</div>
+        <div class="legend-item"><span class="dot" style="background: #00ffff;"></span> Trimmed Mean</div>
+        <div class="legend-item"><span class="dot" style="background: #ffffff;"></span> Quadratisch (RMS)</div>
+        <div class="legend-item"><span class="dot" style="background: #ffff00;"></span> Minimum-Sum-Sq</div>
+        <div class="legend-item"><span class="dot" style="background: #ff8800;"></span> Soft-Trim (Dyn)</div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('controls-container');
+    let points = [];
+    let draggingPoint = null;
+
+    function resize() {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+        draw();
+    }
+    window.onresize = resize;
+    setTimeout(resize, 100);
+
+    canvas.addEventListener('mousedown', e => {
+        const x = e.offsetX, y = e.offsetY;
+        draggingPoint = points.find(p => Math.hypot(p.x - x, p.y - y) < p.weight/2 + 10);
+        if (!draggingPoint) {
+            const p = { x, y, weight: 20, id: Date.now() };
+            points.push(p);
+            addControl(p);
+            draw();
+        }
+    });
+
+    window.addEventListener('mousemove', e => {
+        if (draggingPoint) {
+            draggingPoint.x = e.offsetX; draggingPoint.y = e.offsetY;
+            draw();
+        }
+    });
+    window.addEventListener('mouseup', () => draggingPoint = null);
+
+    function addControl(p) {
+        const div = document.createElement('div');
+        div.className = 'point-control';
+        div.id = 'ctrl-'+p.id;
+        div.innerHTML = `<label>Gewicht: <b id="val-${p.id}">${p.weight}</b></label><br><input type="range" min="-100" max="100" value="${p.weight}" oninput="updateW(${p.id}, this.value)">`;
+        container.appendChild(div);
+    }
+    function updateW(id, val) { 
+        const p = points.find(p => p.id === id); 
+        if(p) {
+            p.weight = parseInt(val); 
+            document.getElementById('val-'+id).innerText = val;
+            draw(); 
+        }
+    }
+    function clearPoints() { points = []; container.innerHTML = ''; draw(); }
+
+    // --- DIE 8 BERECHNUNGEN ---
+
+    function getArith(pts) {
+        let x=0, y=0, w=0;
+        pts.forEach(p => { x += p.x*p.weight; y += p.y*p.weight; w += p.weight; });
+        if (Math.abs(w) < 0.001) return { x: NaN, y: NaN };
+        return { x: x/w, y: y/w };
+    }
+
+    function getGeoMedians(pts) {
+        if (pts.length === 0) return [];
+        
+        let candidates = [];
+        // Wir starten den Algorithmus von jedem existierenden Punkt aus,
+        // um verschiedene lokale Minima in der nicht-konvexen Landschaft zu finden.
+        pts.forEach(startP => {
+            let m = { x: startP.x, y: startP.y };
+            for(let i=0; i<60; i++) {
+                let nX=0, nY=0, d=0;
+                pts.forEach(p => {
+                    let dist = Math.hypot(p.x-m.x, p.y-m.y);
+                    if (dist < 0.1) return;
+                    let wf = p.weight / dist;
+                    nX += p.x * wf; nY += p.y * wf; d += wf;
+                });
+                if (Math.abs(d) > 0.001) {
+                    let nextM = { x: nX/d, y: nY/d };
+                    if (Math.hypot(nextM.x - m.x, nextM.y - m.y) < 0.01) break; // Konvergiert
+                    m = nextM;
+                } else break;
+            }
+            if (!isNaN(m.x)) candidates.push(m);
+        });
+
+        // Deduplizierung: Punkte, die sehr nah beieinander liegen, zusammenfassen
+        let uniqueMedians = [];
+        candidates.forEach(c => {
+            if (!uniqueMedians.some(u => Math.hypot(u.x - c.x, u.y - c.y) < 1)) {
+                uniqueMedians.push(c);
+            }
+        });
+        return uniqueMedians;
+    }
+
+    function getMidRange(pts) {
+        let xS = pts.map(p => p.x), yS = pts.map(p => p.y);
+        return { x: (Math.min(...xS) + Math.max(...xS))/2, y: (Math.min(...yS) + Math.max(...yS))/2 };
+    }
+
+    function getHarmonic(pts) {
+        let dX=0, dY=0, w=0;
+        pts.forEach(p => { 
+            if (p.x !== 0 && p.y !== 0) {
+                dX += p.weight/p.x; dY += p.weight/p.y; w += p.weight; 
+            }
+        });
+        if (Math.abs(dX) < 0.0001 || Math.abs(dY) < 0.0001) return { x: NaN, y: NaN };
+        return { x: w/dX, y: w/dY };
+    }
+
+    function getRMS(pts) {
+        let x2=0, y2=0, w=0;
+        pts.forEach(p => { x2 += p.x*p.x*p.weight; y2 += p.y*p.y*p.weight; w += p.weight; });
+        if (w === 0 || x2/w < 0 || y2/w < 0) return { x: NaN, y: NaN };
+        return { x: Math.sqrt(x2/w), y: Math.sqrt(y2/w) };
+    }
+
+    function getTrimmed(pts) {
+        if(pts.length < 4) return getArith(pts);
+        let center = getArith(pts);
+        if (isNaN(center.x)) center = { x: pts[0].x, y: pts[0].y };
+        let sorted = [...pts].sort((a,b) => Math.hypot(a.x-center.x, a.y-center.y) - Math.hypot(b.x-center.x, b.y-center.y));
+        return getArith(sorted.slice(0, Math.floor(pts.length * 0.75))); 
+    }
+
+    function getSoftTrimmed(pts) {
+        if(pts.length < 2) return getArith(pts);
+        let center = getArith(pts);
+        if (isNaN(center.x)) center = { x: pts[0].x, y: pts[0].y };
+        
+        // 1. Distanzen berechnen
+        let dists = pts.map(p => Math.hypot(p.x - center.x, p.y - center.y));
+        // 2. Eine "charakteristische Distanz" finden (Median der Distanzen)
+        let sortedDists = [...dists].sort((a,b) => a-b);
+        let dMed = sortedDists[Math.floor(dists.length/2)] || 10;
+        if (dMed < 1) dMed = 1;
+
+        // 3. Gewichte weich abklingen lassen (Gauß-Kurve)
+        let newPts = pts.map((p, i) => {
+            // Punkte, die weiter als dMed entfernt sind, verlieren exponentiell an Gewicht
+            let softWeight = p.weight * Math.exp(-Math.pow(dists[i] / (dMed * 1.5), 2));
+            return { ...p, weight: softWeight };
+        });
+
+        return getArith(newPts);
+    }
+
+    function getBounding(pts) {
+        let xS = pts.map(p => p.x), yS = pts.map(p => p.y);
+        let cx = (Math.min(...xS) + Math.max(...xS))/2, cy = (Math.min(...yS) + Math.max(...yS))/2;
+        let r = Math.max(...pts.map(p => Math.hypot(p.x-cx, p.y-cy)));
+        return { x: cx, y: cy, r: r };
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (points.length === 0) return;
+
+        // Punkte zeichnen
+        points.forEach(p => {
+            const r = Math.max(2, Math.abs(p.weight)/2);
+            ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI*2);
+            ctx.fillStyle = p.weight >= 0 ? 'rgba(0, 212, 255, 0.2)' : 'rgba(255, 68, 68, 0.2)';
+            ctx.fill();
+            ctx.strokeStyle = p.weight >= 0 ? '#00d4ff' : '#ff4444'; 
+            ctx.lineWidth = 2; 
+            ctx.stroke();
+            
+            // Minuszeichen für negative Punkte
+            if (p.weight < 0) {
+                ctx.beginPath();
+                ctx.moveTo(p.x - 5, p.y); ctx.lineTo(p.x + 5, p.y);
+                ctx.stroke();
+            }
+        });
+
+        const b = getBounding(points);
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+        ctx.strokeStyle = 'rgba(0, 255, 0, 0.15)'; ctx.setLineDash([5, 5]); ctx.stroke(); ctx.setLineDash([]);
+
+        // Alle Berechnungen ausführen und zeichnen
+        drawCross(getArith(points), '#ff4444', "Arith");
+        
+        const medians = getGeoMedians(points);
+        medians.forEach((m, i) => {
+            drawCross(m, '#4444ff', medians.length > 1 ? `GeoM ${i+1}` : "GeoM");
+        });
+
+        drawCross({x: b.x, y: b.y}, '#00ff00', "Bound");
+        drawCross(getMidRange(points), '#ffaa00', "MidR");
+        drawCross(getHarmonic(points), '#ff00ff', "Harm");
+        drawCross(getTrimmed(points), '#00ffff', "Trim");
+        drawCross(getSoftTrimmed(points), '#ff8800', "SoftT");
+        drawCross(getRMS(points), '#ffffff', "RMS");
+        
+        // MSS ist mathematisch identisch zu Arith. Mittel
+        const mss = getArith(points);
+        if (!isNaN(mss.x)) drawCross(mss, '#ffff00', "MSS"); 
+    }
+
+    function drawCross(pos, color, label) {
+        if (!pos || isNaN(pos.x) || isNaN(pos.y)) return;
+        ctx.strokeStyle = color; ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(pos.x-15, pos.y); ctx.lineTo(pos.x+15, pos.y);
+        ctx.moveTo(pos.x, pos.y-15); ctx.lineTo(pos.x, pos.y+15);
+        ctx.stroke();
+        
+        ctx.fillStyle = color; ctx.font = '10px Arial';
+        ctx.fillText(label, pos.x + 18, pos.y - 5);
+    }
+</script>
+</body>
+</html>
