@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse-Dashboard: Mittelwert-Dynamik</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-dragdata@2.2.3/dist/chartjs-plugin-dragdata.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 20px; background: #1a1b26; color: #a9b1d6; }
+        .container { max-width: 1100px; margin: auto; background: #24283b; padding: 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .main-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 25px; padding: 20px; background: #414868; border-radius: 8px; }
+        .control-group { display: flex; flex-direction: column; gap: 8px; }
+        h1, h2 { color: #7aa2f7; margin-top: 0; }
+        .result-box { padding: 10px; background: #1a1b26; border-radius: 6px; border-left: 4px solid #ff9e64; font-family: monospace; font-size: 1.1rem; color: #ff9e64; }
+        .grid-response { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 30px; }
+        .response-card { background: #1f2335; padding: 15px; border-radius: 8px; border: 1px solid #414868; text-align: center; }
+        .response-card h3 { font-size: 0.9rem; margin-bottom: 10px; color: #bb9af7; }
+        canvas { background: #1a1b26; border-radius: 4px; }
+        .hint { font-size: 0.9rem; color: #565f89; margin-bottom: 15px; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>1. Daten-Input & Gewichtung</h1>
+    <p class="hint">Bewege die Datenpunkte oben. Beobachte unten den roten Punkt, der deine aktuelle Slider-Position markiert.</p>
+
+    <div class="main-controls">
+        <div class="control-group">
+            <label id="label-es">Top % (Expected Shortfall): <b>10%</b></label>
+            <input type="range" id="param-es" min="1" max="100" value="10">
+            <div class="result-box" id="res-es">-</div>
+        </div>
+        <div class="control-group">
+            <label id="label-exp">Faktor a (Exp. Gewicht): <b>10</b></label>
+            <input type="range" id="param-exp" min="0" max="40" step="1" value="10">
+            <div class="result-box" id="res-exp">-</div>
+        </div>
+        <div class="control-group">
+            <label id="label-power">Exponent m (Power Mean): <b>3</b></label>
+            <input type="range" id="param-power" min="1" max="20" step="1" value="3">
+            <div class="result-box" id="res-power">-</div>
+        </div>
+    </div>
+
+    <canvas id="mainChart" height="100"></canvas>
+
+    <h2>2. Sensitivitäts-Kurven (Slider-Position markiert)</h2>
+    <div class="grid-response">
+        <div class="response-card">
+            <h3>Expected Shortfall</h3>
+            <canvas id="chart-es-res"></canvas>
+        </div>
+        <div class="response-card">
+            <h3>Exp. Gewichtung</h3>
+            <canvas id="chart-exp-res"></canvas>
+        </div>
+        <div class="response-card">
+            <h3>Power Mean</h3>
+            <canvas id="chart-power-res"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    let dataValues = Array.from({length: 40}, (_, i) => Math.pow(i, 1.4) + 10).sort((a,b) => a-b);
+    const labels = dataValues.map((_, i) => `${(i/dataValues.length * 100).toFixed(0)}%`);
+
+    const calcES = (data, p) => {
+        const num = Math.max(1, Math.round(data.length * (p/100)));
+        return data.slice(-num).reduce((a,b) => a+b, 0) / num;
+    };
+    const calcExp = (data, a) => {
+        let sw = 0, ws = 0, n = data.length;
+        data.forEach((v, i) => { 
+            let w = Math.exp(a * (i / n)); 
+            ws += v * w; sw += w; 
+        });
+        return ws / sw;
+    };
+    const calcPower = (data, m) => Math.pow(data.reduce((a, b) => a + Math.pow(Math.abs(b), m), 0) / data.length, 1/m);
+
+    const ctxMain = document.getElementById('mainChart').getContext('2d');
+    const mainChart = new Chart(ctxMain, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{ label: 'Datenwerte', data: dataValues, borderColor: '#7aa2f7', fill: true, pointRadius: 4 }]
+        },
+        options: {
+            plugins: { dragData: { onDragEnd: () => { dataValues.sort((a,b)=>a-b); mainChart.update(); updateAll(); } } },
+            scales: { 
+                y: { min: 0, max: 400, title: { display: true, text: 'Wert', color: '#565f89' } },
+                x: { title: { display: true, text: 'Perzentil-Rang', color: '#565f89' } }
+            }
+        }
+    });
+
+    const createResChart = (id, xTitle) => new Chart(document.getElementById(id), {
+        type: 'line',
+        data: { 
+            labels: [], 
+            datasets: [
+                { data: [], borderColor: '#444b6a', pointRadius: 0, borderWidth: 2, fill: false },
+                { data: [], borderColor: '#f7768e', pointRadius: 6, pointBackgroundColor: '#f7768e', showLine: false } // Der Punkt
+            ] 
+        },
+        options: { 
+            plugins: { legend: { display: false } }, 
+            scales: { 
+                x: { title: { display: true, text: xTitle, font: { size: 10 } } }, 
+                y: { ticks: { font: { size: 9 } } } 
+            } 
+        }
+    });
+
+    const resChartES = createResChart('chart-es-res', 'Top X %');
+    const resChartExp = createResChart('chart-exp-res', 'Faktor a');
+    const resChartPower = createResChart('chart-power-res', 'Exponent m');
+
+    function updateAll() {
+        const pES = parseFloat(document.getElementById('param-es').value);
+        const pExp = parseFloat(document.getElementById('param-exp').value);
+        const pPower = parseFloat(document.getElementById('param-power').value);
+
+        const valES = calcES(dataValues, pES);
+        const valExp = calcExp(dataValues, pExp);
+        const valPower = calcPower(dataValues, pPower);
+
+        document.getElementById('res-es').innerText = valES.toFixed(2);
+        document.getElementById('res-exp').innerText = valExp.toFixed(2);
+        document.getElementById('res-power').innerText = valPower.toFixed(2);
+        
+        document.getElementById('label-es').innerHTML = `Top %: <b>${pES}%</b>`;
+        document.getElementById('label-exp').innerHTML = `Faktor a: <b>${pExp}</b>`;
+        document.getElementById('label-power').innerHTML = `Exponent m: <b>${pPower}</b>`;
+
+        const updateRes = (chart, min, max, currentX, currentY, func) => {
+            let pts = [];
+            let labels = [];
+            for(let x=min; x<=max; x++) {
+                pts.push(func(dataValues, x));
+                labels.push(x);
+            }
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = pts;
+            // Marker-Punkt setzen: Wir suchen den Index, der dem aktuellen Slider entspricht
+            chart.data.datasets[1].data = labels.map(l => l === Math.round(currentX) ? currentY : null);
+            chart.update('none');
+        };
+
+        updateRes(resChartES, 1, 100, pES, valES, calcES);
+        updateRes(resChartExp, 0, 40, pExp, valExp, calcExp);
+        updateRes(resChartPower, 1, 20, pPower, valPower, calcPower);
+    }
+
+    document.querySelectorAll('input').forEach(i => i.addEventListener('input', updateAll));
+    updateAll();
+</script>
+</body>
+</html>
