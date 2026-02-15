@@ -4,142 +4,729 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AGH Wahlkreise Berlin 2026</title>
-  <!-- Maplibre CSS -->
-  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
-  <!-- Tailwind CSS -->
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet">
+  <link href="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.5.0/dist/maplibre-gl-geocoder.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <!-- Poppins Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
+    html, body {
+      height: 100%;
+    }
     body {
-      margin: 0; padding: 0; height: 100%;
-      background: #2d2d2d;
-      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #0f172a 0, #020617 45%, #000 100%);
+      color: #f9fafb;
     }
-    html { height: 100%; }
-    #map { width: 100vw; height: 100vh;}
-    #info-box {
-      position: absolute;
-      top: 20px; right: 20px;
-      min-width: 260px;
-      background: rgba(0, 0, 0, 0.56);
-      backdrop-filter: blur(4px);
-      border-radius: 10px;
-      padding: 16px 14px;
-      color: #fff;
-      z-index: 10;
-      font-size: 1rem;
+    #map {
+      position: fixed;
+      inset: 0;
     }
-    #info-box h2 { margin-top: 0; font-size: 1.15rem; font-weight: 600;}
-    #info-box .feld { font-size: 1.02rem; padding-bottom: 4px;}
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.86);
+      backdrop-filter: blur(14px);
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      box-shadow:
+        0 18px 60px rgba(15, 23, 42, 0.75),
+        0 0 0 1px rgba(15, 23, 42, 0.7);
+    }
+    .pill {
+      border-radius: 999px;
+      background: radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.4), rgba(56, 189, 248, 0.18));
+      border: 1px solid rgba(148, 163, 184, 0.5);
+    }
+    .maplibregl-ctrl-bottom-right,
+    .maplibregl-ctrl-bottom-left {
+      margin: 0.75rem;
+    }
+    .maplibregl-ctrl-logo {
+      display: none;
+    }
+    .maplibregl-ctrl-attrib-inner {
+      font-size: 10px;
+    }
+    .maplibregl-popup-content {
+      font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .maplibre-geocoder {
+      width: 100%;
+      max-width: none;
+      font-family: inherit;
+    }
+    .maplibre-geocoder .maplibre-geocoder-input {
+      width: 100%;
+      border-radius: 999px;
+      padding-left: 2.5rem;
+      padding-right: 0.75rem;
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      background-color: rgba(15, 23, 42, 0.9);
+      color: #e5e7eb;
+      outline: none;
+      transition: border-color 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+    }
+    .maplibre-geocoder .maplibre-geocoder-input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.9);
+      background-color: rgba(15, 23, 42, 0.98);
+    }
+    .maplibre-geocoder .maplibre-geocoder-results {
+      margin-top: 0.4rem;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      border-color: rgba(30, 64, 175, 0.9);
+      background-color: rgba(15, 23, 42, 0.98);
+    }
+    .maplibre-geocoder .maplibre-geocoder-results ul {
+      max-height: 18rem;
+    }
+    .maplibre-geocoder .maplibre-geocoder-result-title {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+    .maplibre-geocoder .maplibre-geocoder-result-subtitle {
+      color: #9ca3af;
+      font-size: 0.75rem;
+    }
+    .maplibre-geocoder .maplibre-geocoder-icon-search {
+      left: 0.95rem;
+      color: #6b7280;
+    }
+    .maplibre-geocoder .maplibre-geocoder-icon-close {
+      right: 0.9rem;
+      color: #6b7280;
+    }
+    .badge {
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .badge-blue {
+      background: rgba(37, 99, 235, 0.16);
+      border: 1px solid rgba(59, 130, 246, 0.6);
+      color: #bfdbfe;
+    }
+    .badge-green {
+      background: rgba(22, 163, 74, 0.16);
+      border: 1px solid rgba(34, 197, 94, 0.6);
+      color: #bbf7d0;
+    }
+    .badge-amber {
+      background: rgba(217, 119, 6, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.65);
+      color: #fed7aa;
+    }
+    .truncate-soft {
+      max-width: 14rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .awk-label-marker {
+      pointer-events: none;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+      text-shadow:
+        -1.5px -1.5px 0 #2563eb,
+         1.5px -1.5px 0 #2563eb,
+        -1.5px  1.5px 0 #2563eb,
+         1.5px  1.5px 0 #2563eb,
+         0 0 8px rgba(37, 99, 235, 0.8);
+    }
   </style>
 </head>
-<body>
+<body class="antialiased">
   <div id="map"></div>
-  <div id="info-box">
-    <h2 id="district-title">Wähle einen Wahlkreis</h2>
-    <div id="district-info">
-      <span class="feld">Nummer (AWK): –</span><br>
-      <span class="feld">Großregion (AWK2): –</span><br>
-      <span class="feld">Bezirk (BEZ): –</span>
+
+  <header class="pointer-events-none fixed inset-x-0 top-0 z-20 flex justify-center px-4 pt-4 md:px-6 md:pt-5">
+    <div class="pointer-events-auto glass-panel w-full max-w-5xl px-4 py-3 md:px-6 md:py-4">
+      <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div class="flex items-start gap-3">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+          </div>
+        </div>
+        <div class="mt-2 flex w-full flex-col gap-2 md:mt-0 md:w-auto md:flex-row md:items-center">
+          <div class="relative w-full min-w-[14rem] md:w-80">
+            <div id="geocoder-container"></div>
+          </div>
+          <div class="flex flex-row items-center gap-2">
+            <button
+              id="basemap-btn"
+              class="inline-flex items-center justify-center gap-2 rounded-full border border-indigo-300/80 bg-indigo-500/90 px-3 py-2 text-xs font-medium text-white shadow-md shadow-sky-500/20 transition hover:bg-slate-800 active:scale-[0.98] md:text-sm"
+              type="button"
+            >
+              <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-indigo-700/80 text-[0.7rem] font-semibold">
+                H
+              </span>
+              Hybrid
+            </button>
+            <button
+              id="locate-btn"
+              class="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-400/70 bg-emerald-500/90 px-4 py-2 text-xs font-medium text-emerald-50 shadow-md shadow-emerald-500/30 transition hover:bg-emerald-400 active:scale-[0.98] md:text-sm"
+              type="button"
+            >
+              <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-700/80 text-[0.7rem] font-semibold">
+                ●
+              </span>
+              Mein Standort
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </header>
+
+  <aside class="pointer-events-none fixed bottom-0 left-0 right-0 z-20 flex justify-center px-4 pb-4 md:left-auto md:right-4 md:top-auto md:w-auto md:justify-end md:px-0">
+    <div class="pointer-events-auto glass-panel w-full max-w-md px-4 py-4 md:w-80 md:px-5 md:py-5">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 id="info-title" class="text-sm font-semibold tracking-tight text-slate-50 md:text-base">
+              Wähle einen Wahlkreis
+            </h2>
+            <span id="info-origin-badge" class="badge badge-amber hidden">
+              Quelle
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 space-y-1.5 text-xs text-slate-200 md:text-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Nummer (AWK)</span>
+          <span id="info-awk" class="font-medium text-slate-50">–</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Großregion (AWK2)</span>
+          <span id="info-awk2" class="font-medium text-slate-50">–</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Bezirk (BEZ)</span>
+          <span id="info-bez" class="font-medium text-slate-50">–</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Ort / Adresse</span>
+          <span id="info-location" class="truncate-soft text-right font-medium text-slate-50">–</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-400">Quelle</span>
+          <span id="info-source" class="text-right text-[0.75rem] text-slate-300">–</span>
+        </div>
+      </div>
+    </div>
+  </aside>
 
   <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <script src="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.5.0/dist/maplibre-gl-geocoder.min.js"></script>
   <script>
-    // Vector-basierte Karte
     const map = new maplibregl.Map({
       container: 'map',
-      style: 'https://kxljxv.github.io/bmdebright.json', 
-      center: [13.4050, 52.52],
-      zoom: 10
+      style: 'https://kxljxv.github.io/bmdebright.json',
+      center: [13.405, 52.52],
+      zoom: 10.4
     });
 
     map.dragRotate.disable();
     map.touchZoomRotate.disableRotation();
     map.keyboard.disable();
 
-    map.on('load', function() {
-      // Warte bis die Karte geladen ist
+    const infoTitle = document.getElementById('info-title');
+    const infoSubtitle = document.getElementById('info-subtitle');
+    const infoAwk = document.getElementById('info-awk');
+    const infoAwk2 = document.getElementById('info-awk2');
+    const infoBez = document.getElementById('info-bez');
+    const infoLocation = document.getElementById('info-location');
+    const infoSource = document.getElementById('info-source');
+    const infoOriginBadge = document.getElementById('info-origin-badge');
+    const locateBtn = document.getElementById('locate-btn');
+    const basemapBtn = document.getElementById('basemap-btn');
+
+    let highlightSourceReady = false;
+    let searchMarker = null;
+    let userMarker = null;
+    let satelliteEnabled = false;
+
+    function setBadge(type) {
+      infoOriginBadge.classList.remove('hidden');
+      infoOriginBadge.classList.remove('badge-blue', 'badge-green', 'badge-amber');
+      if (type === 'search') {
+        infoOriginBadge.classList.add('badge-blue');
+        infoOriginBadge.textContent = 'Suche';
+      } else if (type === 'location') {
+        infoOriginBadge.classList.add('badge-green');
+        infoOriginBadge.textContent = 'Standort';
+      } else if (type === 'map') {
+        infoOriginBadge.classList.add('badge-amber');
+        infoOriginBadge.textContent = 'Karte';
+      } else {
+        infoOriginBadge.classList.add('badge-amber');
+        infoOriginBadge.textContent = 'Info';
+      }
+    }
+
+    function resetInfo() {
+      infoTitle.textContent = 'Wähle einen Wahlkreis';
+      infoSubtitle.textContent = 'Klicke in die Karte, suche eine Adresse oder nutze deinen Standort.';
+      infoAwk.textContent = '–';
+      infoAwk2.textContent = '–';
+      infoBez.textContent = '–';
+      infoLocation.textContent = '–';
+      infoSource.textContent = '–';
+      infoOriginBadge.classList.add('hidden');
+    }
+
+    function highlightFeature(feature) {
+      if (!highlightSourceReady) {
+        return;
+      }
+      const src = map.getSource('highlight-source');
+      if (!src) {
+        return;
+      }
+      const data = feature && feature.type === 'Feature'
+        ? feature
+        : feature
+          ? { type: 'Feature', geometry: feature.geometry, properties: feature.properties || {} }
+          : { type: 'FeatureCollection', features: [] };
+      src.setData(data);
+    }
+
+    function updateInfoFromFeature(feature, locationLabel, sourceLabel, originType) {
+      const props = feature && feature.properties ? feature.properties : {};
+      const awk = props.AWK != null ? props.AWK : '–';
+      const awk2 = props.AWK2 != null ? props.AWK2 : '–';
+      const bez = props.BEZ != null ? props.BEZ : '–';
+      infoTitle.textContent = awk !== '–' ? 'Wahlkreis ' + awk : 'Nicht innerhalb eines Wahlkreises';
+      infoAwk.textContent = awk;
+      infoAwk2.textContent = awk2;
+      infoBez.textContent = bez;
+      if (locationLabel) {
+        infoLocation.textContent = locationLabel;
+      } else {
+        infoLocation.textContent = '–';
+      }
+      if (sourceLabel) {
+        infoSource.textContent = sourceLabel;
+      } else {
+        infoSource.textContent = '–';
+      }
+      if (originType) {
+        setBadge(originType);
+      } else {
+        infoOriginBadge.classList.add('hidden');
+      }
+      if (!feature) {
+        infoSubtitle.textContent = 'Der Punkt liegt außerhalb der geladenen Wahlkreise.';
+      } else if (originType === 'search') {
+        infoSubtitle.textContent = 'Gefundener Ort in Berlin und zugehöriger Wahlkreis.';
+      } else if (originType === 'location') {
+        infoSubtitle.textContent = 'Dein aktueller Standort und der zugehörige Wahlkreis.';
+      } else if (originType === 'map') {
+        infoSubtitle.textContent = 'Auswahl per Klick in die Karte.';
+      }
+    }
+
+    function updateFromPoint(lng, lat, locationLabel, sourceLabel, originType) {
+      const point = map.project([lng, lat]);
+      const features = map.queryRenderedFeatures(point, { layers: ['wahlkreise-fill'] });
+      if (!features.length) {
+        highlightFeature(null);
+        updateInfoFromFeature(null, locationLabel || lng.toFixed(5) + ', ' + lat.toFixed(5), sourceLabel, originType);
+        return;
+      }
+      const feature = features[0];
+      highlightFeature(feature);
+      updateInfoFromFeature(feature, locationLabel || lng.toFixed(5) + ', ' + lat.toFixed(5), sourceLabel, originType);
+    }
+
+    function getPolygonCenter(coords) {
+      if (!coords || coords.length < 3) {
+        return null;
+      }
+      let area = 0;
+      let x = 0;
+      let y = 0;
+      for (let i = 0; i < coords.length - 1; i++) {
+        const x1 = coords[i][0];
+        const y1 = coords[i][1];
+        const x2 = coords[i + 1][0];
+        const y2 = coords[i + 1][1];
+        const a = x1 * y2 - x2 * y1;
+        area += a;
+        x += (x1 + x2) * a;
+        y += (y1 + y2) * a;
+      }
+      area *= 0.5;
+      if (area === 0) {
+        return null;
+      }
+      return [x / (6 * area), y / (6 * area)];
+      }
+
+    function getFeatureCenter(geometry) {
+      if (!geometry) {
+        return null;
+      }
+      if (geometry.type === 'Polygon') {
+        return getPolygonCenter(geometry.coordinates[0]);
+      }
+      if (geometry.type === 'MultiPolygon') {
+        if (!geometry.coordinates.length || !geometry.coordinates[0].length) {
+          return null;
+        }
+        return getPolygonCenter(geometry.coordinates[0][0]);
+      }
+      return null;
+    }
+
+    map.on('load', function () {
       map.addSource('wahlkreise', {
         type: 'geojson',
-        data: 'AWK_AH2026.json'  // Relative URL zur GeoJSON
+        data: 'AWK_AH2026.json'
       });
 
-      // Füllfarb-Layer
       map.addLayer({
-        'id': 'wahlkreise-fill',
-        'type': 'fill',
-        'source': 'wahlkreise',
-        'layout': {},
-        'paint': {
-          'fill-color': '#0c87e7',
-          'fill-opacity': 0.2
+        id: 'wahlkreise-fill',
+        type: 'fill',
+        source: 'wahlkreise',
+        paint: {
+          'fill-color': '#0ea5e9',
+          'fill-opacity': 0.01
         }
       });
 
-      // Umriss-Layer
       map.addLayer({
-        'id': 'wahlkreise-line',
-        'type': 'line',
-        'source': 'wahlkreise',
-        'layout': {},
-        'paint': {
-          'line-color': '#175ae0',
+        id: 'wahlkreise-line',
+        type: 'line',
+        source: 'wahlkreise',
+        paint: {
+          'line-color': '#1d4ed8',
           'line-width': 2
         }
       });
-    });
 
-    // Click Handler
-    map.on('click', 'wahlkreise-fill', function(e) {
-      if (!e.features.length) return;
-      const feature = e.features[0];
-      
-      // Highlight-Layer aktualisieren
-      if (map.getLayer('highlight-layer')) {
-        map.removeLayer('highlight-layer');
-        map.removeSource('highlight-layer');
-      }
-      
-      map.addSource('highlight-layer', {
+      map.addSource('highlight-source', {
         type: 'geojson',
-        data: feature.geometry
+        data: { type: 'FeatureCollection', features: [] }
       });
 
       map.addLayer({
-        'id': 'highlight-layer',
-        'type': 'line',
-        'source': 'highlight-layer',
-        'paint': {
+        id: 'highlight-layer',
+        type: 'line',
+        source: 'highlight-source',
+        paint: {
           'line-color': '#ffffff',
           'line-width': 4
         }
       });
 
-      // Infobox aktualisieren
-      document.getElementById('district-title').textContent = 
-        'Wahlkreis ' + (feature.properties.AWK || "–");
-      
-      document.getElementById('district-info').innerHTML = `
-        <span class="feld">Nummer (AWK): ${feature.properties.AWK || "–"}</span><br>
-        <span class="feld">Großregion (AWK2): ${feature.properties.AWK2 || "–"}</span><br>
-        <span class="feld">Bezirk (BEZ): ${feature.properties.BEZ || "–"}</span>
-      `;
+      highlightSourceReady = true;
+
+      fetch('AWK_AH2026.json')
+        .then(function (response) {
+          if (!response.ok) {
+            return null;
+          }
+          return response.json();
+        })
+        .then(function (data) {
+          if (!data || !data.features || !Array.isArray(data.features)) {
+            return;
+          }
+          data.features.forEach(function (feature) {
+            if (!feature || !feature.geometry || !feature.properties) {
+              return;
+            }
+            const center = getFeatureCenter(feature.geometry);
+            if (!center) {
+              return;
+            }
+            const awkValue = feature.properties.AWK;
+            if (awkValue == null || awkValue === '') {
+              return;
+            }
+            const el = document.createElement('div');
+            el.className = 'awk-label-marker';
+            el.textContent = String(awkValue);
+            new maplibregl.Marker({
+              element: el
+            })
+              .setLngLat(center)
+              .addTo(map);
+          });
+        })
+        .catch(function () {});
+
+      map.addSource('satellite', {
+        type: 'raster',
+        tiles: [
+          'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+        ],
+        tileSize: 256,
+        attribution: 'Imagery © Esri'
+      });
+
+      map.addSource('hybrid-overlay', {
+        type: 'raster',
+        tiles: [
+          'https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}'
+        ],
+        tileSize: 256,
+        attribution: 'Map data © Google'
+      });
+
+      map.addLayer(
+        {
+          id: 'satellite-layer',
+          type: 'raster',
+          source: 'satellite',
+          layout: {
+            visibility: 'visible'
+          },
+          paint: {
+            'raster-opacity': 1
+          }
+        },
+        'wahlkreise-fill'
+      );
+
+      map.addLayer(
+        {
+          id: 'hybrid-overlay-layer',
+          type: 'raster',
+          source: 'hybrid-overlay',
+          layout: {
+            visibility: 'visible'
+          },
+          paint: {
+            'raster-opacity': 1
+          }
+        },
+        'wahlkreise-fill'
+      );
+
+      map.on('click', 'wahlkreise-fill', function (e) {
+        if (!e.features || !e.features.length) {
+          return;
+        }
+        const feature = e.features[0];
+        highlightFeature(feature);
+        const lngLat = e.lngLat || { lng: feature.geometry.coordinates[0][0][0], lat: feature.geometry.coordinates[0][0][1] };
+        updateInfoFromFeature(feature, 'Klick in die Karte', 'Interaktive Karte', 'map');
+        map.easeTo({
+          center: [lngLat.lng, lngLat.lat],
+          zoom: Math.max(map.getZoom(), 11.5),
+          duration: 600
+        });
+      });
+
+      map.on('mouseenter', 'wahlkreise-fill', function () {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.on('mouseleave', 'wahlkreise-fill', function () {
+        map.getCanvas().style.cursor = '';
+      });
+
+      const geocoderApi = {
+        forwardGeocode: async (config) => {
+          const features = [];
+          const q = (config.query || '').trim();
+          if (!q) {
+            return { features };
+          }
+          try {
+            const params = new URLSearchParams({
+              q: q,
+              format: 'geojson',
+              polygon_geojson: '0',
+              addressdetails: '1',
+              bounded: '1',
+              viewbox: '13.0883,52.6755,13.7611,52.3383'
+            });
+            const url = 'https://nominatim.openstreetmap.org/search?' + params.toString();
+            const response = await fetch(url, {
+              headers: {
+                'Accept': 'application/json'
+              }
+            });
+            const geojson = await response.json();
+            for (const feature of geojson.features || []) {
+              if (!feature.bbox && !feature.geometry) {
+                continue;
+              }
+              const bbox = feature.bbox;
+              let center;
+              if (bbox && bbox.length === 4) {
+                center = [
+                  bbox[0] + (bbox[2] - bbox[0]) / 2,
+                  bbox[1] + (bbox[3] - bbox[1]) / 2
+                ];
+              } else if (feature.geometry.type === 'Point') {
+                center = feature.geometry.coordinates;
+              } else {
+                continue;
+              }
+              const label = feature.properties && feature.properties.display_name
+                ? feature.properties.display_name
+                : q;
+              const pointFeature = {
+                type: 'Feature',
+                geometry: {
+                  type: 'Point',
+                  coordinates: center
+                },
+                place_name: label,
+                properties: feature.properties || {},
+                text: label,
+                place_type: ['place'],
+                center: center
+              };
+              features.push(pointFeature);
+            }
+          } catch (e) {
+            console.error('Geocoding-Fehler:', e);
+          }
+          return { features };
+        }
+      };
+
+      const geocoder = new MaplibreGeocoder(geocoderApi, {
+        maplibregl,
+        marker: false,
+        flyTo: false,
+        placeholder: 'Adresse in Berlin suchen',
+        limit: 8
+      });
+
+      const geocoderContainer = document.getElementById('geocoder-container');
+      if (geocoderContainer) {
+        const geocoderElement = geocoder.onAdd(map);
+        geocoderContainer.appendChild(geocoderElement);
+      } else {
+        map.addControl(geocoder, 'top-left');
+      }
+
+      geocoder.on('result', function (e) {
+        if (!e || !e.result || !e.result.center) {
+          return;
+        }
+        const center = e.result.center;
+        const label = e.result.place_name || 'Gefundener Ort';
+        if (!searchMarker) {
+          searchMarker = new maplibregl.Marker({
+            color: '#f97316'
+          });
+        }
+        searchMarker.setLngLat(center).addTo(map);
+        map.easeTo({
+          center: center,
+          zoom: 15,
+          duration: 700
+        });
+        updateFromPoint(center[0], center[1], label, 'Nominatim / OpenStreetMap', 'search');
+      });
+
+      if (locateBtn) {
+        locateBtn.addEventListener('click', function () {
+          if (!navigator.geolocation) {
+            infoSubtitle.textContent = 'Dein Browser unterstützt keine Standortabfrage.';
+            setBadge('location');
+            infoSource.textContent = 'Browser';
+            return;
+          }
+          locateBtn.disabled = true;
+          const originalText = locateBtn.textContent;
+          locateBtn.textContent = 'Standort wird gesucht...';
+          navigator.geolocation.getCurrentPosition(
+            function (position) {
+              locateBtn.disabled = false;
+              locateBtn.textContent = originalText;
+              const lng = position.coords.longitude;
+              const lat = position.coords.latitude;
+              const coords = [lng, lat];
+              if (!userMarker) {
+                userMarker = new maplibregl.Marker({
+                  color: '#22c55e'
+                });
+              }
+              userMarker.setLngLat(coords).addTo(map);
+              map.easeTo({
+                center: coords,
+                zoom: 14.5,
+                duration: 700
+              });
+              updateFromPoint(lng, lat, 'Dein Standort', 'Browser-Geolocation', 'location');
+            },
+            function (err) {
+              locateBtn.disabled = false;
+              locateBtn.textContent = originalText;
+              infoSubtitle.textContent = 'Standort konnte nicht ermittelt werden. Bitte Standortfreigabe im Browser prüfen.';
+              setBadge('location');
+              infoSource.textContent = 'Browser';
+              console.error('Geolocation-Fehler:', err);
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 30000
+            }
+          );
+        });
+      }
+
+      // Map Mode: 0 = Default (Vector), 1 = Satellite, 2 = Hybrid (Sat + Labels)
+      let mapMode = 2;
+
+      if (basemapBtn) {
+        basemapBtn.addEventListener('click', function () {
+          mapMode = (mapMode + 1) % 3;
+          
+          const satVisibility = (mapMode === 1 || mapMode === 2) ? 'visible' : 'none';
+          const labelVisibility = (mapMode === 2) ? 'visible' : 'none';
+
+          if (map.getLayer('satellite-layer')) {
+            map.setLayoutProperty('satellite-layer', 'visibility', satVisibility);
+          }
+          if (map.getLayer('hybrid-overlay-layer')) {
+            map.setLayoutProperty('hybrid-overlay-layer', 'visibility', labelVisibility);
+          }
+
+          if (mapMode === 0) {
+            // 2D Vector
+            basemapBtn.classList.remove('bg-sky-500/90', 'border-sky-300/80', 'text-slate-900', 'bg-indigo-500/90', 'border-indigo-300/80');
+            basemapBtn.classList.add('bg-slate-900/80', 'border-sky-500/70', 'text-sky-100');
+            basemapBtn.querySelector('span').textContent = '2D';
+            basemapBtn.querySelector('span').className = 'inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-600/80 text-[0.7rem] font-semibold';
+            basemapBtn.lastChild.textContent = ' Karte';
+          } else if (mapMode === 1) {
+            // Satellite Only
+            basemapBtn.classList.remove('bg-slate-900/80', 'border-sky-500/70', 'text-sky-100', 'bg-indigo-500/90', 'border-indigo-300/80');
+            basemapBtn.classList.add('bg-sky-500/90', 'border-sky-300/80', 'text-slate-900');
+            basemapBtn.querySelector('span').textContent = '3D';
+            basemapBtn.querySelector('span').className = 'inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-900/20 text-[0.7rem] font-semibold';
+            basemapBtn.lastChild.textContent = ' Satellit';
+          } else {
+            // Hybrid
+            basemapBtn.classList.remove('bg-slate-900/80', 'border-sky-500/70', 'text-sky-100', 'bg-sky-500/90', 'border-sky-300/80');
+            basemapBtn.classList.add('bg-indigo-500/90', 'border-indigo-300/80', 'text-white');
+            basemapBtn.querySelector('span').textContent = 'H';
+            basemapBtn.querySelector('span').className = 'inline-flex h-5 w-5 items-center justify-center rounded-full bg-indigo-700/80 text-[0.7rem] font-semibold';
+            basemapBtn.lastChild.textContent = ' Hybrid';
+          }
+        });
+      }
+
+      resetInfo();
     });
 
-    // Hover-Effekte
-    map.on('mouseenter', 'wahlkreise-fill', function() {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-
-    map.on('mouseleave', 'wahlkreise-fill', function() {
-      map.getCanvas().style.cursor = '';
-    });
-
-    // Error Handler
-    map.on('error', function(err) {
-      console.error('Maplibre Error:', err);
+    map.on('error', function (err) {
+      console.error('Maplibre-Fehler:', err && err.error ? err.error : err);
     });
   </script>
 </body>
