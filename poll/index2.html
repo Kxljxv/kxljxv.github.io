@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wahlumfragen — Deutschland</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <style>
+    :root {
+      --bg: #0c0d10;
+      --surface: #13141a;
+      --surface2: #1a1c24;
+      --surface3: #22253000;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --text: #f0efe8;
+      --text2: #9a9890;
+      --text3: #5a5855;
+      --accent: #e8c547;
+      --accent2: #4f9ef8;
+      --accent3: #f06a50;
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    /* Radial accent glow */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -30vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80vw;
+      height: 60vh;
+      background: radial-gradient(ellipse, rgba(79,158,248,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem 4rem;
+    }
+
+    /* ─── HEADER ─────────────────────────────────────────── */
+    header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 2.5rem 0 2rem;
+      border-bottom: 1px solid var(--border);
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .header-title {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .header-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .header-title h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+      color: var(--text);
+    }
+    .header-title h1 span { color: var(--accent); }
+
+    /* Parliament selector */
+    .parl-selector {
+      position: relative;
+    }
+    #parliamentDropdownButton {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 1.1rem;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+    #parliamentDropdownButton:hover { background: var(--surface3); border-color: var(--border2); }
+    #parliamentDropdownButton svg { opacity: 0.6; }
+    #parliamentDropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 260px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+      z-index: 100;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+    }
+    #parliamentDropdown.hidden { display: none; }
+    #parliamentDropdownList { list-style: none; max-height: 360px; overflow-y: auto; }
+    #parliamentDropdownList::-webkit-scrollbar { width: 4px; }
+    #parliamentDropdownList::-webkit-scrollbar-track { background: transparent; }
+    #parliamentDropdownList::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+    #parliamentDropdownList li a {
+      display: block;
+      padding: 0.65rem 1.25rem;
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background 0.15s, color 0.15s;
+    }
+    #parliamentDropdownList li a:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+
+    /* ─── MAIN GRID ──────────────────────────────────────── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    /* ─── CARDS ──────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--border2); }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 1.75rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .card-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text3);
+      font-weight: 500;
+    }
+    .card-body { padding: 1.5rem 1.75rem; }
+
+    /* ─── YEAR NAV ───────────────────────────────────────── */
+    .year-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .year-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--text2);
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .year-btn:hover:not(:disabled) { background: var(--surface2); color: var(--text); border-color: var(--accent); }
+    .year-btn:disabled { opacity: 0.25; cursor: default; }
+    .year-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+      min-width: 3rem;
+      text-align: center;
+    }
+
+    /* ─── HEATMAP ────────────────────────────────────────── */
+    #echartsHeatmap {
+      width: 100%;
+      height: 180px;
+    }
+
+    /* ─── BOTTOM SECTION: 2-col ─────────────────────────── */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 1.5rem;
+    }
+    @media (max-width: 960px) {
+      .bottom-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ─── TREND CHART ────────────────────────────────────── */
+    #echartsTrend {
+      width: 100%;
+      height: 420px;
+    }
+
+    /* ─── RIGHT PANEL ────────────────────────────────────── */
+    .right-panel { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    /* ─── PIE ────────────────────────────────────────────── */
+    #echartsPie {
+      width: 100%;
+      height: 260px;
+    }
+
+    /* ─── SURVEY META ────────────────────────────────────── */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem 1rem;
+    }
+    .meta-item { display: flex; flex-direction: column; gap: 0.2rem; }
+    .meta-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text3);
+    }
+    .meta-value {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text2);
+      line-height: 1.3;
+    }
+    .meta-value.highlight {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ─── PARTY BARS ─────────────────────────────────────── */
+    .party-bars { display: flex; flex-direction: column; gap: 0.5rem; }
+    .party-bar-row {
+      display: grid;
+      grid-template-columns: 60px 1fr 36px;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .party-name-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--text2);
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .bar-track {
+      height: 6px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+    .party-pct {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text2);
+      text-align: right;
+    }
+    .party-pct.above5 { color: var(--text); font-weight: 600; }
+
+    /* ─── THRESHOLD LINE ─────────────────────────────────── */
+    .threshold-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      color: var(--text3);
+      text-transform: uppercase;
+      padding: 0.4rem 0;
+      border-top: 1px dashed rgba(255,255,255,0.08);
+      margin: 0.3rem 0;
+    }
+
+    /* ─── MODAL ──────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      backdrop-filter: blur(4px);
+      animation: fadeIn 0.15s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-box {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 2rem;
+      min-width: 340px;
+      max-width: 90vw;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+      animation: slideUp 0.2s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1.25rem;
+    }
+    .modal-survey-btn {
+      display: block;
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1rem;
+      color: var(--text2);
+      text-align: left;
+      cursor: pointer;
+      margin-bottom: 0.6rem;
+      transition: all 0.15s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .modal-survey-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); border-color: var(--border2); }
+    .modal-survey-btn strong { display: block; font-size: 0.92rem; color: var(--text); margin-bottom: 0.2rem; }
+    .modal-survey-btn span { font-size: 0.78rem; color: var(--text3); font-family: 'DM Mono', monospace; }
+    .modal-cancel {
+      margin-top: 0.5rem;
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.6rem;
+      color: var(--text3);
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      transition: all 0.15s;
+    }
+    .modal-cancel:hover { border-color: var(--border2); color: var(--text2); }
+
+    /* ─── LOADING ────────────────────────────────────────── */
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      gap: 1rem;
+    }
+    .loading-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text3);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+    .loading-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: bounce 1s ease-in-out infinite;
+    }
+    @keyframes bounce { 0%,100% { transform: scale(0.7); opacity: 0.4; } 50% { transform: scale(1); opacity: 1; } }
+
+    /* ─── ACTIVE SURVEY INDICATOR ─────────────────────────── */
+    .active-survey-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(232,197,71,0.12);
+      border: 1px solid rgba(232,197,71,0.25);
+      border-radius: 20px;
+      padding: 0.25rem 0.75rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+    }
+    .active-survey-pill::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    /* ─── LEGEND ─────────────────────────────────────────── */
+    .legend-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1rem;
+      padding: 0.75rem 1.75rem;
+      border-top: 1px solid var(--border);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      user-select: none;
+      transition: opacity 0.15s;
+    }
+    .legend-item.dimmed { opacity: 0.3; }
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .legend-name {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--text2);
+    }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+    @media (max-width: 640px) {
+      .app-wrapper { padding: 0 1rem 3rem; }
+      .card-body { padding: 1rem; }
+      .card-header { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="loading-dot"></div>
+  <div class="loading-text">Daten werden geladen</div>
+</div>
+
+<div id="surveySelectModal" style="display:none;">
+  <div class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-title">Mehrere Umfragen</div>
+      <div id="surveySelectList"></div>
+      <button class="modal-cancel" onclick="document.getElementById('surveySelectModal').style.display='none'">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<div class="app-wrapper">
+  <header>
+    <div class="header-title">
+      <div class="header-eyebrow">Politische Analyse · Deutschland</div>
+      <h1>Wahl<span>umfragen</span></h1>
+    </div>
+    <div class="parl-selector">
+      <button id="parliamentDropdownButton" type="button">
+        <span id="selectedParliamentLabel">Parlament wählen</span>
+        <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div id="parliamentDropdown" class="hidden">
+        <ul id="parliamentDropdownList"></ul>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- HEATMAP CARD -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Umfragezeitplan</div>
+        <div class="year-nav">
+          <button class="year-btn" id="calendarPrevYear">‹</button>
+          <span class="year-label" id="calendarYearLabel"></span>
+          <button class="year-btn" id="calendarNextYear">›</button>
+        </div>
+      </div>
+      <div style="padding: 0.75rem 1.75rem 1.25rem;">
+        <div id="echartsHeatmap"></div>
+      </div>
+    </div>
+
+    <!-- TREND CHART + RIGHT PANEL -->
+    <div class="bottom-grid">
+
+      <!-- TREND CHART -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Historische Umfrageverläufe</div>
+          <div id="activeSurveyPill"></div>
+        </div>
+        <div style="padding: 1rem 0.5rem 0;">
+          <div id="echartsTrend"></div>
+        </div>
+        <div class="legend-row" id="trendLegend"></div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="right-panel">
+
+        <!-- PIE / PARTY BARS CARD -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Aktuelle Verteilung</div>
+          </div>
+          <div class="card-body" style="padding-top:1rem; padding-bottom:0.5rem;">
+            <div id="echartsPie"></div>
+          </div>
+          <div class="card-body" style="padding-top:0; padding-bottom:1.5rem;">
+            <div class="party-bars" id="partyBars"></div>
+          </div>
+        </div>
+
+        <!-- META INFO CARD -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Umfragedetails</div>
+          </div>
+          <div class="card-body">
+            <div class="meta-grid" id="surveyMeta"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─── Party colors ────────────────────────────────────────────
+const PARTY_COLORS = {
+  "SPD": "#E3000F",
+  "CDU": "#c8c8c8",
+  "CSU": "#0570C9",
+  "CDU/CSU": "#c8c8c8",
+  "GRÜNE": "#1AA037",
+  "DIE LINKE": "#BE3075",
+  "FDP": "#FFCC00",
+  "AFD": "#009EE0",
+  "DIE PARTEI": "#B92837",
+  "PIRATEN": "#FE7400",
+  "FREIE WÄHLER": "#4A7BC5",
+  "ÖDP": "#EE7100",
+  "NPD": "#808080",
+  "SSW": "#003F8E",
+  "BÜNDNIS SAHRA WAGENKNECHT": "#7B6BAE",
+  "BSW": "#7B6BAE",
+  "VOLT": "#662D91",
+  "SONSTIGE": "#3d3f4e"
+};
+
+function getPartyColor(shortcut, name) {
+  if (shortcut && PARTY_COLORS[shortcut.toUpperCase()]) return PARTY_COLORS[shortcut.toUpperCase()];
+  if (name && PARTY_COLORS[name.toUpperCase()]) return PARTY_COLORS[name.toUpperCase()];
+  return "#5C75CC";
+}
+
+function getDecimalPlaces(num) {
+  const s = String(num);
+  return s.indexOf('.') > -1 ? s.length - s.indexOf('.') - 1 : 0;
+}
+
+function fmtVal(num) {
+  return (typeof num === "number" && getDecimalPlaces(num) > 0) ? num.toFixed(1) : parseInt(num, 10);
+}
+
+function fmtDate(d) {
+  if (!d) return "-";
+  return new Date(d).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function getDatesBetween(start, end) {
+  const result = [];
+  let current = new Date(start);
+  const endDate = new Date(end);
+  while (current <= endDate) {
+    result.push(current.toISOString().slice(0,10));
+    current.setDate(current.getDate() + 1);
+  }
+  return result;
+}
+
+// ─── LOESS / Moving Average for trend line ─────────────────
+// True weighted LOESS smoothing: bandwidth h covers ~30% of points
+function loessSmooth(xs, ys, bandwidth) {
+  if (xs.length < 2) return ys.slice();
+  const n = xs.length;
+  const smoothed = new Array(n);
+  const h = bandwidth || Math.max(3, Math.round(n * 0.25));
+  
+  for (let i = 0; i < n; i++) {
+    // Find h nearest neighbors
+    const dists = xs.map((x, j) => ({ j, d: Math.abs(xs[j] - xs[i]) }));
+    dists.sort((a, b) => a.d - b.d);
+    const neighbors = dists.slice(0, h);
+    const maxDist = neighbors[neighbors.length - 1].d || 1;
+    
+    // Tricube weight function
+    let sw = 0, swx = 0, swy = 0, swxx = 0, swxy = 0;
+    for (const { j, d } of neighbors) {
+      const u = d / maxDist;
+      const w = Math.pow(1 - u * u * u, 3);
+      const x = xs[j], y = ys[j];
+      sw  += w;
+      swx += w * x;
+      swy += w * y;
+      swxx += w * x * x;
+      swxy += w * x * y;
+    }
+    // WLS fit: y = a + b*x
+    const denom = sw * swxx - swx * swx;
+    if (Math.abs(denom) < 1e-10) {
+      smoothed[i] = swy / sw;
+    } else {
+      const b = (sw * swxy - swx * swy) / denom;
+      const a = (swy - b * swx) / sw;
+      smoothed[i] = a + b * xs[i];
+    }
+  }
+  return smoothed;
+}
+
+// ─── API ─────────────────────────────────────────────────────
+class DawumAPI {
+  static async fetchData() {
+    const r = await fetch('https://api.dawum.de/');
+    if (!r.ok) throw new Error('API error');
+    return r.json();
+  }
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────────
+class Dashboard {
+  constructor() {
+    this.data = null;
+    this.selectedParliament = null;
+    this.surveys = [];
+    this.datesToSurveys = {};
+    this.selectedSurvey = null;
+    this.heatmapYear = null;
+    this.years = [];
+    this.maxSurveyInADay = 1;
+
+    this.eHeatmap = null;
+    this.eTrend = null;
+    this.ePie = null;
+
+    this.hiddenParties = new Set();
+
+    this.init();
+  }
+
+  async init() {
+    try {
+      this.data = await DawumAPI.fetchData();
+      this.renderParliamentDropdown();
+      this.selectedParliament = Object.keys(this.data.Parliaments)[0];
+      this.updateParliamentLabel();
+      this.updateSurveys();
+      document.getElementById('loading').style.display = 'none';
+    } catch (e) {
+      document.getElementById('loading').innerHTML = '<div style="color:#f06a50;font-family:DM Mono,monospace;font-size:.8rem;letter-spacing:.1em;">Fehler beim Laden — bitte neu laden</div>';
+    }
+  }
+
+  renderParliamentDropdown() {
+    const list = document.getElementById('parliamentDropdownList');
+    list.innerHTML = "";
+    Object.entries(this.data.Parliaments).forEach(([id, p]) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<a href="#" data-id="${id}">${p.Name}</a>`;
+      list.appendChild(li);
+      li.querySelector('a').addEventListener('click', e => {
+        e.preventDefault();
+        this.selectedParliament = id;
+        this.updateParliamentLabel();
+        this.updateSurveys();
+        document.getElementById('parliamentDropdown').classList.add('hidden');
+      });
+    });
+    // Toggle dropdown
+    const btn = document.getElementById('parliamentDropdownButton');
+    const dd = document.getElementById('parliamentDropdown');
+    btn.addEventListener('click', e => { e.stopPropagation(); dd.classList.toggle('hidden'); });
+    document.addEventListener('click', () => dd.classList.add('hidden'));
+  }
+
+  updateParliamentLabel() {
+    document.getElementById('selectedParliamentLabel').textContent =
+      this.data.Parliaments[this.selectedParliament]?.Name || "Parlament wählen";
+  }
+
+  updateSurveys() {
+    this.hiddenParties = new Set();
+    this.surveys = Object.values(this.data.Surveys)
+      .filter(s => s.Parliament_ID === this.selectedParliament)
+      .sort((a, b) => new Date(a.Date) - new Date(b.Date));
+    this.years = [...new Set(this.surveys.map(s => new Date(s.Date).getFullYear()))];
+    this.heatmapYear = this.years.length ? this.years[this.years.length - 1] : new Date().getFullYear();
+    this.buildDatesToSurveys();
+    this.computeMax();
+    this.selectedSurvey = this.surveys.length ? this.surveys[this.surveys.length - 1] : null;
+    this.renderHeatmap();
+    this.renderTrend();
+    this.renderPie();
+    this.renderSurveyInfo();
+  }
+
+  buildDatesToSurveys() {
+    this.datesToSurveys = {};
+    for (const s of this.surveys) {
+      const start = s.Survey_Period?.Date_Start?.slice(0,10) || s.Date.slice(0,10);
+      const end   = s.Survey_Period?.Date_End?.slice(0,10)   || s.Date.slice(0,10);
+      for (const d of getDatesBetween(start, end < start ? start : end)) {
+        if (!this.datesToSurveys[d]) this.datesToSurveys[d] = [];
+        this.datesToSurveys[d].push(s);
+      }
+    }
+  }
+
+  computeMax() {
+    this.maxSurveyInADay = Math.max(1, ...Object.values(this.datesToSurveys).map(a => a.length));
+  }
+
+  // ─── HEATMAP ──────────────────────────────────────────────
+  renderHeatmap() {
+    const year = this.heatmapYear;
+    document.getElementById('calendarYearLabel').textContent = year;
+
+    const dayTime = 3600 * 24 * 1000;
+    const start = +echarts.time.parse(year + '-01-01');
+    const end   = +echarts.time.parse(year + '-12-31');
+    const data  = [];
+    for (let t = start; t <= end; t += dayTime) {
+      const d = echarts.time.format(t, '{yyyy}-{MM}-{dd}', false);
+      data.push([d, (this.datesToSurveys[d] || []).length]);
+    }
+
+    const dom = document.getElementById('echartsHeatmap');
+    if (this.eHeatmap) this.eHeatmap.dispose();
+    this.eHeatmap = echarts.init(dom, null, { renderer: 'svg' });
+
+    this.eHeatmap.setOption({
+      backgroundColor: 'transparent',
+      visualMap: {
+        show: false, min: 0, max: this.maxSurveyInADay,
+        inRange: { color: ['#1a1c24', '#1e3a5f', '#4f9ef8'] }
+      },
+      tooltip: {
+        backgroundColor: '#1a1c24',
+        borderColor: 'rgba(255,255,255,0.1)',
+        textStyle: { color: '#f0efe8', fontFamily: 'DM Mono', fontSize: 11 },
+        formatter: p => {
+          const [date, count] = p.value;
+          if (!count) return `<span style="color:#5a5855">${date}</span>`;
+          return `<b style="color:#4f9ef8">${date}</b><br>${count} Umfrage${count === 1 ? '' : 'n'}`;
+        }
+      },
+      calendar: {
+        range: year.toString(),
+        cellSize: ['auto', 18],
+        left: 40, right: 20,
+        itemStyle: { borderWidth: 2, borderColor: '#0c0d10' },
+        yearLabel: { show: false },
+        monthLabel: { color: '#5a5855', fontFamily: 'DM Sans', fontSize: 11, fontWeight: 500 },
+        dayLabel: { firstDay: 1, color: '#3d3f4e', fontFamily: 'DM Mono', fontSize: 10 }
+      },
+      series: [{
+        type: 'heatmap',
+        coordinateSystem: 'calendar',
+        data,
+        emphasis: { itemStyle: { borderColor: '#4f9ef8', borderWidth: 2, shadowBlur: 6, shadowColor: 'rgba(79,158,248,0.4)' } }
+      }]
+    });
+
+    this.eHeatmap.on('click', params => {
+      if (!params.value) return;
+      const [date, count] = params.value;
+      if (!count) return;
+      const surveys = this.datesToSurveys[date];
+      if (!surveys) return;
+      if (surveys.length === 1) {
+        this.selectedSurvey = surveys[0];
+        this.renderPie();
+        this.renderSurveyInfo();
+        this.highlightTrendDate(surveys[0].Date.slice(0,10));
+      } else {
+        this.openSurveySelect(date, surveys);
+      }
+    });
+
+    document.getElementById('calendarPrevYear').onclick = () => {
+      const idx = this.years.indexOf(this.heatmapYear);
+      if (idx > 0) { this.heatmapYear = this.years[idx - 1]; this.renderHeatmap(); }
+    };
+    document.getElementById('calendarNextYear').onclick = () => {
+      const idx = this.years.indexOf(this.heatmapYear);
+      if (idx < this.years.length - 1) { this.heatmapYear = this.years[idx + 1]; this.renderHeatmap(); }
+    };
+    document.getElementById('calendarPrevYear').disabled = (this.years.indexOf(this.heatmapYear) === 0);
+    document.getElementById('calendarNextYear').disabled = (this.years.indexOf(this.heatmapYear) === this.years.length - 1);
+  }
+
+  // ─── TREND CHART ──────────────────────────────────────────
+  renderTrend() {
+    if (!this.surveys.length) return;
+
+    // Collect all unique party IDs from all surveys
+    const partySet = new Set();
+    this.surveys.forEach(s => Object.keys(s.Results).forEach(id => partySet.add(id)));
+
+    const parties = Array.from(partySet).map(id => ({
+      id,
+      name: this.data.Parties[id]?.Name || id,
+      shortcut: this.data.Parties[id]?.Shortcut || id,
+      color: getPartyColor(this.data.Parties[id]?.Shortcut || '', this.data.Parties[id]?.Name || '')
+    }));
+
+    // Get average value in latest survey to sort
+    const latest = this.surveys[this.surveys.length - 1];
+    parties.sort((a, b) => (Number(latest.Results[b.id]) || 0) - (Number(latest.Results[a.id]) || 0));
+
+    // Build time series per party
+    const dates = this.surveys.map(s => s.Date.slice(0, 10));
+    const xNums = this.surveys.map(s => new Date(s.Date).getTime());
+
+    // Build echart series
+    const series = [];
+
+    for (const party of parties) {
+      if (this.hiddenParties.has(party.id)) continue;
+      const ys = this.surveys.map(s => {
+        const v = s.Results[party.id];
+        return v !== undefined ? Number(v) : null;
+      });
+
+      // Only smooth where we have enough non-null values
+      const validIndices = ys.map((v, i) => v !== null ? i : -1).filter(i => i >= 0);
+      if (validIndices.length < 2) continue;
+
+      const validXs = validIndices.map(i => xNums[i]);
+      const validYs = validIndices.map(i => ys[i]);
+
+      // LOESS with bandwidth = max(5, 20% of data)
+      const bandwidth = Math.max(5, Math.round(validYs.length * 0.22));
+      const smoothed = loessSmooth(validXs, validYs, bandwidth);
+
+      // Scatter series (raw dots)
+      const scatterData = dates.map((d, i) => ys[i] !== null ? [d, ys[i]] : null).filter(Boolean);
+
+      series.push({
+        name: party.shortcut,
+        type: 'scatter',
+        data: scatterData,
+        symbol: 'circle',
+        symbolSize: 4,
+        itemStyle: { color: party.color, opacity: 0.35 },
+        z: 1,
+        tooltip: {
+          formatter: p => `<b style="color:${party.color}">${party.name}</b><br>${p.value[0]}: ${fmtVal(p.value[1])}%`
+        }
+      });
+
+      // Trend line (LOESS)
+      const trendData = validIndices.map((i, j) => [dates[i], Math.max(0, +smoothed[j].toFixed(2))]);
+
+      series.push({
+        name: party.shortcut + '_trend',
+        type: 'line',
+        data: trendData,
+        smooth: false,
+        showSymbol: false,
+        lineStyle: { color: party.color, width: 2.5, opacity: 0.9 },
+        itemStyle: { color: party.color },
+        z: 2,
+        tooltip: { show: false },
+        endLabel: {
+          show: true,
+          formatter: p => {
+            const val = p.value[1];
+            if (val < 1) return '';
+            return `{tag|${party.shortcut}}`;
+          },
+          rich: {
+            tag: {
+              fontFamily: 'DM Mono',
+              fontSize: 9,
+              color: party.color,
+              padding: [1, 4],
+              borderRadius: 3,
+              backgroundColor: `${party.color}22`,
+              borderWidth: 1,
+              borderColor: `${party.color}55`
+            }
+          }
+        }
+      });
+    }
+
+    // 5% threshold markLine
+    series.push({
+      name: '__threshold',
+      type: 'line',
+      data: [],
+      markLine: {
+        silent: true,
+        symbol: 'none',
+        lineStyle: { color: 'rgba(255,255,255,0.12)', width: 1, type: 'dashed' },
+        label: {
+          show: true,
+          position: 'insideEndTop',
+          formatter: '5% Hürde',
+          fontFamily: 'DM Mono',
+          fontSize: 9,
+          color: 'rgba(255,255,255,0.25)'
+        },
+        data: [{ yAxis: 5 }]
+      }
+    });
+
+    const dom = document.getElementById('echartsTrend');
+    if (this.eTrend) this.eTrend.dispose();
+    this.eTrend = echarts.init(dom, null, { renderer: 'svg' });
+
+    this.eTrend.setOption({
+      backgroundColor: 'transparent',
+      grid: { left: 40, right: 80, top: 20, bottom: 40 },
+      xAxis: {
+        type: 'time',
+        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+        axisTick: { show: false },
+        axisLabel: {
+          color: '#5a5855',
+          fontFamily: 'DM Mono',
+          fontSize: 10,
+          formatter: v => {
+            const d = new Date(v);
+            return d.getFullYear() + '\n' + (d.getMonth() === 0 ? '' : String(d.getMonth() + 1).padStart(2,'0') + '/' );
+          }
+        },
+        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.04)' } }
+      },
+      yAxis: {
+        type: 'value',
+        min: 0,
+        axisLabel: {
+          formatter: v => v + '%',
+          color: '#5a5855',
+          fontFamily: 'DM Mono',
+          fontSize: 10
+        },
+        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } },
+        axisLine: { show: false },
+        axisTick: { show: false }
+      },
+      tooltip: {
+        trigger: 'item',
+        backgroundColor: '#13141a',
+        borderColor: 'rgba(255,255,255,0.1)',
+        textStyle: { color: '#f0efe8', fontFamily: 'DM Sans', fontSize: 12 }
+      },
+      series
+    });
+
+    // Click on scatter to select survey
+    this.eTrend.on('click', 'series.scatter', params => {
+      const date = params.value[0];
+      const surveys = this.datesToSurveys[date];
+      if (!surveys || !surveys.length) return;
+      this.selectedSurvey = surveys[0];
+      this.renderPie();
+      this.renderSurveyInfo();
+    });
+
+    this.renderTrendLegend(parties);
+  }
+
+  renderTrendLegend(parties) {
+    const container = document.getElementById('trendLegend');
+    container.innerHTML = '';
+    parties.forEach(p => {
+      const item = document.createElement('div');
+      item.className = 'legend-item' + (this.hiddenParties.has(p.id) ? ' dimmed' : '');
+      item.innerHTML = `<div class="legend-dot" style="background:${p.color}"></div><span class="legend-name">${p.shortcut}</span>`;
+      item.addEventListener('click', () => {
+        if (this.hiddenParties.has(p.id)) this.hiddenParties.delete(p.id);
+        else this.hiddenParties.add(p.id);
+        this.renderTrend();
+      });
+      container.appendChild(item);
+    });
+  }
+
+  highlightTrendDate(date) {
+    if (!this.eTrend) return;
+    this.eTrend.dispatchAction({
+      type: 'showTip',
+      x: 0, y: 0
+    });
+  }
+
+  // ─── PIE ──────────────────────────────────────────────────
+  renderPie() {
+    const survey = this.selectedSurvey;
+    const dom = document.getElementById('echartsPie');
+    if (this.ePie) this.ePie.dispose();
+    if (!survey) return;
+
+    let pieData = Object.entries(survey.Results).map(([id, v]) => {
+      const p = this.data.Parties[id];
+      const name = p?.Name || '';
+      const shortcut = p?.Shortcut || name;
+      return { name, value: +v, shortcut, id, color: getPartyColor(shortcut, name) };
+    }).sort((a, b) => b.value - a.value);
+
+    this.ePie = echarts.init(dom, null, { renderer: 'svg' });
+    this.ePie.setOption({
+      backgroundColor: 'transparent',
+      tooltip: {
+        backgroundColor: '#13141a',
+        borderColor: 'rgba(255,255,255,0.1)',
+        textStyle: { color: '#f0efe8', fontFamily: 'DM Sans', fontSize: 12 },
+        formatter: p => `<b style="color:${p.data.color}">${p.data.name}</b><br>${fmtVal(p.value)}% (${fmtVal(p.percent)}%)`
+      },
+      series: [{
+        type: 'pie',
+        radius: ['38%', '70%'],
+        center: ['50%', '50%'],
+        data: pieData.map(d => ({
+          name: d.name,
+          value: d.value,
+          shortcut: d.shortcut,
+          color: d.color,
+          itemStyle: { color: d.color, borderRadius: 4, borderWidth: 2, borderColor: '#13141a' }
+        })),
+        emphasis: {
+          itemStyle: { shadowBlur: 12, shadowColor: 'rgba(0,0,0,0.4)', borderWidth: 0 },
+          scaleSize: 8
+        },
+        label: {
+          show: true,
+          formatter: p => {
+            if (p.percent < 2.5) return '';
+            return `{shortcut|${p.data.shortcut}}\n{val|${fmtVal(p.value)}%}`;
+          },
+          rich: {
+            shortcut: { fontFamily: 'DM Mono', fontSize: 8, color: 'rgba(255,255,255,0.7)', align: 'center' },
+            val: { fontFamily: 'DM Mono', fontSize: 9, fontWeight: 600, color: '#f0efe8', align: 'center' }
+          }
+        },
+        labelLine: { length: 6, length2: 8, lineStyle: { color: 'rgba(255,255,255,0.2)' } }
+      }]
+    });
+
+    // Party bars
+    this.renderPartyBars(pieData);
+
+    // Update active survey pill
+    const pill = document.getElementById('activeSurveyPill');
+    pill.innerHTML = `<span class="active-survey-pill">${fmtDate(survey.Date)} · ${this.data.Institutes[survey.Institute_ID]?.Name || ''}</span>`;
+  }
+
+  renderPartyBars(pieData) {
+    const container = document.getElementById('partyBars');
+    container.innerHTML = '';
+    const maxVal = pieData[0]?.value || 100;
+
+    pieData.forEach(p => {
+      const above5 = p.value >= 5 && p.name !== "sonstige Parteien";
+      const row = document.createElement('div');
+      row.className = 'party-bar-row';
+      row.innerHTML = `
+        <div class="party-name-tag" title="${p.name}" style="color:${p.color}">${p.shortcut}</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${(p.value / maxVal * 100).toFixed(1)}%;background:${p.color};opacity:${above5 ? 0.85 : 0.3}"></div>
+        </div>
+        <div class="party-pct${above5 ? ' above5' : ''}" style="color:${above5 ? p.color : '#3d3f4e'}">${fmtVal(p.value)}%</div>
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  // ─── META INFO ────────────────────────────────────────────
+  renderSurveyInfo() {
+    const survey = this.selectedSurvey;
+    const container = document.getElementById('surveyMeta');
+    if (!survey) { container.innerHTML = ''; return; }
+
+    const institute = this.data.Institutes[survey.Institute_ID]?.Name || '-';
+    const tasker = this.data.Taskers[survey.Tasker_ID]?.Name || '-';
+    const method = this.data.Methods[survey.Method_ID]?.Name || '-';
+    const published = fmtDate(survey.Date);
+    const periodStart = survey.Survey_Period?.Date_Start;
+    const periodEnd = survey.Survey_Period?.Date_End;
+    const period = (periodStart && periodEnd) ? `${fmtDate(periodStart)} – ${fmtDate(periodEnd)}` : '-';
+    const persons = survey.Surveyed_Persons ? (+survey.Surveyed_Persons).toLocaleString('de-DE') : '-';
+
+    const fields = [
+      { label: 'Institut', value: institute, highlight: true },
+      { label: 'Auftraggeber', value: tasker },
+      { label: 'Veröffentlicht', value: published, highlight: true },
+      { label: 'Methode', value: method },
+      { label: 'Zeitraum', value: period },
+      { label: 'Befragte', value: persons, highlight: true }
+    ];
+
+    container.innerHTML = fields.map(f => `
+      <div class="meta-item">
+        <div class="meta-label">${f.label}</div>
+        <div class="meta-value${f.highlight ? ' highlight' : ''}">${f.value}</div>
+      </div>
+    `).join('');
+  }
+
+  // ─── MODAL ────────────────────────────────────────────────
+  openSurveySelect(date, surveys) {
+    const modal = document.getElementById('surveySelectModal');
+    const list = document.getElementById('surveySelectList');
+    list.innerHTML = '';
+    surveys.forEach(s => {
+      const inst = this.data.Institutes[s.Institute_ID]?.Name || '';
+      const tasker = this.data.Taskers[s.Tasker_ID]?.Name || '';
+      const method = this.data.Methods[s.Method_ID]?.Name || '';
+      const period = s.Survey_Period?.Date_Start
+        ? `${fmtDate(s.Survey_Period.Date_Start)} – ${fmtDate(s.Survey_Period.Date_End)}`
+        : '';
+      const btn = document.createElement('button');
+      btn.className = 'modal-survey-btn';
+      btn.innerHTML = `<strong>${inst}</strong><span>${tasker}${method ? ' · ' + method : ''}${period ? ' · ' + period : ''}</span>`;
+      btn.onclick = () => {
+        this.selectedSurvey = s;
+        modal.style.display = 'none';
+        this.renderPie();
+        this.renderSurveyInfo();
+      };
+      list.appendChild(btn);
+    });
+    modal.style.display = '';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { new Dashboard(); });
+</script>
+</body>
+</html>
