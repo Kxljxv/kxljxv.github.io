@@ -467,6 +467,27 @@
       color: var(--text2);
     }
 
+    /* ─── TREND YEAR NAV ─────────────────────────────────────── */
+    .trend-header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .trend-year-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .trend-year-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--accent);
+      min-width: 3rem;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+
     /* scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -539,7 +560,14 @@
       <div class="card">
         <div class="card-header">
           <div class="card-title">Historische Umfrageverläufe</div>
-          <div id="activeSurveyPill"></div>
+          <div class="trend-header-right">
+            <div id="activeSurveyPill"></div>
+            <div class="trend-year-nav">
+              <button class="year-btn" id="trendPrevYear" title="Vorheriges Jahr">‹</button>
+              <span class="trend-year-label" id="trendYearLabel"></span>
+              <button class="year-btn" id="trendNextYear" title="Nächstes Jahr">›</button>
+            </div>
+          </div>
         </div>
         <div style="padding: 1rem 0.5rem 0;">
           <div id="echartsTrend"></div>
@@ -725,12 +753,179 @@ function buildWeightedSeries(surveys) {
   return points;
 }
 
+// ─── Web Worker (inline Blob) ────────────────────────────────
+// All heavy computation (buildWeightedSeries + LOESS per party)
+// runs off the main thread so the UI never blocks.
+const WORKER_SRC = `
+// ── Helpers ──────────────────────────────────────────────────
+function getDatesBetween(start, end) {
+  const result = [];
+  let cur = new Date(start), endD = new Date(end);
+  while (cur <= endD) { result.push(cur.toISOString().slice(0,10)); cur.setDate(cur.getDate()+1); }
+  return result;
+}
+
+// Weighted LOESS (same algorithm as main thread)
+function loessSmooth(xs, ys, ws, bandwidth) {
+  const n = xs.length;
+  if (n < 2) return ys.slice();
+  const W = (ws && ws.length === n) ? ws : new Array(n).fill(1);
+  const h = bandwidth || Math.max(5, Math.round(n * 0.22));
+  const smoothed = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const dists = xs.map((x, j) => ({ j, d: Math.abs(x - xs[i]) }));
+    dists.sort((a, b) => a.d - b.d);
+    const nb = dists.slice(0, h);
+    const dMax = nb[nb.length - 1].d || 1;
+    let sw=0, swx=0, swy=0, swxx=0, swxy=0;
+    for (const {j, d} of nb) {
+      const u = d / dMax;
+      const w = Math.pow(1 - u*u*u, 3) * W[j];
+      const x = xs[j], y = ys[j];
+      sw+=w; swx+=w*x; swy+=w*y; swxx+=w*x*x; swxy+=w*x*y;
+    }
+    const denom = sw*swxx - swx*swx;
+    if (Math.abs(denom) < 1e-10) { smoothed[i] = swy/(sw||1); }
+    else {
+      const b = (sw*swxy - swx*swy)/denom;
+      smoothed[i] = (swy - b*swx)/sw + b*xs[i];
+    }
+  }
+  return smoothed;
+}
+
+// Expand surveys into per-day weighted points
+function buildWeightedSeries(surveys) {
+  const points = [];
+  for (const s of surveys) {
+    const startStr = s.Survey_Period?.Date_Start?.slice(0,10) || s.Date.slice(0,10);
+    const endStr   = s.Survey_Period?.Date_End?.slice(0,10)   || s.Date.slice(0,10);
+    const startMs  = new Date(startStr).getTime();
+    const endMs    = new Date(endStr).getTime();
+    const days     = Math.max(1, Math.round((endMs - startMs) / 86400000) + 1);
+    const persons  = Number(s.Surveyed_Persons) || 1000;
+    const weight   = persons / days;
+    for (let d = 0; d < days; d++) {
+      const dayMs   = startMs + d * 86400000;
+      const dayDate = new Date(dayMs).toISOString().slice(0,10);
+      points.push({ x: dayMs, xDate: dayDate, results: s.Results,
+                    weight, surveyIdx: s._idx, days, persons });
+    }
+  }
+  points.sort((a, b) => a.x - b.x);
+  return points;
+}
+
+self.onmessage = function(e) {
+  const { surveys, partyIds, parliamentId } = e.data;
+
+  const wPoints = buildWeightedSeries(surveys);
+
+  // Scatter: one point per survey at midpoint
+  const scatterPoints = [];
+  const seen = new Set();
+  for (const p of wPoints) {
+    if (seen.has(p.surveyIdx)) continue;
+    seen.add(p.surveyIdx);
+    const s = surveys[p.surveyIdx];
+    const startStr = s.Survey_Period?.Date_Start?.slice(0,10) || s.Date.slice(0,10);
+    const endStr   = s.Survey_Period?.Date_End?.slice(0,10)   || s.Date.slice(0,10);
+    const midMs    = (new Date(startStr).getTime() + new Date(endStr).getTime()) / 2;
+    scatterPoints.push({
+      xDate:   new Date(midMs).toISOString().slice(0,10),
+      weight:  p.weight,
+      persons: p.persons,
+      days:    p.days,
+      results: p.results,
+      surveyIdx: p.surveyIdx
+    });
+  }
+  scatterPoints.sort((a, b) => new Date(a.xDate) - new Date(b.xDate));
+
+  const allXs = wPoints.map(p => p.x);
+  const allWs = wPoints.map(p => p.weight);
+  const avgW  = allWs.reduce((s,w)=>s+w,0) / (allWs.length||1);
+
+  // Compute LOESS per party
+  const trendsByParty   = {};  // partyId → [[date, val], …]
+  const scatterByParty  = {};  // partyId → [{value:[date,val], symbolSize, meta}, …]
+
+  for (const partyId of partyIds) {
+    const ys = wPoints.map(p => {
+      const v = p.results[partyId];
+      return v !== undefined ? Number(v) : null;
+    });
+    const validIdx = ys.map((v,i) => v!==null ? i : -1).filter(i=>i>=0);
+    if (validIdx.length < 2) continue;
+
+    const vXs = validIdx.map(i=>allXs[i]);
+    const vYs = validIdx.map(i=>ys[i]);
+    const vWs = validIdx.map(i=>allWs[i]);
+    const bw  = Math.max(7, Math.round(vYs.length * 0.22));
+    const smoothed = loessSmooth(vXs, vYs, vWs, bw);
+
+    // Trend: thin to one value per unique date
+    const seenDates = new Set(), trend = [];
+    for (let j = 0; j < validIdx.length; j++) {
+      const date = wPoints[validIdx[j]].xDate;
+      if (seenDates.has(date)) continue;
+      seenDates.add(date);
+      trend.push([date, Math.max(0, +smoothed[j].toFixed(2))]);
+    }
+    trendsByParty[partyId] = trend;
+
+    // Scatter
+    scatterByParty[partyId] = scatterPoints
+      .filter(sp => sp.results[partyId] !== undefined)
+      .map(sp => ({
+        value:      [sp.xDate, Number(sp.results[partyId])],
+        symbolSize: Math.max(3, Math.min(11, 4 * Math.sqrt(sp.weight / avgW))),
+        weight:     sp.weight,
+        persons:    sp.persons,
+        days:       sp.days,
+        surveyIdx:  sp.surveyIdx
+      }));
+  }
+
+  self.postMessage({ parliamentId, trendsByParty, scatterByParty, avgW });
+};
+`;
+
+function createWorker() {
+  const blob = new Blob([WORKER_SRC], { type: 'application/javascript' });
+  return new Worker(URL.createObjectURL(blob));
+}
+
 // ─── API ─────────────────────────────────────────────────────
+// The dawum.de endpoint returns one large JSON blob with ALL surveys
+// for ALL parliaments (~5–10 MB).  We fetch once, cache the result,
+// and then filter per parliament on demand — no second round-trip.
+// A setTimeout(0) yield between network read and JSON.parse lets the
+// browser repaint the "Parsing…" state so the UI never looks frozen.
 class DawumAPI {
+  static _raw = null;
+  static _fetchPromise = null;
+
   static async fetchData() {
-    const r = await fetch('https://api.dawum.de/');
-    if (!r.ok) throw new Error('API error');
-    return r.json();
+    if (this._raw) return this._raw;
+    if (this._fetchPromise) return this._fetchPromise;
+    this._fetchPromise = (async () => {
+      const r = await fetch('https://api.dawum.de/');
+      if (!r.ok) throw new Error('API error');
+      const text = await r.text();
+      // Yield one frame so loading label can update before blocking parse
+      await new Promise(resolve => setTimeout(resolve, 0));
+      const json = JSON.parse(text);
+      this._raw = json;
+      return json;
+    })();
+    return this._fetchPromise;
+  }
+
+  // Cheap parliament-scoped slice — no re-fetch
+  static getSurveysForParliament(data, parliamentId) {
+    return Object.values(data.Surveys)
+      .filter(s => s.Parliament_ID === parliamentId);
   }
 }
 
@@ -751,13 +946,35 @@ class Dashboard {
     this.ePie = null;
 
     this.hiddenParties = new Set();
+    this.trendYear = null;   // currently displayed year in trend chart
+
+    // Per-parliament cache: parliamentId → { trendsByParty, scatterByParty, avgW }
+    this._trendCache = {};
+    this._worker = createWorker();
+    this._pendingParliament = null;  // track which parliament is being computed
+
+    this._worker.onmessage = (e) => {
+      const { parliamentId, trendsByParty, scatterByParty, avgW } = e.data;
+      // Cache result
+      this._trendCache[parliamentId] = { trendsByParty, scatterByParty, avgW };
+      // Only apply if still the selected parliament
+      if (parliamentId === this.selectedParliament) {
+        this._pendingParliament = null;
+        this._applyTrendData();
+      }
+    };
 
     this.init();
   }
 
   async init() {
+    const loadingText = document.querySelector('#loading .loading-text');
     try {
+      if (loadingText) loadingText.textContent = 'Daten werden geladen';
       this.data = await DawumAPI.fetchData();
+      if (loadingText) loadingText.textContent = 'Wird verarbeitet';
+      // Yield so the label update paints before we run JS
+      await new Promise(resolve => setTimeout(resolve, 0));
       this.renderParliamentDropdown();
       this.selectedParliament = Object.keys(this.data.Parliaments)[0];
       this.updateParliamentLabel();
@@ -797,18 +1014,104 @@ class Dashboard {
 
   updateSurveys() {
     this.hiddenParties = new Set();
-    this.surveys = Object.values(this.data.Surveys)
-      .filter(s => s.Parliament_ID === this.selectedParliament)
+    // Only load surveys for the selected parliament — no full scan needed
+    this.surveys = DawumAPI.getSurveysForParliament(this.data, this.selectedParliament)
       .sort((a, b) => new Date(a.Date) - new Date(b.Date));
     this.years = [...new Set(this.surveys.map(s => new Date(s.Date).getFullYear()))];
     this.heatmapYear = this.years.length ? this.years[this.years.length - 1] : new Date().getFullYear();
+    // Default trend year to most recent year
+    this.trendYear = this.years.length ? this.years[this.years.length - 1] : new Date().getFullYear();
     this.buildDatesToSurveys();
     this.computeMax();
     this.selectedSurvey = this.surveys.length ? this.surveys[this.surveys.length - 1] : null;
+
+    // Wire up trend year nav buttons (once; replace handlers cleanly via cloneNode)
+    this._bindTrendYearNav();
+
+    // Render heatmap + pie immediately (fast, no LOESS needed)
     this.renderHeatmap();
-    this.renderTrend();
     this.renderPie();
     this.renderSurveyInfo();
+
+    // Check cache first — if already computed, render immediately
+    if (this._trendCache[this.selectedParliament]) {
+      this._applyTrendData();
+      return;
+    }
+
+    // Show skeleton while worker computes
+    this._showTrendSkeleton();
+
+    // Tag each survey with its index so the worker can reference it back
+    const surveysForWorker = this.surveys.map((s, i) => ({ ...s, _idx: i }));
+
+    // Collect all party IDs relevant to this parliament
+    const partySet = new Set();
+    this.surveys.forEach(s => Object.keys(s.Results).forEach(id => partySet.add(id)));
+
+    this._pendingParliament = this.selectedParliament;
+    this._worker.postMessage({
+      surveys:      surveysForWorker,
+      partyIds:     Array.from(partySet),
+      parliamentId: this.selectedParliament
+    });
+  }
+
+  _bindTrendYearNav() {
+    // Replace buttons to clear any stale event listeners
+    const replaceBtn = id => {
+      const old = document.getElementById(id);
+      const fresh = old.cloneNode(true);
+      old.parentNode.replaceChild(fresh, old);
+      return fresh;
+    };
+    const prevBtn = replaceBtn('trendPrevYear');
+    const nextBtn = replaceBtn('trendNextYear');
+
+    prevBtn.addEventListener('click', () => {
+      const idx = this.years.indexOf(this.trendYear);
+      if (idx > 0) { this.trendYear = this.years[idx - 1]; this._updateTrendYearNav(); this.renderTrend(); }
+    });
+    nextBtn.addEventListener('click', () => {
+      const idx = this.years.indexOf(this.trendYear);
+      if (idx < this.years.length - 1) { this.trendYear = this.years[idx + 1]; this._updateTrendYearNav(); this.renderTrend(); }
+    });
+    this._updateTrendYearNav();
+  }
+
+  _updateTrendYearNav() {
+    document.getElementById('trendYearLabel').textContent = this.trendYear || '';
+    const idx = this.years.indexOf(this.trendYear);
+    document.getElementById('trendPrevYear').disabled = (idx <= 0);
+    document.getElementById('trendNextYear').disabled = (idx >= this.years.length - 1);
+  }
+
+  // Show a lightweight skeleton in the trend chart area while worker runs
+  _showTrendSkeleton() {
+    const dom = document.getElementById('echartsTrend');
+    if (this.eTrend) { this.eTrend.dispose(); this.eTrend = null; }
+    document.getElementById('trendLegend').innerHTML = '';
+    document.getElementById('activeSurveyPill').innerHTML = '';
+    dom.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;gap:.75rem;opacity:.5;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f9ef8" stroke-width="2">
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
+            <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur=".9s" repeatCount="indefinite"/>
+          </path>
+        </svg>
+        <span style="font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:.15em;color:#4f9ef8;">Trend wird berechnet …</span>
+      </div>`;
+  }
+
+  // Called by worker message handler once data is ready
+  _applyTrendData() {
+    const cached = this._trendCache[this.selectedParliament];
+    if (!cached) return;
+    // Restore DOM (skeleton may have replaced innerHTML)
+    const dom = document.getElementById('echartsTrend');
+    dom.innerHTML = '';
+    this._updateTrendYearNav();
+    this._renderTrendFromCache(cached);
   }
 
   buildDatesToSurveys() {
@@ -907,100 +1210,71 @@ class Dashboard {
   }
 
   // ─── TREND CHART ──────────────────────────────────────────
+  // Now just called when toggling party visibility (re-render from cache)
   renderTrend() {
+    const cached = this._trendCache[this.selectedParliament];
+    if (!cached) return; // worker hasn't finished yet
+    this._renderTrendFromCache(cached);
+  }
+
+  _renderTrendFromCache({ trendsByParty, scatterByParty, avgW }) {
     if (!this.surveys.length) return;
 
-    // wPoints: one entry per fieldwork day, weight = persons/days
-    const wPoints = buildWeightedSeries(this.surveys);
+    // Year window: Jan 1 … Dec 31 of trendYear
+    const yearStart = `${this.trendYear}-01-01`;
+    const yearEnd   = `${this.trendYear}-12-31`;
 
-    // For scatter display we want one dot per survey (at fieldwork midpoint),
-    // not one dot per day. Build a deduplicated set keyed by survey object.
-    const surveyMidpoints = new Map(); // survey → { xDate, weight, persons, days, results }
-    for (const p of wPoints) {
-      if (!surveyMidpoints.has(p.survey)) {
-        // We'll compute the midpoint date properly from the period
-        const startStr = p.survey.Survey_Period?.Date_Start?.slice(0,10) || p.survey.Date.slice(0,10);
-        const endStr   = p.survey.Survey_Period?.Date_End?.slice(0,10)   || p.survey.Date.slice(0,10);
-        const midMs    = (new Date(startStr).getTime() + new Date(endStr).getTime()) / 2;
-        surveyMidpoints.set(p.survey, {
-          xDate:   new Date(midMs).toISOString().slice(0,10),
-          weight:  p.weight,
-          persons: p.persons,
-          days:    p.days,
-          results: p.results,
-          survey:  p.survey
-        });
-      }
-    }
-    const scatterPoints = Array.from(surveyMidpoints.values())
-      .sort((a, b) => new Date(a.xDate) - new Date(b.xDate));
-
-    // Collect all unique party IDs
-    const partySet = new Set();
-    wPoints.forEach(p => Object.keys(p.results).forEach(id => partySet.add(id)));
-
+    // Build party list sorted by latest value
+    const partySet = new Set(Object.keys(trendsByParty));
+    const latest = this.surveys[this.surveys.length - 1];
     const parties = Array.from(partySet).map(id => ({
       id,
       name:     this.data.Parties[id]?.Name     || id,
       shortcut: this.data.Parties[id]?.Shortcut || id,
       color:    getPartyColor(this.data.Parties[id]?.Shortcut || '', this.data.Parties[id]?.Name || '')
-    }));
-
-    // Sort by latest known value descending
-    const latest = scatterPoints[scatterPoints.length - 1];
-    parties.sort((a, b) => (Number(latest?.results[b.id]) || 0) - (Number(latest?.results[a.id]) || 0));
-
-    // All per-day xs and ws (used for LOESS only)
-    const allXs = wPoints.map(p => p.x);
-    const allWs = wPoints.map(p => p.weight);
-
-    // Average weight across all per-day points (for symbol sizing)
-    const avgW = allWs.reduce((s, w) => s + w, 0) / (allWs.length || 1);
+    })).sort((a, b) => (Number(latest?.Results[b.id]) || 0) - (Number(latest?.Results[a.id]) || 0));
 
     const series = [];
 
     for (const party of parties) {
       if (this.hiddenParties.has(party.id)) continue;
 
-      // ── Per-day y-values for LOESS ──────────────────────────
-      const ys = wPoints.map(p => {
-        const v = p.results[party.id];
-        return v !== undefined ? Number(v) : null;
+      const trendData  = trendsByParty[party.id];
+      const rawScatter = scatterByParty[party.id];
+      if (!trendData || !rawScatter || rawScatter.length < 2) continue;
+
+      // ── Scatter: filter to selected year ──
+      const scatterData = rawScatter
+        .filter(pt => pt.value[0] >= yearStart && pt.value[0] <= yearEnd)
+        .map(pt => ({
+          value:      pt.value,
+          symbolSize: pt.symbolSize,
+          _weight:    pt.weight,
+          _persons:   pt.persons,
+          _days:      pt.days,
+          _survey:    this.surveys[pt.surveyIdx]
+        }));
+
+      // ── Trend: extend slightly beyond window for smooth context,
+      //    then clip to year bounds so LOESS curve looks complete ──
+      // We use a ±60-day buffer for the LOESS line (context),
+      // but only display from yearStart to yearEnd on xAxis via min/max.
+      const bufferMs   = 60 * 86400000;
+      const winStartMs = new Date(yearStart).getTime() - bufferMs;
+      const winEndMs   = new Date(yearEnd  ).getTime() + bufferMs;
+      const trendFiltered = trendData.filter(([d]) => {
+        const t = new Date(d).getTime();
+        return t >= winStartMs && t <= winEndMs;
       });
-      const validIdx = ys.map((v, i) => v !== null ? i : -1).filter(i => i >= 0);
-      if (validIdx.length < 2) continue;
 
-      const validXs = validIdx.map(i => allXs[i]);
-      const validYs = validIdx.map(i => ys[i]);
-      const validWs = validIdx.map(i => allWs[i]);
-
-      // Bandwidth: ~22% of unique days, min 7
-      const bandwidth = Math.max(7, Math.round(validYs.length * 0.22));
-      const smoothed  = loessSmooth(validXs, validYs, validWs, bandwidth);
-
-      // ── Scatter dots: one per survey at midpoint ────────────
-      const scatterData = scatterPoints
-        .filter(sp => sp.results[party.id] !== undefined)
-        .map(sp => {
-          const val = Number(sp.results[party.id]);
-          // Symbol size: sqrt-scaled to survey weight relative to average
-          const size = Math.max(3, Math.min(11, 4 * Math.sqrt(sp.weight / avgW)));
-          return {
-            value:    [sp.xDate, val],
-            symbolSize: size,
-            _weight:  sp.weight,
-            _persons: sp.persons,
-            _days:    sp.days,
-            _survey:  sp.survey
-          };
-        });
+      if (scatterData.length === 0 && trendFiltered.length === 0) continue;
 
       series.push({
         name:  party.shortcut,
         type:  'scatter',
         data:  scatterData,
         symbol: 'circle',
-        itemStyle: { color: party.color, opacity: 0.38 },
+        itemStyle: { color: party.color, opacity: 0.45 },
         z: 1,
         tooltip: {
           formatter: p => {
@@ -1022,23 +1296,10 @@ class Dashboard {
         }
       });
 
-      // ── LOESS trend line: evaluated at every per-day x ──────
-      // To avoid drawing a line for each individual day (too noisy),
-      // we thin to unique dates (one smoothed value per calendar day)
-      const seenDates = new Set();
-      const trendData = [];
-      for (let j = 0; j < validIdx.length; j++) {
-        const date = wPoints[validIdx[j]].xDate;
-        if (seenDates.has(date)) continue;
-        seenDates.add(date);
-        const val = Math.max(0, +smoothed[j].toFixed(2));
-        trendData.push([date, val]);
-      }
-
       series.push({
         name:  party.shortcut + '_trend',
         type:  'line',
-        data:  trendData,
+        data:  trendFiltered,
         smooth: false,
         showSymbol: false,
         lineStyle: { color: party.color, width: 2.5, opacity: 0.9 },
@@ -1087,6 +1348,8 @@ class Dashboard {
       grid: { left: 40, right: 80, top: 20, bottom: 40 },
       xAxis: {
         type: 'time',
+        min: yearStart,
+        max: yearEnd,
         axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
         axisTick: { show: false },
         axisLabel: {
@@ -1095,7 +1358,8 @@ class Dashboard {
           fontSize: 10,
           formatter: v => {
             const d = new Date(v);
-            return d.getFullYear() + '\n' + (d.getMonth() === 0 ? '' : String(d.getMonth() + 1).padStart(2,'0') + '/' );
+            const mon = d.toLocaleString('de-DE', { month: 'short' });
+            return mon;
           }
         },
         splitLine: { lineStyle: { color: 'rgba(255,255,255,0.04)' } }
