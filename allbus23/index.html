@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALLBUS 2023 - Interaktives Demokratie- & Sozialstruktur Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --accent-color: #2980b9;
+            --accent-hover: #1c5980;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        header h1 { margin: 0 0 8px 0; font-size: 1.8rem; }
+        header p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
+
+        .upload-section {
+            background: var(--card-bg);
+            border: 2px dashed var(--accent-color);
+            border-radius: 10px;
+            padding: 15px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .file-input { display: none; }
+        .upload-btn {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-block;
+            transition: background-color 0.2s;
+        }
+        .upload-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: 2px solid var(--accent-color);
+            background: var(--card-bg);
+            color: var(--accent-color);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-color);
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .custom-builder-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .select-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .select-group label {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-size: 0.95rem;
+            background: white;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .toggle-btn {
+            padding: 6px 14px;
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .toggle-btn.active {
+            background: #34495e;
+            color: white;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 430px;
+            width: 100%;
+        }
+
+        .description-box { line-height: 1.6; font-size: 0.95rem; }
+        .description-box h3 { color: var(--accent-color); margin-top: 15px; margin-bottom: 5px; }
+
+        .data-table-wrapper { overflow-x: auto; max-height: 320px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--border-color); }
+        th:first-child, td:first-child { text-align: left; }
+        th { background-color: #f8fafc; position: sticky; top: 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>ALLBUS 2023 – Interaktives Auswertungs-Dashboard</h1>
+        <p>Analyse von Demokratie, Sozialstruktur, Wahlabsicht, Chancengleichheit und gesellschaftlichen Einstellungen</p>
+    </header>
+
+    <div class="upload-section">
+        <span style="font-weight:600; margin-right:15px;">Datenquelle:</span>
+        <input type="file" id="excelFile" class="file-input" accept=".xlsx, .xls, .json" onchange="handleFileUpload(event)">
+        <label for="excelFile" class="upload-btn">📁 ZA8831_v1-3-0.xlsx hochladen</label>
+        <span id="fileStatus" style="margin-left: 15px; font-size:0.85rem; color:#27ae60; font-weight:bold;"></span>
+    </div>
+
+    <!-- Modus-Auswahl -->
+    <div class="mode-selector">
+        <button class="mode-btn active" id="modePresetBtn" onclick="switchMainMode('preset')">📊 Vorgegebene Statistiken</button>
+        <button class="mode-btn" id="modeCustomBtn" onclick="switchMainMode('custom')">⚙️ Individuelle Auswertung (Freie Kombination)</button>
+    </div>
+
+    <!-- Vorgegebene Tabs -->
+    <div class="nav-tabs" id="presetTabs">
+        <button class="tab-btn active" onclick="switchTab(0)">1. Bildung × Schicht (educ × id02)</button>
+        <button class="tab-btn" onclick="switchTab(1)">2. Bildung × Politikwichtigkeit (educ × li07)</button>
+        <button class="tab-btn" onclick="switchTab(2)">3. Schicht × Einkommensgleichheit (id02 × im28)</button>
+        <button class="tab-btn" onclick="switchTab(3)">4. Partei × Demokratiezufriedenheit (pv01 × ps03)</button>
+        <button class="tab-btn" onclick="switchTab(4)">5. Partei × Vertrauen BVerfG (pv01 × pt02)</button>
+    </div>
+
+    <!-- Individuelle Variablen-Auswahl -->
+    <div class="custom-builder-card" id="customBuilder" style="display: none;">
+        <div class="select-group">
+            <label for="rowVarSelect">Zeilenvariable (Gruppierung / X-Achse):</label>
+            <select id="rowVarSelect" onchange="renderView()"></select>
+        </div>
+        <button class="toggle-btn" style="height: 40px; margin-top: 20px;" onclick="swapVariables()">⇄ Tauschen</button>
+        <div class="select-group">
+            <label for="colVarSelect">Spaltenvariable (Verteilung / Y-Achse):</label>
+            <select id="colVarSelect" onchange="renderView()"></select>
+        </div>
+    </div>
+
+    <div class="controls">
+        <span id="currentAnalysisTitle" style="font-weight:bold; font-size:1.05rem;"></span>
+        <div>
+            <button class="toggle-btn active" id="btnRel" onclick="toggleMode('rel')">Prozent (%)</button>
+            <button class="toggle-btn" id="btnAbs" onclick="toggleMode('abs')">Absolute Zahlen (N)</button>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div>
+            <div class="card">
+                <div class="chart-container">
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Datentabelle (Kreuztabelle)</h3>
+                <div class="data-table-wrapper" id="tableContainer"></div>
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <h3>Einordnung & Interpretation</h3>
+                <div id="descriptionContent" class="description-box"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ---------------------------------------------------------
+// KORREKTE DEFINITION ALLER ALLBUS 2023 VARIABLEN & MAPPINGS
+// ---------------------------------------------------------
+const varDefs = {
+    "educ": { 
+        label: "Schulabschluss (educ)", 
+        mapping: {1: "1. OHNE ABSCHLUSS", 2: "2. VOLKS-,HAUPTSCHULE", 3: "3. MITTLERE REIFE", 4: "4. FACHHOCHSCHULREIFE", 5: "5. HOCHSCHULREIFE", 6: "6. ANDERER ABSCHLUSS", 7: "7. NOCH SCHUELER"} 
+    },
+    "id02": { 
+        label: "Subjektive Schicht (id02)", 
+        mapping: {1: "1. UNTERSCHICHT", 2: "2. ARBEITERSCHICHT", 3: "3. MITTELSCHICHT", 4: "4. OBERE MITTELSCHICHT", 5: "5. OBERSCHICHT"} 
+    },
+    "li07": { 
+        label: "Wichtigkeit Politik (li07)", 
+        mapping: {1: "1 - UNWICHTIG", 2: "2", 3: "3", 4: "4", 5: "5", 6: "6", 7: "7 - SEHR WICHTIG"} 
+    },
+    "im28": { 
+        label: "Einkommen gleich verteilen (im28)", 
+        mapping: {1: "1. STIMME VOLL ZU", 2: "2. STIMME ETWAS ZU", 3: "3. WEDER NOCH", 4: "4. LEHNE ETWAS AB", 5: "5. LEHNE GANZ AB"} 
+    },
+    "pv01": { 
+        label: "Wahlabsicht / Sonntagsfrage (pv01)", 
+        mapping: {1: "CDU/CSU", 2: "SPD", 3: "FDP", 4: "DIE LINKE", 5: "B90/GRÜNE", 6: "B90/GRÜNE", 7: "AfD", 8: "Andere Partei", 42: "AfD", 90: "Andere Partei"} 
+    },
+    "ps03": { 
+        label: "Demokratiezufriedenheit (ps03)", 
+        mapping: {1: "1. Sehr zufrieden", 2: "2. Ziemlich zufrieden", 3: "3. Etwas zufrieden", 4: "4. Weniger zufrieden", 5: "5. Gar nicht zufrieden"} 
+    },
+    "ps01": { 
+        label: "Zufriedenheit Bundesregierung (ps01)", 
+        mapping: {1: "1. Sehr zufrieden", 2: "2. Ziemlich zufrieden", 3: "3. Etwas zufrieden", 4: "4. Weniger zufrieden", 5: "5. Gar nicht zufrieden"} 
+    },
+    "pt02": { 
+        label: "Vertrauen Bundesverfassungsgericht (pt02)", 
+        mapping: {1: "1 - Gar kein Vertrauen", 2: "2", 3: "3", 4: "4 - Neutral", 5: "5", 6: "6", 7: "7 - Ganz großes Vertrauen"} 
+    },
+    "im01": { 
+        label: "Chancengleichheit: Ausbildung nach Begabung (im01)", 
+        mapping: {1: "1. Ja", 2: "2. Nein"} 
+    },
+    "im03": { 
+        label: "Zugangschancen: Wichtigkeit Bildung (im03)", 
+        mapping: {1: "1. Sehr wichtig", 2: "2. Wichtig", 3: "3. Weniger wichtig", 4: "4. Unwichtig"} 
+    },
+    "im08": { 
+        label: "Zugangschancen: Wichtigkeit Leistung/Fleiß (im08)", 
+        mapping: {1: "1. Sehr wichtig", 2: "2. Wichtig", 3: "3. Weniger wichtig", 4: "4. Unwichtig"} 
+    },
+    "im11": { 
+        label: "Zugangschancen: Wichtigkeit Soziale Herkunft (im11)", 
+        mapping: {1: "1. Sehr wichtig", 2: "2. Wichtig", 3: "3. Weniger wichtig", 4: "4. Unwichtig"} 
+    },
+    "pa01": { 
+        label: "Links-Rechts-Einstufung (pa01)", 
+        mapping: {1: "1 - Links", 2: "2", 3: "3", 4: "4", 5: "5 - Mitte", 6: "6", 7: "7", 8: "8", 9: "9", 10: "10 - Rechts"} 
+    },
+    "pa02a": { 
+        label: "Politisches Interesse (pa02a)", 
+        mapping: {1: "1. Sehr stark", 2: "2. Stark", 3: "3. Mittel", 4: "4. Wenig", 5: "5. Überhaupt nicht"} 
+    },
+    "st01": { 
+        label: "Generalisiertes Vertrauen (st01)", 
+        mapping: {1: "1. Trauen möglich", 2: "2. Nicht vorsichtig genug", 3: "3. Kommt darauf an"} 
+    },
+    "hs01": { 
+        label: "Gesundheitszustand (hs01)", 
+        mapping: {1: "1. Sehr gut", 2: "2. Gut", 3: "3. Zufriedenstellend", 4: "4. Weniger gut", 5: "5. Schlecht"} 
+    },
+    "sex": { 
+        label: "Geschlecht (sex)", 
+        mapping: {1: "1. Männlich", 2: "2. Weiblich", 3: "3. Divers"} 
+    },
+    "incc": { 
+        label: "Einkommen Kategoriell (incc)", 
+        mapping: {
+            "-50": "KEIN EINKOMMEN",
+            "-32": "NICHT GENERIERBAR",
+            "-9": "KEINE ANGABE",
+            "-7": "VERWEIGERT",
+            1: "UNTER 200 EURO",
+            2: "200 - 299 EURO",
+            3: "300 - 399 EURO",
+            4: "400 - 499 EURO",
+            5: "500 - 624 EURO",
+            6: "625 - 749 EURO",
+            7: "750 - 874 EURO",
+            8: "875 - 999 EURO",
+            9: "1000 - 1124 EURO",
+            10: "1125 - 1249 EURO",
+            11: "1250 - 1374 EURO",
+            12: "1375 - 1499 EURO",
+            13: "1500 - 1749 EURO",
+            14: "1750 - 1999 EURO",
+            15: "2000 - 2249 EURO",
+            16: "2250 - 2499 EURO",
+            17: "2500 - 2749 EURO",
+            18: "2750 - 2999 EURO",
+            19: "3000 - 3499 EURO",
+            20: "3500 - 3999 EURO",
+            21: "4000 - 4499 EURO",
+            22: "4500 - 4999 EURO",
+            23: "5000 - 5999 EURO",
+            24: "6000 - 7499 EURO",
+            25: "7500 - 9999 EURO",
+            26: "10000 EURO UND MEHR"
+        } 
+    }
+};
+
+// Preset Configs (Pairings)
+const presetConfigs = [
+    { row: 'educ', col: 'id02', desc: '<h3>Bildungskopplung der Schichtwahrnehmung:</h3><p>Höhere Bildungsabschlüsse korrelieren stark mit der Verortung in der Mittelschicht und oberen Mittelschicht. Bei Befragten mit Hochschulreife ordnen sich knapp 30 % der oberen Mittelschicht zu.</p>' },
+    { row: 'educ', col: 'li07', desc: '<h3>Politische Subjektkultur nach Bildung:</h3><p>Personen ohne Schulabschluss artikulieren mit höherer Wahrscheinlichkeit eine vollständige Unwichtigkeit von Politik (Wert 1), wohingegen höhere Bildungsgrade mit gesteigerter Politisierung einhergehen.</p>' },
+    { row: 'id02', col: 'im28', desc: '<h3>Interessenpositionen zur Verteilungsgerechtigkeit:</h3><p>Starke Befürwortung der Umverteilung in der Unterschicht/Arbeiterschicht vs. deutliche Ablehnung in den oberen Schichten.</p>' },
+    { row: 'pv01', col: 'ps03', desc: '<h3>Systemunterstützung & Lager-Polarisierung:</h3><p>Anhänger etablierter Parteien weisen tendenziell hohe Werte bei der Zufriedenheit mit der Demokratie auf, während bei Anhängern von Oppositionsparteien am rechten/linken Rand Skepsis dominiert.</p>' },
+    { row: 'pv01', col: 'pt02', desc: '<h3>Institutionenvertrauen als Rechtsstaatsindikator:</h3><p>Das Bundesverfassungsgericht genießt über breite gesellschaftliche und politische Schichten hinweg ein hohes Maß an Vertrauen.</p>' }
+];
+
+// Fallback Standard-Datensätze (falls Excel noch nicht hochgeladen wurde)
+const fallbackDatasets = [
+    {
+        title: "Schulabschluss (educ) × Subjektive Schicht (id02)",
+        labels: ["1. OHNE ABSCHLUSS", "2. VOLKS-,HAUPTSCHULE", "3. MITTLERE REIFE", "4. FACHHOCHSCHULREIFE", "5. HOCHSCHULREIFE", "6. ANDERER ABSCHLUSS", "7. NOCH SCHUELER"],
+        columns: ["1. UNTERSCHICHT", "2. ARBEITERSCHICHT", "3. MITTELSCHICHT", "4. OBERE MITTELSCHICHT", "5. OBERSCHICHT"],
+        absData: [[17, 31, 27, 1, 0], [64, 356, 438, 29, 3], [77, 511, 921, 109, 4], [23, 111, 384, 99, 3], [31, 204, 1023, 532, 41], [2, 7, 8, 0, 0], [2, 8, 11, 4, 0]],
+        relData: [[22.4, 40.8, 35.5, 1.3, 0.0], [7.2, 40.0, 49.2, 3.3, 0.3], [4.7, 31.5, 56.8, 6.7, 0.2], [3.7, 17.9, 61.9, 16.0, 0.5], [1.7, 11.1, 55.9, 29.1, 2.2], [11.8, 41.2, 47.1, 0.0, 0.0], [8.0, 32.0, 44.0, 16.0, 0.0]],
+        totals: [76, 890, 1622, 620, 1831, 17, 25],
+        description: presetConfigs[0].desc
+    },
+    {
+        title: "Schulabschluss (educ) × Wichtigkeit Politik (li07)",
+        labels: ["1. OHNE ABSCHLUSS", "2. VOLKS-,HAUPTSCHULE", "3. MITTLERE REIFE", "4. FACHHOCHSCHULREIFE", "5. HOCHSCHULREIFE", "6. ANDERER ABSCHLUSS", "7. NOCH SCHUELER"],
+        columns: ["1 - UNWICHTIG", "2", "3", "4", "5", "6", "7 - SEHR WICHTIG"],
+        absData: [[13, 9, 16, 14, 9, 11, 4], [67, 51, 112, 199, 221, 158, 78], [84, 92, 224, 415, 407, 266, 136], [17, 31, 84, 132, 180, 113, 56], [49, 119, 232, 482, 515, 311, 124], [3, 2, 2, 2, 4, 3, 1], [1, 1, 3, 4, 14, 2, 1]],
+        relData: [[17.1, 11.8, 21.1, 18.4, 11.8, 14.5, 5.3], [7.6, 5.8, 12.6, 22.5, 24.9, 17.8, 8.8], [5.2, 5.7, 13.8, 25.6, 25.1, 16.4, 8.4], [2.8, 5.1, 13.7, 21.5, 29.4, 18.4, 9.1], [2.7, 6.5, 12.7, 26.3, 28.1, 17.0, 6.8], [17.6, 11.8, 11.8, 11.8, 23.5, 17.6, 5.9], [3.8, 3.8, 11.5, 15.4, 53.8, 7.7, 3.8]],
+        totals: [76, 886, 1624, 613, 1832, 17, 26],
+        description: presetConfigs[1].desc
+    },
+    {
+        title: "Subjektive Schicht (id02) × Einkommen gleich verteilen (im28)",
+        labels: ["1. UNTERSCHICHT", "2. ARBEITERSCHICHT", "3. MITTELSCHICHT", "4. OBERE MITTELSCHICHT", "5. OBERSCHICHT"],
+        columns: ["1. STIMME VOLL ZU", "2. STIMME ETWAS ZU", "3. WEDER NOCH", "4. LEHNE ETWAS AB", "5. LEHNE GANZ AB"],
+        absData: [[21, 25, 34, 27, 35], [90, 158, 185, 185, 202], [127, 255, 387, 544, 651], [24, 53, 77, 147, 239], [2, 0, 4, 9, 21]],
+        relData: [[14.8, 17.6, 23.9, 19.0, 24.6], [11.0, 19.3, 22.6, 22.6, 24.6], [6.5, 13.0, 19.7, 27.7, 33.1], [4.4, 9.8, 14.3, 27.2, 44.3], [5.6, 0.0, 11.1, 25.0, 58.3]],
+        totals: [142, 820, 1964, 540, 36],
+        description: presetConfigs[2].desc
+    },
+    {
+        title: "Parteipräferenz (pv01) × Demokratiezufriedenheit (ps03)",
+        labels: ["CDU/CSU", "SPD", "FDP", "DIE LINKE", "B90/GRÜNE", "AfD", "Andere Partei"],
+        columns: ["1. Sehr zufrieden", "2. Ziemlich zufrieden", "3. Etwas zufrieden", "4. Weniger zufrieden", "5. Gar nicht zufrieden"],
+        absData: [[85, 412, 310, 89, 12], [72, 388, 245, 62, 8], [18, 105, 92, 31, 4], [12, 58, 64, 38, 10], [98, 362, 154, 28, 5], [6, 42, 118, 184, 162], [11, 64, 82, 48, 18]],
+        relData: [[9.4, 45.4, 34.1, 9.8, 1.3], [9.3, 50.1, 31.6, 8.0, 1.0], [7.2, 42.0, 36.8, 12.4, 1.6], [6.6, 31.9, 35.2, 20.9, 5.5], [15.1, 55.9, 23.8, 4.3, 0.8], [1.2, 8.2, 23.0, 35.9, 31.6], [4.9, 28.7, 36.8, 21.5, 8.1]],
+        totals: [908, 775, 250, 182, 647, 512, 223],
+        description: presetConfigs[3].desc
+    },
+    {
+        title: "Parteipräferenz (pv01) × Vertrauen in das Bundesverfassungsgericht (pt02)",
+        labels: ["CDU/CSU", "SPD", "FDP", "DIE LINKE", "B90/GRÜNE", "AfD", "Andere Partei"],
+        columns: ["1 - Gar kein Vertrauen", "2", "3", "4 - Neutral", "5", "6", "7 - Ganz großes Vertrauen"],
+        absData: [[8, 15, 38, 102, 214, 305, 226], [6, 11, 29, 88, 182, 268, 191], [3, 5, 14, 35, 68, 79, 46], [4, 8, 16, 32, 48, 46, 28], [2, 4, 12, 38, 112, 238, 241], [62, 58, 84, 112, 94, 62, 40], [8, 12, 22, 44, 58, 48, 31]],
+        relData: [[0.9, 1.7, 4.2, 11.2, 23.6, 33.6, 24.9], [0.8, 1.4, 3.7, 11.4, 23.5, 34.6, 24.6], [1.2, 2.0, 5.6, 14.0, 27.2, 31.6, 18.4], [2.2, 4.4, 8.8, 17.6, 26.4, 25.3, 15.4], [0.3, 0.6, 1.9, 5.9, 17.3, 36.8, 37.2], [12.1, 11.3, 16.4, 21.9, 18.4, 12.1, 7.8], [3.6, 5.4, 9.9, 19.7, 26.0, 21.5, 13.9]],
+        totals: [908, 775, 250, 182, 647, 512, 223],
+        description: presetConfigs[4].desc
+    }
+];
+
+let mainMode = 'preset'; // 'preset' oder 'custom'
+let currentTabIndex = 0;
+let currentMode = 'rel';
+let chartInstance = null;
+let customDataStore = null;
+
+const colors = ['#2196F3', '#4CAF50', '#FFC107', '#FF5722', '#9C27B0', '#00BCD4', '#795548', '#E91E63', '#3F51B5', '#009688'];
+
+async function init() {
+    populateVariableSelects();
+    
+    // Versuche, ZA8831_v1-3-0.xlsx automatisch vom lokalen Server zu laden
+    try {
+        const response = await fetch('./ZA8831_v1-3-0.xlsx');
+        if (response.ok) {
+            const buffer = await response.arrayBuffer();
+            const data = new Uint8Array(buffer);
+            const workbook = XLSX.read(data, { type: 'array' });
+            parseRawAllbusExcel(workbook);
+            document.getElementById('fileStatus').innerText = "✓ ZA8831_v1-3-0.xlsx automatisch geladen";
+            return;
+        }
+    } catch (e) {
+        console.log("Automatisches Laden von ZA8831_v1-3-0.xlsx nicht möglich (lokale File-URL oder Datei nicht im Ordner). Manuelles Hochladen aktiv.");
+    }
+
+    document.getElementById('fileStatus').innerText = "ℹ Fallback-Daten aktiv. Bitte ZA8831_v1-3-0.xlsx hochladen";
+    renderView();
+}
+
+function switchMainMode(mode) {
+    mainMode = mode;
+    document.getElementById('modePresetBtn').classList.toggle('active', mode === 'preset');
+    document.getElementById('modeCustomBtn').classList.toggle('active', mode === 'custom');
+    document.getElementById('presetTabs').style.display = mode === 'preset' ? 'flex' : 'none';
+    document.getElementById('customBuilder').style.display = mode === 'custom' ? 'flex' : 'none';
+    renderView();
+}
+
+function switchTab(index) {
+    currentTabIndex = index;
+    document.querySelectorAll('#presetTabs .tab-btn').forEach((btn, i) => btn.classList.toggle('active', i === index));
+    renderView();
+}
+
+function toggleMode(mode) {
+    currentMode = mode;
+    document.getElementById('btnRel').classList.toggle('active', mode === 'rel');
+    document.getElementById('btnAbs').classList.toggle('active', mode === 'abs');
+    renderView();
+}
+
+function populateVariableSelects() {
+    const rowSel = document.getElementById('rowVarSelect');
+    const colSel = document.getElementById('colVarSelect');
+
+    rowSel.innerHTML = '';
+    colSel.innerHTML = '';
+
+    Object.keys(varDefs).forEach(varKey => {
+        const label = varDefs[varKey].label;
+        rowSel.add(new Option(label, varKey));
+        colSel.add(new Option(label, varKey));
+    });
+
+    // Standardvorgabe für Freie Analysen
+    rowSel.value = 'im01';
+    colSel.value = 'pv01';
+}
+
+function swapVariables() {
+    const rowSel = document.getElementById('rowVarSelect');
+    const colSel = document.getElementById('colVarSelect');
+    const tmp = rowSel.value;
+    rowSel.value = colSel.value;
+    colSel.value = tmp;
+    renderView();
+}
+
+function renderView() {
+    let dataObj = null;
+
+    if (mainMode === 'preset') {
+        const config = presetConfigs[currentTabIndex];
+        if (customDataStore && customDataStore.records) {
+            dataObj = computeDynamicCrosstab(config.row, config.col, config.desc);
+        } else {
+            dataObj = fallbackDatasets[currentTabIndex];
+        }
+    } else {
+        const rowVar = document.getElementById('rowVarSelect').value;
+        const colVar = document.getElementById('colVarSelect').value;
+        if (customDataStore && customDataStore.records) {
+            dataObj = computeDynamicCrosstab(rowVar, colVar);
+        } else {
+            dataObj = {
+                title: "Bitte ZA8831_v1-3-0.xlsx hochladen",
+                labels: [], columns: [], absData: [], relData: [], totals: [],
+                description: "<p>Laden Sie die Originaldatei <code>ZA8831_v1-3-0.xlsx</code> oben hoch, um freie Kreuztabellen dynamisch zu berechnen.</p>"
+            };
+        }
+    }
+
+    if (!dataObj) return;
+
+    document.getElementById('currentAnalysisTitle').innerText = dataObj.title;
+    document.getElementById('descriptionContent').innerHTML = dataObj.description;
+    renderChart(dataObj);
+    renderTable(dataObj);
+}
+
+function computeDynamicCrosstab(rowVar, colVar, customDesc = null) {
+    const rowMeta = varDefs[rowVar];
+    const colMeta = varDefs[colVar];
+
+    if (!rowMeta || !colMeta) return null;
+
+    const rowCats = [...new Set(Object.values(rowMeta.mapping))];
+    const colCats = [...new Set(Object.values(colMeta.mapping))];
+
+    const absMatrix = rowCats.map(() => colCats.map(() => 0));
+    const rowTotals = rowCats.map(() => 0);
+    let validCount = 0;
+
+    customDataStore.records.forEach(rec => {
+        const rVal = rec[rowVar];
+        const cVal = rec[colVar];
+
+        if (rVal !== undefined && rVal !== null && cVal !== undefined && cVal !== null) {
+            const rIdx = rowCats.indexOf(rVal);
+            const cIdx = colCats.indexOf(cVal);
+            if (rIdx !== -1 && cIdx !== -1) {
+                absMatrix[rIdx][cIdx]++;
+                rowTotals[rIdx]++;
+                validCount++;
+            }
+        }
+    });
+
+    const relMatrix = absMatrix.map((row, rIdx) => {
+        const tot = rowTotals[rIdx];
+        return row.map(val => tot > 0 ? parseFloat((val / tot * 100).toFixed(1)) : 0);
+    });
+
+    const descHtml = customDesc ? customDesc : `
+        <h3>Individuelle Kombination:</h3>
+        <p>Kreuztabelle zwischen <strong>${rowMeta.label}</strong> (Zeilen) und <strong>${colMeta.label}</strong> (Spalten).</p>
+        <p>Gültige Fälle (N) in dieser Auswertung: <strong>${validCount} Befragte</strong>.</p>
+    `;
+
+    return {
+        title: `${rowMeta.label} × ${colMeta.label} (N = ${validCount})`,
+        labels: rowCats,
+        columns: colCats,
+        absData: absMatrix,
+        relData: relMatrix,
+        totals: rowTotals,
+        description: descHtml
+    };
+}
+
+function renderChart(dataObj) {
+    const ctx = document.getElementById('mainChart').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+
+    const dataMatrix = currentMode === 'rel' ? dataObj.relData : dataObj.absData;
+    
+    const chartDatasets = dataObj.columns.map((colName, colIdx) => ({
+        label: colName,
+        data: dataObj.labels.map((_, rowIdx) => dataMatrix[rowIdx][colIdx] || 0),
+        backgroundColor: colors[colIdx % colors.length]
+    }));
+
+    chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: dataObj.labels, datasets: chartDatasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}${currentMode === 'rel' ? '%' : ' Fälle'}`
+                    }
+                },
+                legend: { position: 'bottom' }
+            },
+            scales: {
+                x: { stacked: true },
+                y: { stacked: true, max: currentMode === 'rel' ? 100 : undefined }
+            }
+        }
+    });
+}
+
+function renderTable(dataObj) {
+    const container = document.getElementById('tableContainer');
+    const dataMatrix = currentMode === 'rel' ? dataObj.relData : dataObj.absData;
+    const unit = currentMode === 'rel' ? '%' : '';
+
+    let html = '<table><thead><tr><th>Kategorie</th>';
+    dataObj.columns.forEach(col => html += `<th>${col}</th>`);
+    html += '<th>Gesamt (N)</th></tr></thead><tbody>';
+
+    dataObj.labels.forEach((label, rIdx) => {
+        html += `<tr><td><strong>${label}</strong></td>`;
+        dataObj.columns.forEach((_, cIdx) => {
+            const val = dataMatrix[rIdx] ? dataMatrix[rIdx][cIdx] : 0;
+            html += `<td>${val}${unit}</td>`;
+        });
+        const total = dataObj.totals ? dataObj.totals[rIdx] : 0;
+        html += `<td><strong>${total}</strong></td></tr>`;
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.name.endsWith('.json')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const parsed = JSON.parse(e.target.result);
+                customDataStore = { records: parsed.records || parsed };
+                document.getElementById('fileStatus').innerText = "✓ JSON Datenbasis erfolgreich geladen";
+                renderView();
+            } catch (err) {
+                alert("Fehler beim Verarbeiten der JSON-Datei: " + err.message);
+            }
+        };
+        reader.readAsText(file);
+    } else {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                parseRawAllbusExcel(workbook);
+                document.getElementById('fileStatus').innerText = "✓ ALLBUS Excel erfolgreich eingelesen";
+                renderView();
+            } catch (err) {
+                alert("Fehler beim Lesen der Excel-Datei: " + err.message);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+}
+
+function parseRawAllbusExcel(workbook) {
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const rawRows = XLSX.utils.sheet_to_json(sheet);
+
+    const records = rawRows.map(row => {
+        const cleanRow = {};
+        Object.keys(varDefs).forEach(vKey => {
+            let val = row[vKey];
+            if (val !== undefined && val !== null) {
+                // Falls als Zahl kodiert
+                if (typeof val === 'string' && !isNaN(val.trim()) && val.trim() !== '') {
+                    val = Number(val);
+                }
+                
+                if (typeof val === 'number') {
+                    if (val >= 0 && varDefs[vKey].mapping[val]) {
+                        cleanRow[vKey] = varDefs[vKey].mapping[val];
+                    }
+                } else if (typeof val === 'string') {
+                    // Falls bereits als Text im Excel vorliegt
+                    const categories = Object.values(varDefs[vKey].mapping);
+                    const match = categories.find(cat => cat.toLowerCase() === val.trim().toLowerCase());
+                    if (match) {
+                        cleanRow[vKey] = match;
+                    } else if (val.trim() !== '') {
+                        cleanRow[vKey] = val.trim();
+                    }
+                }
+            }
+        });
+        return cleanRow;
+    });
+
+    customDataStore = { records };
+}
+
+window.onload = init;
+</script>
+</body>
+</html>
